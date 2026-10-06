@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>សៀវភៅហិរញ្ញវត្ថុ & ផ្ញើសារ Telegram</title>
+  <!-- Google Fonts for Khmer & Latin -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Kantumruy Pro"', '"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            },
+            telegram: {
+              DEFAULT: '#229ED9',
+              dark: '#1c82b3',
+              light: '#e8f5fb'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(241, 245, 249, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .dark ::-webkit-scrollbar-track {
+      background: rgba(30, 41, 59, 0.5);
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased min-h-screen pb-14 transition-colors duration-200">
+
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0">
+          <i class="fa-solid fa-wallet text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-xl text-slate-900 dark:text-white leading-tight flex items-center gap-2">
+            សៀវភៅហិរញ្ញវត្ថុ
+            <span class="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">Telegram Sync</span>
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">តាមដានចំណូលចំណាយ & ផ្ញើដំណឹងភ្លាមៗទៅ Telegram</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Currency Toggle -->
+        <button id="currencyBtn" onclick="toggleCurrency()" class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition shadow-sm">
+          <i class="fa-solid fa-money-bill-transfer text-emerald-600 dark:text-emerald-400"></i>
+          <span id="currencyLabel">USD ($)</span>
+        </button>
+
+        <!-- Exchange Rate Button -->
+        <button onclick="openRateModal()" title="កំណត់អត្រាប្តូរប្រាក់" class="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition shadow-sm">
+          <span class="text-emerald-600 dark:text-emerald-400 font-bold">$1 =</span>
+          <span id="headerExchangeRate">4,100 ៛</span>
+        </button>
+
+        <!-- Monthly Report Modal Button -->
+        <button onclick="openMonthlyReportModal()" class="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900 transition shadow-sm">
+          <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400"></i>
+          <span class="hidden md:inline">របាយការណ៍ខែនេះ</span>
+        </button>
+
+        <!-- Monthly Budget Modal Button -->
+        <button onclick="openBudgetModal()" class="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900 transition shadow-sm">
+          <i class="fa-solid fa-bullseye text-emerald-600 dark:text-emerald-400"></i>
+          <span class="hidden md:inline">កញ្ចប់ថវិកា</span>
+        </button>
+
+        <!-- Dark Mode Toggle Button -->
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="ប្តូរពណ៌ Dark / Light" class="w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center text-xs transition shadow-sm">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
+        <!-- Telegram Settings Button -->
+        <button onclick="openTelegramModal()" class="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 text-xs font-semibold hover:bg-sky-100 dark:hover:bg-sky-900 transition shadow-sm">
+          <i class="fa-brands fa-telegram text-base text-telegram"></i>
+          <span class="hidden sm:inline">ភ្ជាប់ Bot</span>
+          <span id="tgStatusBadge" class="w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-white dark:ring-slate-800"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+
+    <!-- Top Alert Banner if Telegram not configured -->
+    <div id="tgAlertBanner" class="p-4 rounded-2xl bg-gradient-to-r from-sky-500/10 via-teal-500/10 to-emerald-500/10 border border-sky-200/80 dark:border-sky-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-start gap-3">
+        <div class="p-2.5 rounded-xl bg-telegram text-white shrink-0 shadow-sm">
+          <i class="fa-brands fa-telegram text-xl"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">ភ្ជាប់ជាមួយ Telegram Bot របស់អ្នកឥឡូវនេះ</h2>
+          <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">ដើម្បីឱ្យប្រព័ន្ធបញ្ជូនសារជូនដំណឹងរាល់ពេលកត់ត្រាចំណូលចំណាយ និងទទួលរបាយការណ៍សង្ខេបប្រចាំថ្ងៃ/ខែ។</p>
+        </div>
+      </div>
+      <button onclick="openTelegramModal()" class="self-start sm:self-center px-4 py-2 text-xs font-semibold bg-telegram hover:bg-telegram-dark text-white rounded-xl shadow-sm shadow-sky-500/20 transition whitespace-nowrap">
+        <i class="fa-solid fa-gear mr-1"></i> កំណត់ Bot ឥឡូវនេះ
+      </button>
+    </div>
+
+    <!-- 3 High-Level Balance Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Net Balance -->
+      <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">សមតុល្យសរុប (Net Balance)</span>
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </div>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="netBalance" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">$0.00</span>
+        </div>
+        <p class="text-xs text-slate-400 dark:text-slate-400 mt-2 flex items-center gap-1">
+          <i class="fa-regular fa-clock"></i> គិតត្រឹមថ្ងៃនេះ
+        </p>
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
+      </div>
+
+      <!-- Income Card -->
+      <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ចំណូលសរុប (Total Income)</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+          </div>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="totalIncome" class="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">$0.00</span>
+        </div>
+        <p class="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-2 flex items-center gap-1">
+          <i class="fa-solid fa-circle-check text-[10px]"></i> ប្រភពចំណូលសរុបទាំងអស់
+        </p>
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
+      </div>
+
+      <!-- Expense Card -->
+      <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ចំណាយសរុប (Total Expense)</span>
+          <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <i class="fa-solid fa-arrow-trend-down"></i>
+          </div>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="totalExpense" class="text-2xl sm:text-3xl font-extrabold text-rose-600 dark:text-rose-400">$0.00</span>
+        </div>
+        <p class="text-xs text-rose-600/80 dark:text-rose-400/80 mt-2 flex items-center gap-1">
+          <i class="fa-solid fa-receipt text-[10px]"></i> បន្ទុកចំណាយសរុបទាំងអស់
+        </p>
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-rose-500/5 rounded-full blur-xl pointer-events-none"></div>
+      </div>
+    </div>
+
+    <!-- Monthly Budget Progress & Health Card -->
+    <div class="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-bullseye"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">កញ្ចប់ថវិកាចំណាយខែនេះ (Monthly Budget)</h3>
+          <span id="budgetHealthBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">ស្ថានភាពល្អប្រសើរ</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span id="budgetPercentText" class="font-bold text-slate-700 dark:text-slate-300">0% នៃកញ្ចប់ថវិកា</span>
+          <button onclick="openBudgetModal()" class="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-pen-to-square"></i> កែប្រែ
+          </button>
+        </div>
+      </div>
+
+      <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+        <div id="budgetProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700" style="width: 0%"></div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">បានចំណាយខែនេះ</p>
+          <p id="budgetSpentDisplay" class="text-sm font-extrabold text-rose-600 dark:text-rose-400 mt-0.5">$0.00</p>
+          <p id="budgetSpentAlt" class="text-[10px] text-slate-400">0 ៛</p>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">ថវិកានៅសល់</p>
+          <p id="budgetRemainDisplay" class="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">$0.00</p>
+          <p id="budgetRemainAlt" class="text-[10px] text-slate-400">0 ៛</p>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">កញ្ចប់កំណត់សរុប</p>
+          <p id="budgetTargetDisplay" class="text-sm font-extrabold text-slate-800 dark:text-slate-200 mt-0.5">$0.00</p>
+          <p id="budgetTargetAlt" class="text-[10px] text-slate-400">0 ៛</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Quick Entry & Manual Form -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- Smart Quick Text Entry Card -->
+        <div class="bg-gradient-to-br from-indigo-50/80 via-white to-sky-50/80 dark:from-slate-800 dark:via-slate-800 dark:to-indigo-950/40 rounded-2xl p-4 sm:p-5 border border-indigo-100 dark:border-slate-700 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-indigo-950 dark:text-indigo-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> កត់ត្រារហ័សឆ្លាតវៃ (Smart Text Entry)
+            </span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-semibold">ចុច Enter បានភ្លាម</span>
+          </div>
+          <form onsubmit="handleSmartQuickEntry(event)" class="space-y-2">
+            <div class="flex gap-2">
+              <input type="text" id="smartQuickInput" placeholder="ឧ. បាយថ្ងៃត្រង់ 12000 ឬ សាំង $2..." class="flex-1 px-3.5 py-2.5 rounded-xl border border-indigo-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs">
+              <button type="submit" class="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition active:scale-95 shrink-0 flex items-center gap-1">
+                <i class="fa-solid fa-plus"></i> បញ្ចូល
+              </button>
+            </div>
+          </form>
+          <div class="flex flex-wrap gap-1.5 mt-2.5">
+            <span class="text-[10px] text-slate-400">គំរូចុចតេស្ត៖</span>
+            <button type="button" onclick="setQuickInputSample('បាយថ្ងៃត្រង់ 12000')" class="text-[10px] px-2 py-0.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50">បាយថ្ងៃត្រង់ 12000</button>
+            <button type="button" onclick="setQuickInputSample('ចាក់សាំងម៉ូតូ 10000')" class="text-[10px] px-2 py-0.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50">ចាក់សាំង 10000</button>
+            <button type="button" onclick="setQuickInputSample('កាហ្វេ $1.75')" class="text-[10px] px-2 py-0.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50">កាហ្វេ $1.75</button>
+          </div>
+        </div>
+
+        <!-- Full Form Card -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700">
+            <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <i class="fa-solid fa-plus-circle text-emerald-600 dark:text-emerald-400"></i>
+              <span>កត់ត្រាប្រតិបត្តិការថ្មី</span>
+            </h2>
+            <span class="text-xs text-slate-400">ស្វ័យប្រវត្តបញ្ជូនទៅ TG</span>
+          </div>
+
+          <!-- Type Switcher -->
+          <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl my-4">
+            <button type="button" id="tabExpense" onclick="setType('expense')" class="py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 shadow-sm">
+              <i class="fa-solid fa-arrow-down"></i> ចំណាយ (Expense)
+            </button>
+            <button type="button" id="tabIncome" onclick="setType('income')" class="py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              <i class="fa-solid fa-arrow-up"></i> ចំណូល (Income)
+            </button>
+          </div>
+
+          <form id="txForm" onsubmit="handleSaveTransaction(event)" class="space-y-4">
+            <!-- Form Currency Choice (KHR vs USD) -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">រូបិយប័ណ្ណដែលត្រូវបញ្ចូល</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" id="btnInputKHR" onclick="setInputCurrency('KHR')" class="py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                  <span class="text-sm">៛</span> ប្រាក់រៀល (KHR)
+                </button>
+                <button type="button" id="btnInputUSD" onclick="setInputCurrency('USD')" class="py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium text-xs flex items-center justify-center gap-1.5 transition">
+                  <span class="text-sm font-bold">$</span> ប្រាក់ដុល្លារ (USD)
+                </button>
+              </div>
+            </div>
+
+            <!-- Amount Input -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300">ចំនួនទឹកប្រាក់ <span class="text-rose-500">*</span></label>
+                <span id="convertedPreview" class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">= $0.00</span>
+              </div>
+              <div class="relative rounded-xl shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold text-lg" id="amountPrefix">
+                  ៛
+                </div>
+                <input type="number" step="any" min="0.01" id="txAmount" required placeholder="ឧ. 10157" oninput="updateConvertedPreview()" class="block w-full pl-9 pr-14 py-3 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-lg font-bold text-slate-900 dark:text-white">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-xs font-bold text-emerald-600 dark:text-emerald-400" id="amountCurrency">
+                  KHR
+                </div>
+              </div>
+
+              <!-- Quick Amount Buttons -->
+              <div id="quickAmountChips" class="flex flex-wrap gap-1.5 mt-2">
+                <!-- Dynamically populated chips -->
+              </div>
+            </div>
+
+            <!-- Category Selector -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">ប្រភេទ / ប្រភព <span class="text-rose-500">*</span></label>
+              <select id="txCategory" required class="block w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm text-slate-800 dark:text-slate-100">
+                <!-- Dynamically populated categories -->
+              </select>
+            </div>
+
+            <!-- Date -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">កាលបរិច្ឆេទ</label>
+              <input type="date" id="txDate" required class="block w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm text-slate-800 dark:text-slate-100">
+            </div>
+
+            <!-- Note / Description -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">កំណត់សម្គាល់ (មុខទំនិញ / Note)</label>
+              <input type="text" id="txNote" placeholder="ឧ. ញ៉ាំបាយថ្ងៃត្រង់, ចាក់សាំង, ប្រាក់ខែ..." class="block w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm text-slate-800 dark:text-slate-100">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-2 flex flex-col gap-2">
+              <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold text-sm shadow-md shadow-emerald-600/25 transition active:scale-[0.99] flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>រក្សាទុក & ផ្ញើទៅ Telegram</span>
+              </button>
+
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="sendTodayTransactionsToTelegram()" class="py-2.5 px-2 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-semibold text-xs transition flex items-center justify-center gap-1.5">
+                  <i class="fa-brands fa-telegram text-telegram"></i>
+                  <span>ផ្ញើបញ្ជីថ្ងៃនេះ</span>
+                </button>
+                <button type="button" onclick="sendMonthTransactionsToTelegram()" class="py-2.5 px-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-semibold text-xs transition flex items-center justify-center gap-1.5">
+                  <i class="fa-brands fa-telegram text-indigo-500"></i>
+                  <span>ផ្ញើបញ្ជីខែនេះ</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Telegram Quick Status Card -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <i class="fa-brands fa-telegram text-telegram text-base"></i> ស្ថានភាពតភ្ជាប់ Telegram
+            </span>
+            <span id="tgConnectionTag" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">មិនទាន់ភ្ជាប់</span>
+          </div>
+          <p id="tgBotInfoText" class="text-xs text-slate-600 dark:text-slate-300 mb-3">សូមបំពេញ Bot Token និង Chat ID ដើម្បីដំណើរការការជូនដំណឹងស្វ័យប្រវត្ត។</p>
+          <div class="flex gap-2">
+            <button onclick="testTelegramConnection()" class="flex-1 py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+              <i class="fa-solid fa-vial mr-1 text-slate-400"></i> សាកល្បងតេស្ត (Ping)
+            </button>
+            <button onclick="openTelegramModal()" class="py-2 px-3 rounded-lg bg-slate-100 dark:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Today's Activity & Itemized Breakdown Card -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-700">
+            <div>
+              <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm sm:text-base">
+                <i class="fa-solid fa-calendar-day text-emerald-500"></i>
+                <span>សកម្មភាព និងមុខទំនិញថ្ងៃនេះ (Today's Activity)</span>
+              </h2>
+              <p class="text-xs text-slate-400">រាយមុខទំនិញចំណូល និងចំណាយដែលបានកើតឡើងក្នុងថ្ងៃនេះ</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="sendTodayTransactionsToTelegram()" class="px-2.5 py-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 text-xs font-semibold hover:bg-sky-100 transition flex items-center gap-1">
+                <i class="fa-brands fa-telegram text-telegram"></i> ផ្ញើទៅ Telegram
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Today Totals -->
+          <div class="grid grid-cols-3 gap-2">
+            <div class="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 text-center">
+              <span class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">ចំណូលថ្ងៃនេះ</span>
+              <p id="todayIncomeVal" class="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">$0.00</p>
+              <p id="todayIncomeAlt" class="text-[10px] text-emerald-600/80">0 ៛</p>
+            </div>
+            <div class="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/60 text-center">
+              <span class="text-[11px] font-semibold text-rose-700 dark:text-rose-400">ចំណាយថ្ងៃនេះ</span>
+              <p id="todayExpenseVal" class="text-base font-extrabold text-rose-600 dark:text-rose-400 mt-0.5">$0.00</p>
+              <p id="todayExpenseAlt" class="text-[10px] text-rose-600/80">0 ៛</p>
+            </div>
+            <div class="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 text-center">
+              <span class="text-[11px] font-semibold text-indigo-700 dark:text-indigo-400">នៅសល់ថ្ងៃនេះ</span>
+              <p id="todayNetVal" class="text-base font-extrabold text-indigo-600 dark:text-indigo-400 mt-0.5">$0.00</p>
+              <p id="todayNetAlt" class="text-[10px] text-indigo-600/80">0 ៛</p>
+            </div>
+          </div>
+
+          <!-- Two Lists: Today's Income Items vs Expense Items -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+            <!-- Income Items -->
+            <div class="rounded-xl border border-slate-100 dark:border-slate-700 p-3 bg-slate-50/60 dark:bg-slate-900/40">
+              <h4 class="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
+                <span><i class="fa-solid fa-arrow-up mr-1"></i> ចំណូលថ្ងៃនេះ</span>
+                <span id="todayIncomeCount" class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60">0</span>
+              </h4>
+              <div id="todayIncomeList" class="space-y-1.5 mt-2 max-h-40 overflow-y-auto pr-1 text-xs">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Expense Items -->
+            <div class="rounded-xl border border-slate-100 dark:border-slate-700 p-3 bg-slate-50/60 dark:bg-slate-900/40">
+              <h4 class="text-xs font-bold text-rose-700 dark:text-rose-400 flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
+                <span><i class="fa-solid fa-arrow-down mr-1"></i> ចំណាយលើអ្វីខ្លះថ្ងៃនេះ</span>
+                <span id="todayExpenseCount" class="text-[10px] px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-900/60">0</span>
+              </h4>
+              <div id="todayExpenseList" class="space-y-1.5 mt-2 max-h-40 overflow-y-auto pr-1 text-xs">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+              <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm sm:text-base">
+                <i class="fa-solid fa-chart-pie text-indigo-500"></i>
+                <span>ការវិភាគចំណាយតាមប្រភេទ</span>
+              </h2>
+              <p class="text-xs text-slate-400">បំណែងចែកចំណាយរបស់អ្នក</p>
+            </div>
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl text-xs">
+              <button onclick="changeChartPeriod('all')" id="btnPeriodAll" class="px-2.5 py-1 rounded-lg font-semibold bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-xs">ទាំងអស់</button>
+              <button onclick="changeChartPeriod('month')" id="btnPeriodMonth" class="px-2.5 py-1 rounded-lg font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">ខែនេះ</button>
+              <button onclick="changeChartPeriod('today')" id="btnPeriodToday" class="px-2.5 py-1 rounded-lg font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">ថ្ងៃនេះ</button>
+            </div>
+          </div>
+
+          <div class="pt-4 grid grid-cols-1 md:grid-cols-12 items-center gap-4">
+            <div class="md:col-span-6 h-52 flex items-center justify-center relative">
+              <canvas id="categoryChart"></canvas>
+            </div>
+            <div id="chartLegend" class="md:col-span-6 space-y-2 max-h-52 overflow-y-auto pr-1 text-xs">
+              <!-- Dynamically populated legend -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Transactions History Section -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+              <h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm sm:text-base">
+                <i class="fa-solid fa-clock-rotate-left text-slate-600 dark:text-slate-300"></i>
+                <span>ប្រវត្តិប្រតិបត្តិការ (Transactions)</span>
+              </h2>
+              <span id="txCountBadge" class="text-xs text-slate-400">0 ប្រតិបត្តិការ</span>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <select id="filterPeriod" onchange="renderTransactions()" class="text-xs rounded-xl border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium focus:ring-1 focus:ring-emerald-500">
+                <option value="all">ពេលវេលា: ទាំងអស់</option>
+                <option value="today">ពេលវេលា: ថ្ងៃនេះ</option>
+                <option value="month">ពេលវេលា: ខែនេះ</option>
+              </select>
+              <select id="filterType" onchange="renderTransactions()" class="text-xs rounded-xl border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium focus:ring-1 focus:ring-emerald-500">
+                <option value="all">ប្រភេទ: ទាំងអស់</option>
+                <option value="income">ចំណូល</option>
+                <option value="expense">ចំណាយ</option>
+              </select>
+              <button onclick="exportToCSV()" class="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-1">
+                <i class="fa-solid fa-file-arrow-down text-emerald-600 dark:text-emerald-400"></i> CSV
+              </button>
+              <button onclick="confirmClearAll()" class="px-2.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition" title="លុបទិន្នន័យទាំងអស់">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Transaction List -->
+          <div id="txList" class="mt-4 space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+            <!-- Dynamically populated list -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Telegram Config Modal -->
+  <div id="telegramModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700 transform transition-all max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-telegram text-white flex items-center justify-center shadow-md shadow-sky-500/25">
+            <i class="fa-brands fa-telegram text-xl"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">ការកំណត់ Telegram Bot</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">ទទួលការជូនដំណឹងផ្ទាល់ខ្លួន</p>
+          </div>
+        </div>
+        <button onclick="closeTelegramModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 flex items-center justify-center text-sm transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4 text-xs">
+        <div class="p-3.5 rounded-2xl bg-sky-50/70 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/60 text-slate-700 dark:text-slate-300 space-y-1.5">
+          <p class="font-bold text-sky-900 dark:text-sky-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-info text-telegram"></i> របៀបបង្កើត Telegram Bot ងាយៗ៖
+          </p>
+          <ol class="list-decimal pl-4 space-y-1 text-slate-600 dark:text-slate-400">
+            <li>បើក Telegram ហើយស្វែងរក <b>@BotFather</b> រួចចុច <code>/newbot</code> ដើម្បីបង្កើត Bot និងទទួលបាន <b>Bot Token</b>។</li>
+            <li>ស្វែងរក <b>@userinfobot</b> រួចចុច Start ដើម្បីទទួលបាន <b>Chat ID</b> របស់អ្នក។</li>
+            <li>កុំភ្លេចចុច <b>Start</b> លើ Bot ដែលអ្នកទើបបង្កើតនោះ ដើម្បីឱ្យ Bot អាចផ្ញើសារមករកអ្នកបាន។</li>
+          </ol>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Telegram Bot Token <span class="text-rose-500">*</span></label>
+          <input type="text" id="cfgBotToken" placeholder="ឧ. 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 text-xs text-slate-900 dark:text-white font-mono focus:border-telegram focus:ring-2 focus:ring-sky-500/20">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Telegram Chat ID <span class="text-rose-500">*</span></label>
+          <input type="text" id="cfgChatId" placeholder="ឧ. 987654321" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 text-xs text-slate-900 dark:text-white font-mono focus:border-telegram focus:ring-2 focus:ring-sky-500/20">
+        </div>
+
+        <div class="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-700">
+          <label class="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <span class="font-medium text-slate-700 dark:text-slate-300">ជូនដំណឹងភ្លាមៗរាល់ពេលកត់ត្រា</span>
+            <input type="checkbox" id="cfgAutoSend" checked class="w-4 h-4 rounded text-telegram focus:ring-telegram accent-sky-500">
+          </label>
+          <label class="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <span class="font-medium text-slate-700 dark:text-slate-300">បង្ហាញសមតុល្យនៅចុងសារ</span>
+            <input type="checkbox" id="cfgIncludeBalance" checked class="w-4 h-4 rounded text-telegram focus:ring-telegram accent-sky-500">
+          </label>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
+        <button onclick="closeTelegramModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+          បិទ
+        </button>
+        <button onclick="saveTelegramConfig()" class="px-5 py-2 rounded-xl bg-telegram hover:bg-telegram-dark text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-floppy-disk"></i> រក្សាទុក
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exchange Rate Modal -->
+  <div id="rateModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 dark:text-white text-sm">កំណត់អត្រាប្តូរប្រាក់ (Rate)</h3>
+        </div>
+        <button onclick="closeRateModal()" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="space-y-3">
+        <label class="block text-xs text-slate-600 dark:text-slate-300 font-semibold">1 ដុល្លារ ($) ស្មើនឹង ប្រាក់រៀល (៛):</label>
+        <div class="relative">
+          <input type="number" id="inputExchangeRate" step="10" min="1000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 text-sm font-bold text-slate-800 dark:text-white pr-12 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+          <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-bold text-slate-400">KHR</span>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" onclick="setPresetRate(4000)" class="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">4,000 ៛</button>
+          <button type="button" onclick="setPresetRate(4100)" class="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">4,100 ៛</button>
+          <button type="button" onclick="setPresetRate(4150)" class="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">4,150 ៛</button>
+        </div>
+      </div>
+      <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
+        <button onclick="closeRateModal()" class="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">បោះបង់</button>
+        <button onclick="saveExchangeRate()" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">រក្សាទុក</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budget Modal -->
+  <div id="budgetModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-bullseye"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 dark:text-white text-sm">កំណត់កញ្ចប់ថវិកាប្រចាំខែ (Budget)</h3>
+        </div>
+        <button onclick="closeBudgetModal()" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="space-y-3">
+        <label class="block text-xs text-slate-600 dark:text-slate-300 font-semibold">កញ្ចប់ថវិកាអតិបរមាប្រចាំខែ ($ USD):</label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-sm font-bold text-slate-400">$</span>
+          <input type="number" id="inputMonthlyBudget" step="5" min="10" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 text-sm font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400">ប្រព័ន្ធនឹងផ្ញើដំណឹងព្រមានទៅ Telegram ស្វ័យប្រវត្តនៅពេលចំណាយដល់ 85% នៃកញ្ចប់កំណត់នេះ។</p>
+        <div class="flex gap-2">
+          <button type="button" onclick="setPresetBudget(150)" class="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">$150</button>
+          <button type="button" onclick="setPresetBudget(250)" class="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">$250</button>
+          <button type="button" onclick="setPresetBudget(500)" class="flex-1 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">$500</button>
+        </div>
+      </div>
+      <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2">
+        <button onclick="closeBudgetModal()" class="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">បោះបង់</button>
+        <button onclick="saveMonthlyBudget()" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">រក្សាទុក</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Report Modal -->
+  <div id="monthlyReportModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-700 max-h-[90vh] overflow-y-auto space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-chart-column text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">របាយការណ៍ហិរញ្ញវត្ថុប្រចាំខែ</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">មើលការបែងចែកចំណាយ និងចំណូលជាក់ស្តែង</p>
+          </div>
+        </div>
+        <button onclick="closeMonthlyReportModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-300 flex items-center justify-center text-sm">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between gap-3">
+        <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">ជ្រើសរើសខែដើម្បីមើល៖</label>
+        <input type="month" id="reportMonthPicker" onchange="renderMonthlyReport()" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-white">
+      </div>
+
+      <!-- Overview 3 boxes -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/60 text-center">
+          <p class="text-[11px] font-semibold text-rose-700 dark:text-rose-400">ចំណាយសរុបខែនេះ</p>
+          <p id="modalMonthExpenseVal" class="text-base sm:text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-0.5">$0.00</p>
+          <p id="modalMonthExpenseAlt" class="text-[10px] text-rose-600/80">0 ៛</p>
+        </div>
+        <div class="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 text-center">
+          <p class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">ចំណូលសរុបខែនេះ</p>
+          <p id="modalMonthIncomeVal" class="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">$0.00</p>
+          <p id="modalMonthIncomeAlt" class="text-[10px] text-emerald-600/80">0 ៛</p>
+        </div>
+        <div class="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 text-center">
+          <p class="text-[11px] font-semibold text-indigo-700 dark:text-indigo-400">សមតុល្យសល់ជាក់ស្តែង</p>
+          <p id="modalMonthNetVal" class="text-base sm:text-lg font-extrabold text-indigo-600 dark:text-indigo-400 mt-0.5">$0.00</p>
+          <p id="modalMonthNetAlt" class="text-[10px] text-indigo-600/80">0 ៛</p>
+        </div>
+      </div>
+
+      <!-- Categories breakdown with progress bars -->
+      <div>
+        <h4 class="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">បំណែងចែកចំណាយតាមប្រភេទ (Category Breakdown):</h4>
+        <div id="modalCategoryBreakdown" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Itemized list for the month -->
+      <div>
+        <h4 class="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">រាយមុខទំនិញដែលបានទិញ/ចំណាយក្នុងខែនេះ (Purchased Items):</h4>
+        <div id="modalTxList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1 text-xs">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+        <button onclick="sendMonthTransactionsToTelegram()" class="px-4 py-2 rounded-xl bg-telegram hover:bg-telegram-dark text-white text-xs font-semibold shadow-sm transition flex items-center gap-1.5">
+          <i class="fa-brands fa-telegram"></i> ផ្ញើរបាយការណ៍ខែនេះទៅ Telegram
+        </button>
+        <button onclick="closeMonthlyReportModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+          បិទ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Box -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 max-w-sm w-full bg-slate-900 text-white p-4 rounded-2xl shadow-xl flex items-center gap-3">
+    <div id="toastIcon" class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+      <i class="fa-solid fa-check"></i>
+    </div>
+    <div class="flex-1 min-w-0">
+      <p id="toastTitle" class="text-xs font-bold text-white">ជោគជ័យ</p>
+      <p id="toastMsg" class="text-xs text-slate-300 truncate">ប្រតិបត្តិការត្រូវបានរក្សាទុក</p>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full p-5 shadow-xl border border-slate-100 dark:border-slate-700 text-center">
+      <div class="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-500 mx-auto flex items-center justify-center text-xl mb-3">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 id="confirmTitle" class="font-bold text-slate-900 dark:text-white text-sm mb-1">តើអ្នកពិតជាចង់លុបមែនទេ?</h3>
+      <p id="confirmDesc" class="text-xs text-slate-500 dark:text-slate-400 mb-5">ទិន្នន័យដែលបានលុបនឹងមិនអាចត្រឡប់មកវិញបានឡើយ។</p>
+      <div class="flex gap-2">
+        <button onclick="closeConfirmModal()" class="flex-1 py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+          បោះបង់
+        </button>
+        <button id="confirmActionBtn" class="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition">
+          យល់ព្រមលុប
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Categories definition
+    const CATEGORIES = {
+      expense: [
+        { id: 'food', name: 'អាហារ & ភេសជ្ជៈ', icon: 'fa-utensils', color: '#f97316' },
+        { id: 'transport', name: 'ការធ្វើដំណើរ & សាំង', icon: 'fa-motorcycle', color: '#3b82f6' },
+        { id: 'bills', name: 'ទឹក ភ្លើង & អ៊ីនធឺណិត', icon: 'fa-bolt', color: '#eab308' },
+        { id: 'shopping', name: 'ការទិញទំនិញ', icon: 'fa-bag-shopping', color: '#ec4899' },
+        { id: 'health', name: 'សុខភាព & ថ្នាំសង្កូវ', icon: 'fa-heart-pulse', color: '#ef4444' },
+        { id: 'housing', name: 'ថ្លៃផ្ទះ / បន្ទប់ជួល', icon: 'fa-house', color: '#8b5cf6' },
+        { id: 'entertainment', name: 'ការកម្សាន្ត & ដំណើរកម្សាន្ត', icon: 'fa-gamepad', color: '#06b6d4' },
+        { id: 'other_exp', name: 'ចំណាយផ្សេងៗ', icon: 'fa-ellipsis', color: '#64748b' }
+      ],
+      income: [
+        { id: 'salary', name: 'ប្រាក់ខែ / ប្រាក់បំណាច់', icon: 'fa-money-bill-wave', color: '#10b981' },
+        { id: 'business', name: 'អាជីវកម្ម / ការលក់', icon: 'fa-store', color: '#14b8a6' },
+        { id: 'freelance', name: 'ការងារក្រៅម៉ោង (Freelance)', icon: 'fa-laptop-code', color: '#6366f1' },
+        { id: 'investment', name: 'ការវិនិយោគ / ការប្រាក់', icon: 'fa-chart-line', color: '#84cc16' },
+        { id: 'gift', name: 'អំណោយ / ជំនួយ', icon: 'fa-gift', color: '#f43f5e' },
+        { id: 'other_inc', name: 'ចំណូលផ្សេងៗ', icon: 'fa-coins', color: '#64748b' }
+      ]
+    };
+
+    // State Variables
+    let currentType = 'expense';
+    let currentCurrency = localStorage.getItem('app_currency') || 'USD'; // 'USD' or 'KHR'
+    let inputCurrency = localStorage.getItem('app_input_currency') || 'KHR'; // Default input in KHR
+    let EXCHANGE_RATE = parseInt(localStorage.getItem('app_exchange_rate')) || 4100; // 1 USD = 4100 KHR
+    let monthlyBudget = parseFloat(localStorage.getItem('app_monthly_budget')) || 250.00; // Default $250
+    let isDarkMode = localStorage.getItem('app_dark_mode') === 'true';
+    let budgetWarningSentThisMonth = localStorage.getItem('app_budget_warn_month') || '';
+
+    // Sample initial transactions
+    const defaultTransactions = [
+      {
+        id: 'tx-1',
+        type: 'income',
+        amount: 850.00,
+        originalAmount: 850.00,
+        originalCurrency: 'USD',
+        category: 'salary',
+        note: 'ប្រាក់ខែប្រចាំខែ',
+        date: new Date().toISOString().split('T')[0],
+        timestamp: Date.now() - 86400000 * 2
+      },
+      {
+        id: 'tx-2',
+        type: 'expense',
+        amount: 3.66,
+        originalAmount: 15000,
+        originalCurrency: 'KHR',
+        category: 'food',
+        note: 'ញ៉ាំបាយថ្ងៃត្រង់ និងកាហ្វេ',
+        date: new Date().toISOString().split('T')[0],
+        timestamp: Date.now() - 86400000 * 1
+      },
+      {
+        id: 'tx-3',
+        type: 'expense',
+        amount: 2.44,
+        originalAmount: 10000,
+        originalCurrency: 'KHR',
+        category: 'transport',
+        note: 'ចាក់សាំងម៉ូតូ',
+        date: new Date().toISOString().split('T')[0],
+        timestamp: Date.now()
+      }
+    ];
+
+    let transactions = JSON.parse(localStorage.getItem('app_transactions')) || defaultTransactions;
+    let telegramConfig = JSON.parse(localStorage.getItem('app_telegram_config')) || {
+      botToken: '',
+      chatId: '',
+      autoSend: true,
+      includeBalance: true
+    };
+
+    let chartInstance = null;
+    let currentChartPeriod = 'all';
+
+    window.onload = function() {
+      // Set today's date in input
+      const today = new Date().toISOString().split('T')[0];
+      const txDateInput = document.getElementById('txDate');
+      if (txDateInput) txDateInput.value = today;
+
+      // Apply Dark Mode if previously saved
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      }
+      updateDarkModeIcon();
+
+      // Populate categories & refresh UI
+      updateCategoryDropdown();
+      setInputCurrency(inputCurrency);
+      updateExchangeRateDisplay();
+      updateCurrencyDisplay();
+      updateBudgetDisplay();
+      updateTelegramUIStatus();
+      renderAll();
+    };
+
+    function toggleDarkMode() {
+      isDarkMode = !isDarkMode;
+      localStorage.setItem('app_dark_mode', isDarkMode);
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      updateDarkModeIcon();
+      renderChart();
+      showToast('ទម្រង់ពណ៌', isDarkMode ? 'បានបើក Dark Mode 🌙' : 'បានបើក Light Mode ☀️️', 'info');
+    }
+
+    function updateDarkModeIcon() {
+      const btn = document.getElementById('darkModeBtn');
+      if (!btn) return;
+      if (isDarkMode) {
+        btn.innerHTML = '<i class="fa-solid fa-sun text-amber-400"></i>';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+      }
+    }
+
+    function setType(type) {
+      currentType = type;
+      const tabExp = document.getElementById('tabExpense');
+      const tabInc = document.getElementById('tabIncome');
+
+      if (type === 'expense') {
+        tabExp.className = "py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 shadow-sm";
+        tabInc.className = "py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+      } else {
+        tabInc.className = "py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm";
+        tabExp.className = "py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+      }
+      updateCategoryDropdown();
+    }
+
+    function updateCategoryDropdown() {
+      const select = document.getElementById('txCategory');
+      if (!select) return;
+      const list = CATEGORIES[currentType] || [];
+      select.innerHTML = list.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+
+    function setInputCurrency(curr) {
+      inputCurrency = curr;
+      localStorage.setItem('app_input_currency', curr);
+
+      const btnKHR = document.getElementById('btnInputKHR');
+      const btnUSD = document.getElementById('btnInputUSD');
+      const prefix = document.getElementById('amountPrefix');
+      const suffix = document.getElementById('amountCurrency');
+      const amtInput = document.getElementById('txAmount');
+
+      if (curr === 'KHR') {
+        btnKHR.className = "py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition";
+        btnUSD.className = "py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium text-xs flex items-center justify-center gap-1.5 transition";
+        if (prefix) prefix.textContent = "៛";
+        if (suffix) suffix.textContent = "KHR";
+        if (amtInput) {
+          amtInput.placeholder = "ឧ. 10157";
+          amtInput.step = "any";
+          amtInput.min = "1";
+        }
+      } else {
+        btnUSD.className = "py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition";
+        btnKHR.className = "py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium text-xs flex items-center justify-center gap-1.5 transition";
+        if (prefix) prefix.textContent = "$";
+        if (suffix) suffix.textContent = "USD";
+        if (amtInput) {
+          amtInput.placeholder = "ឧ. 2.50";
+          amtInput.step = "any";
+          amtInput.min = "0.01";
+        }
+      }
+      renderQuickChips();
+      updateConvertedPreview();
+    }
+
+    function renderQuickChips() {
+      const container = document.getElementById('quickAmountChips');
+      if (!container) return;
+
+      if (inputCurrency === 'KHR') {
+        const rielChips = [2000, 5000, 10000, 20000, 50000, 100000];
+        container.innerHTML = rielChips.map(val => `
+          <button type="button" onclick="setQuickAmount(${val})" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition">
+            +${val.toLocaleString()}៛
+          </button>
+        `).join('');
+      } else {
+        const usdChips = [1, 2.5, 5, 10, 20, 50];
+        container.innerHTML = usdChips.map(val => `
+          <button type="button" onclick="setQuickAmount(${val})" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition">
+            +$${val}
+          </button>
+        `).join('');
+      }
+    }
+
+    function setQuickAmount(val) {
+      const input = document.getElementById('txAmount');
+      if (input) {
+        input.value = val;
+        updateConvertedPreview();
+      }
+    }
+
+    function updateConvertedPreview() {
+      const input = document.getElementById('txAmount');
+      const preview = document.getElementById('convertedPreview');
+      if (!input || !preview) return;
+
+      const val = parseFloat(input.value) || 0;
+      if (val <= 0) {
+        preview.textContent = inputCurrency === 'KHR' ? '= $0.00' : '= 0 ៛';
+        return;
+      }
+
+      if (inputCurrency === 'KHR') {
+        const usd = (val / EXCHANGE_RATE).toFixed(2);
+        preview.textContent = `≈ $${usd}`;
+      } else {
+        const khr = Math.round(val * EXCHANGE_RATE).toLocaleString();
+        preview.textContent = `≈ ${khr} ៛`;
+      }
+    }
+
+    function toggleCurrency() {
+      currentCurrency = currentCurrency === 'USD' ? 'KHR' : 'USD';
+      localStorage.setItem('app_currency', currentCurrency);
+      updateCurrencyDisplay();
+      renderAll();
+    }
+
+    function updateCurrencyDisplay() {
+      const label = document.getElementById('currencyLabel');
+      if (label) {
+        label.textContent = currentCurrency === 'USD' ? 'USD ($)' : 'KHR (៛)';
+      }
+    }
+
+    function openRateModal() {
+      const input = document.getElementById('inputExchangeRate');
+      if (input) input.value = EXCHANGE_RATE;
+      const modal = document.getElementById('rateModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeRateModal() {
+      const modal = document.getElementById('rateModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setPresetRate(rate) {
+      const input = document.getElementById('inputExchangeRate');
+      if (input) input.value = rate;
+    }
+
+    function saveExchangeRate() {
+      const input = document.getElementById('inputExchangeRate');
+      const val = parseInt(input.value);
+      if (isNaN(val) || val <= 0) {
+        showToast('បរាជ័យ', 'សូមបញ្ចូលអត្រាប្តូរប្រាក់ឱ្យបានត្រឹមត្រូវ', 'error');
+        return;
+      }
+      EXCHANGE_RATE = val;
+      localStorage.setItem('app_exchange_rate', EXCHANGE_RATE);
+      updateExchangeRateDisplay();
+      updateConvertedPreview();
+      closeRateModal();
+      renderAll();
+      showToast('ជោគជ័យ', `អត្រាប្តូរប្រាក់ត្រូវបានកំណត់ $1 = ${EXCHANGE_RATE.toLocaleString()} ៛`, 'success');
+    }
+
+    function updateExchangeRateDisplay() {
+      const elem = document.getElementById('headerExchangeRate');
+      if (elem) elem.textContent = `${EXCHANGE_RATE.toLocaleString()} ៛`;
+    }
+
+    function handleSaveTransaction(e) {
+      e.preventDefault();
+      const amountInput = document.getElementById('txAmount');
+      const categorySelect = document.getElementById('txCategory');
+      const dateInput = document.getElementById('txDate');
+      const noteInput = document.getElementById('txNote');
+
+      const rawAmount = parseFloat(amountInput.value);
+      if (isNaN(rawAmount) || rawAmount <= 0) {
+        showToast('បរាជ័យ', 'សូមបញ្ចូលចំនួនទឹកប្រាក់ឱ្យបានត្រឹមត្រូវ', 'error');
+        return;
+      }
+
+      // Convert stored standard amount to USD
+      const usdAmount = inputCurrency === 'KHR' ? (rawAmount / EXCHANGE_RATE) : rawAmount;
+
+      const newTx = {
+        id: 'tx-' + Date.now(),
+        type: currentType,
+        amount: usdAmount,
+        originalAmount: rawAmount,
+        originalCurrency: inputCurrency,
+        category: categorySelect.value,
+        date: dateInput.value || new Date().toISOString().split('T')[0],
+        note: (noteInput.value || '').trim(),
+        timestamp: Date.now()
+      };
+
+      transactions.unshift(newTx);
+      localStorage.setItem('app_transactions', JSON.stringify(transactions));
+
+      // Reset form fields
+      amountInput.value = '';
+      noteInput.value = '';
+      updateConvertedPreview();
+      renderAll();
+
+      showToast('ជោគជ័យ', 'ប្រតិបត្តិការត្រូវបានកត់ត្រារួចរាល់!', 'success');
+
+      // Send to Telegram if enabled
+      if (telegramConfig.botToken && telegramConfig.chatId && telegramConfig.autoSend) {
+        sendTransactionToTelegram(newTx);
+      }
+    }
+
+    function handleSmartQuickEntry(e) {
+      e.preventDefault();
+      const input = document.getElementById('smartQuickInput');
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const isDollar = text.includes('$') || /usd/i.test(text);
+      const numberMatch = text.match(/(\d+(\.\d+)?)/);
+      if (!numberMatch) {
+        showToast('សូមបញ្ចូលតម្លៃ', 'មិនអាចស្វែងរកចំនួនទឹកប្រាក់ក្នុងឃ្លារបស់អ្នកទេ', 'error');
+        return;
+      }
+
+      const rawAmount = parseFloat(numberMatch[0]);
+      let origCurrency = isDollar ? 'USD' : (rawAmount < 100 ? 'USD' : 'KHR');
+      let usdAmount = origCurrency === 'KHR' ? (rawAmount / EXCHANGE_RATE) : rawAmount;
+
+      let cleanNote = text.replace(/(\$|៛|khr|usd)/gi, '').replace(/\d+(\.\d+)?/g, '').trim();
+      if (!cleanNote) cleanNote = 'ប្រតិបត្តិការរហ័ស';
+
+      let detectedCategory = 'food';
+      let detectedType = 'expense';
+      const lower = text.toLowerCase();
+
+      if (/បាយ|ម្ហូប|ញ៉ាំ|កាហ្វេ|អាហារ|food|lunch|dinner|drink|coffee|tea|burger|pizza/i.test(lower)) {
+        detectedCategory = 'food';
+      } else if (/សាំង|ម៉ូតូ|ឡាន|passapp|grab|taxi|bus|gas|transport/i.test(lower)) {
+        detectedCategory = 'transport';
+      } else if (/ទឹក|ភ្លើង|wifi|internet|phone|កាត|bill/i.test(lower)) {
+        detectedCategory = 'bills';
+      } else if (/ទិញ|ខោ|អាវ|ស្បែកជើង|shop|shopping/i.test(lower)) {
+        detectedCategory = 'shopping';
+      } else if (/ថ្នាំ|ពេទ្យ|ឈឺ|health/i.test(lower)) {
+        detectedCategory = 'health';
+      } else if (/ផ្ទះ|បន្ទប់|ថ្លៃជួល|rent|house/i.test(lower)) {
+        detectedCategory = 'housing';
+      } else if (/កុន|movie|game|ដើរលេង|travel/i.test(lower)) {
+        detectedCategory = 'entertainment';
+      } else if (/ប្រាក់ខែ|salary|income|bonus|ចំណូល/i.test(lower)) {
+        detectedCategory = 'salary';
+        detectedType = 'income';
+      } else if (/លក់|business|shop/i.test(lower)) {
+        detectedCategory = 'business';
+        detectedType = 'income';
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const newTx = {
+        id: 'tx-' + Date.now(),
+        type: detectedType,
+        amount: usdAmount,
+        originalAmount: rawAmount,
+        originalCurrency: origCurrency,
+        category: detectedCategory,
+        date: today,
+        note: cleanNote,
+        timestamp: Date.now()
+      };
+
+      transactions.unshift(newTx);
+      localStorage.setItem('app_transactions', JSON.stringify(transactions));
+
+      input.value = '';
+      renderAll();
+      showToast('កត់ត្រារហ័សជោគជ័យ!', `${cleanNote} ត្រូវបានបញ្ចូលជា ${origCurrency === 'KHR' ? rawAmount.toLocaleString() + ' ៛' : '$' + rawAmount}`, 'success');
+
+      if (telegramConfig.botToken && telegramConfig.chatId && telegramConfig.autoSend) {
+        sendTransactionToTelegram(newTx);
+      }
+    }
+
+    function setQuickInputSample(text) {
+      const input = document.getElementById('smartQuickInput');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    }
+
+    function openBudgetModal() {
+      const input = document.getElementById('inputMonthlyBudget');
+      if (input) input.value = monthlyBudget;
+      const modal = document.getElementById('budgetModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeBudgetModal() {
+      const modal = document.getElementById('budgetModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setPresetBudget(val) {
+      const input = document.getElementById('inputMonthlyBudget');
+      if (input) input.value = val;
+    }
+
+    function saveMonthlyBudget() {
+      const input = document.getElementById('inputMonthlyBudget');
+      const val = parseFloat(input.value);
+      if (isNaN(val) || val <= 0) {
+        showToast('បរាជ័យ', 'សូមបញ្ចូលចំនួនថវិកាឱ្យបានត្រឹមត្រូវ', 'error');
+        return;
+      }
+      monthlyBudget = val;
+      localStorage.setItem('app_monthly_budget', monthlyBudget);
+      updateBudgetDisplay();
+      closeBudgetModal();
+      showToast('ជោគជ័យ', `កញ្ចប់ថវិកាប្រចាំខែត្រូវបានកំណត់ត្រឹម $${monthlyBudget.toFixed(2)}`, 'success');
+    }
+
+    function updateBudgetDisplay() {
+      const currentMonthStr = new Date().toISOString().substring(0, 7);
+      const monthExpenses = transactions
+        .filter(t => t.type === 'expense' && (t.date || '').startsWith(currentMonthStr))
+        .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+
+      const targetUSD = monthlyBudget;
+      const targetKHR = Math.round(targetUSD * EXCHANGE_RATE);
+      const spentUSD = monthExpenses;
+      const spentKHR = Math.round(spentUSD * EXCHANGE_RATE);
+      const remainUSD = Math.max(0, targetUSD - spentUSD);
+      const remainKHR = Math.round(remainUSD * EXCHANGE_RATE);
+
+      const pct = targetUSD > 0 ? Math.min(100, Math.round((spentUSD / targetUSD) * 100)) : 0;
+
+      const targetEl = document.getElementById('budgetTargetDisplay');
+      const targetAlt = document.getElementById('budgetTargetAlt');
+      const spentEl = document.getElementById('budgetSpentDisplay');
+      const spentAlt = document.getElementById('budgetSpentAlt');
+      const remainEl = document.getElementById('budgetRemainDisplay');
+      const remainAlt = document.getElementById('budgetRemainAlt');
+      const pctText = document.getElementById('budgetPercentText');
+      const bar = document.getElementById('budgetProgressBar');
+      const healthBadge = document.getElementById('budgetHealthBadge');
+
+      if (targetEl) targetEl.textContent = '$' + targetUSD.toFixed(2);
+      if (targetAlt) targetAlt.textContent = `${targetKHR.toLocaleString()} ៛`;
+      if (spentEl) spentEl.textContent = '$' + spentUSD.toFixed(2);
+      if (spentAlt) spentAlt.textContent = `${spentKHR.toLocaleString()} ៛`;
+      if (remainEl) remainEl.textContent = '$' + remainUSD.toFixed(2);
+      if (remainAlt) remainAlt.textContent = `${remainKHR.toLocaleString()} ៛`;
+      if (pctText) pctText.textContent = `${pct}% នៃកញ្ចប់ថវិកា`;
+
+      if (bar) bar.style.width = `${pct}%`;
+
+      if (healthBadge && bar && remainEl) {
+        if (pct >= 100) {
+          bar.className = "h-full bg-rose-600 rounded-full transition-all duration-700";
+          healthBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 animate-pulse";
+          healthBadge.textContent = "លើសកញ្ចប់ថវិកា!";
+          remainEl.className = "text-sm font-extrabold text-rose-600 dark:text-rose-400 mt-0.5";
+        } else if (pct >= 80) {
+          bar.className = "h-full bg-amber-500 rounded-full transition-all duration-700";
+          healthBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700";
+          healthBadge.textContent = "ជិតអស់ថវិកា (ប្រុងប្រយ័ត្ន)";
+          remainEl.className = "text-sm font-extrabold text-amber-600 dark:text-amber-400 mt-0.5";
+        } else {
+          bar.className = "h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-700";
+          healthBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+          healthBadge.textContent = "ស្ថានភាពល្អប្រសើរ";
+          remainEl.className = "text-sm font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5";
+        }
+      }
+
+      checkAndSendBudgetWarning(pct, spentUSD, targetUSD);
+    }
+
+    async function checkAndSendBudgetWarning(pct, spentUSD, targetUSD) {
+      const currentMonthStr = new Date().toISOString().substring(0, 7);
+      if (pct >= 85 && budgetWarningSentThisMonth !== currentMonthStr) {
+        if (telegramConfig.botToken && telegramConfig.chatId) {
+          const spentKHR = Math.round(spentUSD * EXCHANGE_RATE).toLocaleString();
+          const targetKHR = Math.round(targetUSD * EXCHANGE_RATE).toLocaleString();
+
+          let warnMsg = `⚠️ <b>ការប្រកាសអាសន្នកញ្ចប់ថវិកា (Budget Warning)!</b>\n`;
+          warnMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+          warnMsg += `ខែនេះអ្នកបានចំណាយដល់ <b>${pct}%</b> នៃកញ្ចប់ថវិកាហើយ!\n\n`;
+          warnMsg += `🔴 <b>ចំណាយជាក់ស្តែង:</b> ${spentKHR} ៛ ($${spentUSD.toFixed(2)})\n`;
+          warnMsg += `🎯 <b>កញ្ចប់កំណត់:</b> ${targetKHR} ៛ ($${targetUSD.toFixed(2)})\n`;
+          warnMsg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+          warnMsg += `💡 <i>សូមប្រុងប្រយ័ត្ន និងកាត់បន្ថយការចំណាយមិនចាំបាច់។</i>`;
+
+          await sendTelegramMessage(warnMsg);
+          budgetWarningSentThisMonth = currentMonthStr;
+          localStorage.setItem('app_budget_warn_month', currentMonthStr);
+        }
+      }
+    }
+
+    function calculateTotals() {
+      let income = 0;
+      let expense = 0;
+
+      transactions.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if (t.type === 'income') income += amt;
+        else expense += amt;
+      });
+
+      const net = income - expense;
+
+      const netEl = document.getElementById('netBalance');
+      const incEl = document.getElementById('totalIncome');
+      const expEl = document.getElementById('totalExpense');
+
+      if (currentCurrency === 'USD') {
+        if (netEl) netEl.textContent = (net < 0 ? '-$' : '$') + Math.abs(net).toFixed(2);
+        if (incEl) incEl.textContent = '$' + income.toFixed(2);
+        if (expEl) expEl.textContent = '$' + expense.toFixed(2);
+      } else {
+        const netKHR = Math.round(net * EXCHANGE_RATE);
+        const incKHR = Math.round(income * EXCHANGE_RATE);
+        const expKHR = Math.round(expense * EXCHANGE_RATE);
+
+        if (netEl) netEl.textContent = `${netKHR.toLocaleString()} ៛`;
+        if (incEl) incEl.textContent = `${incKHR.toLocaleString()} ៛`;
+        if (expEl) expEl.textContent = `${expKHR.toLocaleString()} ៛`;
+      }
+
+      return { income, expense, net };
+    }
+
+    function renderTodayBreakdown() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayTx = transactions.filter(t => t.date === todayStr);
+
+      let todayInc = 0;
+      let todayExp = 0;
+
+      const incomeListEl = document.getElementById('todayIncomeList');
+      const expenseListEl = document.getElementById('todayExpenseList');
+      const incCountEl = document.getElementById('todayIncomeCount');
+      const expCountEl = document.getElementById('todayExpenseCount');
+
+      const incItems = [];
+      const expItems = [];
+
+      todayTx.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if (t.type === 'income') {
+          todayInc += amt;
+          incItems.push(t);
+        } else {
+          todayExp += amt;
+          expItems.push(t);
+        }
+      });
+
+      const todayNet = todayInc - todayExp;
+
+      // Update stat cards
+      const incVal = document.getElementById('todayIncomeVal');
+      const incAlt = document.getElementById('todayIncomeAlt');
+      const expVal = document.getElementById('todayExpenseVal');
+      const expAlt = document.getElementById('todayExpenseAlt');
+      const netVal = document.getElementById('todayNetVal');
+      const netAlt = document.getElementById('todayNetAlt');
+
+      if (incVal) incVal.textContent = '$' + todayInc.toFixed(2);
+      if (incAlt) incAlt.textContent = `${Math.round(todayInc * EXCHANGE_RATE).toLocaleString()} ៛`;
+
+      if (expVal) expVal.textContent = '$' + todayExp.toFixed(2);
+      if (expAlt) expAlt.textContent = `${Math.round(todayExp * EXCHANGE_RATE).toLocaleString()} ៛`;
+
+      if (netVal) netVal.textContent = (todayNet < 0 ? '-$' : '$') + Math.abs(todayNet).toFixed(2);
+      if (netAlt) netAlt.textContent = `${Math.round(todayNet * EXCHANGE_RATE).toLocaleString()} ៛`;
+
+      if (incCountEl) incCountEl.textContent = incItems.length;
+      if (expCountEl) expCountEl.textContent = expItems.length;
+
+      // Render today income list
+      if (incomeListEl) {
+        if (incItems.length === 0) {
+          incomeListEl.innerHTML = '<p class="text-slate-400 py-2 text-center">មិនទាន់មានចំណូលថ្ងៃនេះ</p>';
+        } else {
+          incomeListEl.innerHTML = incItems.map(t => {
+            const catObj = (CATEGORIES.income || []).find(c => c.id === t.category) || { name: t.category };
+            const title = t.note || catObj.name;
+            const khrStr = Math.round(t.amount * EXCHANGE_RATE).toLocaleString() + ' ៛';
+            return `
+              <div class="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <div class="truncate mr-2">
+                  <p class="font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHtml(title)}</p>
+                  <p class="text-[10px] text-slate-400">${catObj.name}</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="font-bold text-emerald-600 dark:text-emerald-400">+$${t.amount.toFixed(2)}</p>
+                  <p class="text-[10px] text-slate-400">${khrStr}</p>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // Render today expense list
+      if (expenseListEl) {
+        if (expItems.length === 0) {
+          expenseListEl.innerHTML = '<p class="text-slate-400 py-2 text-center">មិនទាន់មានការចំណាយថ្ងៃនេះ</p>';
+        } else {
+          expenseListEl.innerHTML = expItems.map(t => {
+            const catObj = (CATEGORIES.expense || []).find(c => c.id === t.category) || { name: t.category };
+            const title = t.note || catObj.name;
+            const khrStr = Math.round(t.amount * EXCHANGE_RATE).toLocaleString() + ' ៛';
+            return `
+              <div class="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <div class="truncate mr-2">
+                  <p class="font-semibold text-slate-800 dark:text-slate-100 truncate">${escapeHtml(title)}</p>
+                  <p class="text-[10px] text-slate-400">${catObj.name}</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="font-bold text-rose-600 dark:text-rose-400">-$${t.amount.toFixed(2)}</p>
+                  <p class="text-[10px] text-slate-400">${khrStr}</p>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    function renderTransactions() {
+      const listEl = document.getElementById('txList');
+      const badgeEl = document.getElementById('txCountBadge');
+      const typeFilter = document.getElementById('filterType') ? document.getElementById('filterType').value : 'all';
+      const periodFilter = document.getElementById('filterPeriod') ? document.getElementById('filterPeriod').value : 'all';
+
+      if (!listEl) return;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const monthStr = todayStr.substring(0, 7);
+
+      let filtered = transactions.filter(t => {
+        if (typeFilter !== 'all' && t.type !== typeFilter) return false;
+        if (periodFilter === 'today' && t.date !== todayStr) return false;
+        if (periodFilter === 'month' && (!t.date || !t.date.startsWith(monthStr))) return false;
+        return true;
+      });
+
+      if (badgeEl) badgeEl.textContent = `${filtered.length} ប្រតិបត្តិការ`;
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="py-12 text-center text-slate-400">
+            <i class="fa-solid fa-receipt text-3xl mb-2 opacity-50"></i>
+            <p class="text-xs">មិនទាន់មានទិន្នន័យប្រតិបត្តិការនៅឡើយ</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(t => {
+        const isExp = t.type === 'expense';
+        const catList = CATEGORIES[t.type] || [];
+        const catObj = catList.find(c => c.id === t.category) || { name: t.category, icon: 'fa-circle-question', color: '#64748b' };
+
+        const usdStr = '$' + Number(t.amount).toFixed(2);
+        const khrStr = Math.round(t.amount * EXCHANGE_RATE).toLocaleString() + ' ៛';
+        const primaryAmt = currentCurrency === 'USD' ? usdStr : khrStr;
+        const secondaryAmt = currentCurrency === 'USD' ? khrStr : usdStr;
+
+        return `
+          <div class="flex items-center justify-between p-3 rounded-2xl border border-slate-100 dark:border-slate-700/60 bg-white dark:bg-slate-800/80 hover:bg-slate-50/80 dark:hover:bg-slate-700/50 transition">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs" style="background-color: ${catObj.color}">
+                <i class="fa-solid ${catObj.icon}"></i>
+              </div>
+              <div class="min-w-0">
+                <p class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">${escapeHtml(t.note || catObj.name)}</p>
+                <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-700 font-medium">${catObj.name}</span>
+                  <span><i class="fa-regular fa-calendar text-[10px]"></i> ${t.date}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0 ml-3">
+              <div class="text-right">
+                <p class="font-extrabold text-xs sm:text-sm ${isExp ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">
+                  ${isExp ? '-' : '+'}${primaryAmt}
+                </p>
+                <p class="text-[10px] text-slate-400">${secondaryAmt}</p>
+              </div>
+              <button onclick="deleteTransaction('${t.id}')" title="លុប" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function deleteTransaction(id) {
+      showConfirmModal(
+        'លុបប្រតិបត្តិការនេះ?',
+        'តើអ្នកចង់លុបប្រតិបត្តិការនេះចេញពីសៀវភៅកត់ត្រាមែនទេ?',
+        () => {
+          transactions = transactions.filter(t => t.id !== id);
+          localStorage.setItem('app_transactions', JSON.stringify(transactions));
+          renderAll();
+          showToast('បានលុប', 'ប្រតិបត្តិការត្រូវបានលុបរួចរាល់', 'info');
+        }
+      );
+    }
+
+    function confirmClearAll() {
+      showConfirmModal(
+        'លុបទិន្នន័យទាំងអស់?',
+        'ទិន្នន័យប្រតិបត្តិការទាំងអស់នឹងត្រូវលុបចោលទាំងស្រុង!',
+        () => {
+          transactions = [];
+          localStorage.setItem('app_transactions', JSON.stringify(transactions));
+          renderAll();
+          showToast('បានសម្អាត', 'ទិន្នន័យទាំងអស់ត្រូវបានលុប', 'info');
+        }
+      );
+    }
+
+    function changeChartPeriod(period) {
+      currentChartPeriod = period;
+      ['all', 'month', 'today'].forEach(p => {
+        const btn = document.getElementById('btnPeriod' + p.charAt(0).toUpperCase() + p.slice(1));
+        if (btn) {
+          if (p === period) {
+            btn.className = "px-2.5 py-1 rounded-lg font-semibold bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-xs";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-lg font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white";
+          }
+        }
+      });
+      renderChart();
+    }
+
+    function renderChart() {
+      const canvas = document.getElementById('categoryChart');
+      const legendContainer = document.getElementById('chartLegend');
+      if (!canvas) return;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const monthStr = todayStr.substring(0, 7);
+
+      // Filter expenses according to chosen period
+      const expTx = transactions.filter(t => {
+        if (t.type !== 'expense') return false;
+        if (currentChartPeriod === 'today' && t.date !== todayStr) return false;
+        if (currentChartPeriod === 'month' && (!t.date || !t.date.startsWith(monthStr))) return false;
+        return true;
+      });
+
+      const catMap = {};
+      let totalExp = 0;
+
+      expTx.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        totalExp += amt;
+        catMap[t.category] = (catMap[t.category] || 0) + amt;
+      });
+
+      const labels = [];
+      const data = [];
+      const colors = [];
+
+      (CATEGORIES.expense || []).forEach(cat => {
+        if (catMap[cat.id]) {
+          labels.push(cat.name);
+          data.push(catMap[cat.id]);
+          colors.push(cat.color);
+        }
+      });
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      if (data.length === 0) {
+        if (legendContainer) {
+          legendContainer.innerHTML = '<p class="text-slate-400 py-8 text-center text-xs">មិនទាន់មានទិន្នន័យចំណាយក្នុងចន្លោះនេះ</p>';
+        }
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        return;
+      }
+
+      const ctx = canvas.getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: isDarkMode ? '#1e293b' : '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw || 0;
+                  const pct = totalExp > 0 ? ((val / totalExp) * 100).toFixed(1) : 0;
+                  return ` $${val.toFixed(2)} (${pct}%)`;
+                }
+              }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+
+      // Render custom legend
+      if (legendContainer) {
+        legendContainer.innerHTML = labels.map((lbl, idx) => {
+          const val = data[idx];
+          const pct = totalExp > 0 ? ((val / totalExp) * 100).toFixed(1) : 0;
+          const khr = Math.round(val * EXCHANGE_RATE).toLocaleString();
+          return `
+            <div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/40">
+              <div class="flex items-center gap-2 truncate">
+                <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${colors[idx]}"></span>
+                <span class="text-slate-700 dark:text-slate-200 font-medium truncate">${lbl}</span>
+              </div>
+              <div class="text-right shrink-0 font-bold text-slate-800 dark:text-slate-100">
+                <span>$${val.toFixed(2)}</span>
+                <span class="text-[10px] text-slate-400 font-normal ml-1">(${pct}%)</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function openMonthlyReportModal() {
+      const picker = document.getElementById('reportMonthPicker');
+      if (picker && !picker.value) {
+        picker.value = new Date().toISOString().substring(0, 7);
+      }
+      renderMonthlyReport();
+      const modal = document.getElementById('monthlyReportModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeMonthlyReportModal() {
+      const modal = document.getElementById('monthlyReportModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderMonthlyReport() {
+      const picker = document.getElementById('reportMonthPicker');
+      const selectedMonth = picker ? picker.value : new Date().toISOString().substring(0, 7);
+
+      const monthTx = transactions.filter(t => (t.date || '').startsWith(selectedMonth));
+
+      let totalExp = 0;
+      let totalInc = 0;
+      const catMap = {};
+      const expItems = [];
+
+      monthTx.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if (t.type === 'expense') {
+          totalExp += amt;
+          catMap[t.category] = (catMap[t.category] || 0) + amt;
+          expItems.push(t);
+        } else {
+          totalInc += amt;
+        }
+      });
+
+      const net = totalInc - totalExp;
+
+      // Update values
+      const expVal = document.getElementById('modalMonthExpenseVal');
+      const expAlt = document.getElementById('modalMonthExpenseAlt');
+      const incVal = document.getElementById('modalMonthIncomeVal');
+      const incAlt = document.getElementById('modalMonthIncomeAlt');
+      const netVal = document.getElementById('modalMonthNetVal');
+      const netAlt = document.getElementById('modalMonthNetAlt');
+
+      if (expVal) expVal.textContent = '$' + totalExp.toFixed(2);
+      if (expAlt) expAlt.textContent = `${Math.round(totalExp * EXCHANGE_RATE).toLocaleString()} ៛`;
+
+      if (incVal) incVal.textContent = '$' + totalInc.toFixed(2);
+      if (incAlt) incAlt.textContent = `${Math.round(totalInc * EXCHANGE_RATE).toLocaleString()} ៛`;
+
+      if (netVal) netVal.textContent = (net < 0 ? '-$' : '$') + Math.abs(net).toFixed(2);
+      if (netAlt) netAlt.textContent = `${Math.round(net * EXCHANGE_RATE).toLocaleString()} ៛`;
+
+      // Render category breakdown with progress bars
+      const catContainer = document.getElementById('modalCategoryBreakdown');
+      if (catContainer) {
+        const sortedCats = Object.keys(catMap).sort((a, b) => catMap[b] - catMap[a]);
+        if (sortedCats.length === 0) {
+          catContainer.innerHTML = '<p class="text-slate-400 py-3 text-center text-xs">មិនមានទិន្នន័យចំណាយក្នុងខែនេះទេ</p>';
+        } else {
+          catContainer.innerHTML = sortedCats.map(catId => {
+            const catObj = (CATEGORIES.expense || []).find(c => c.id === catId) || { name: catId, color: '#64748b' };
+            const amt = catMap[catId];
+            const pct = totalExp > 0 ? ((amt / totalExp) * 100).toFixed(1) : 0;
+            const khrStr = Math.round(amt * EXCHANGE_RATE).toLocaleString() + ' ៛';
+            return `
+              <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-semibold text-slate-800 dark:text-slate-200">${catObj.name}</span>
+                  <span class="font-bold text-slate-900 dark:text-white">$${amt.toFixed(2)} (${khrStr}) - ${pct}%</span>
+                </div>
+                <div class="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 overflow-hidden">
+                  <div class="h-full rounded-full" style="width: ${pct}%; background-color: ${catObj.color}"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // Render purchased items list
+      const txContainer = document.getElementById('modalTxList');
+      if (txContainer) {
+        if (expItems.length === 0) {
+          txContainer.innerHTML = '<p class="text-slate-400 py-3 text-center text-xs">មិនទាន់មានមុខទំនិញដែលបានកត់ត្រា</p>';
+        } else {
+          txContainer.innerHTML = expItems.map(t => {
+            const catObj = (CATEGORIES.expense || []).find(c => c.id === t.category) || { name: t.category };
+            const title = t.note || catObj.name;
+            const khrStr = Math.round(t.amount * EXCHANGE_RATE).toLocaleString() + ' ៛';
+            return `
+              <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-700/30 border border-slate-100 dark:border-slate-700">
+                <div class="truncate mr-2">
+                  <p class="font-semibold text-slate-800 dark:text-slate-200 truncate">${escapeHtml(title)}</p>
+                  <p class="text-[10px] text-slate-400">${t.date} • ${catObj.name}</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="font-bold text-rose-600 dark:text-rose-400">-$${t.amount.toFixed(2)}</p>
+                  <p class="text-[10px] text-slate-400">${khrStr}</p>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    async function sendTelegramMessage(textHtml) {
+      if (!telegramConfig.botToken || !telegramConfig.chatId) {
+        return { success: false, error: 'មិនទាន់បានកំណត់ Bot Token ឬ Chat ID' };
+      }
+
+      const url = `https://api.telegram.org/bot${telegramConfig.botToken.trim()}/sendMessage`;
+      const payload = {
+        chat_id: telegramConfig.chatId.trim(),
+        text: textHtml,
+        parse_mode: 'HTML'
+      };
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.ok) {
+          return { success: true, result };
+        } else {
+          return { success: false, error: result.description || 'បរាជ័យក្នុងការផ្ញើសារ' };
+        }
+      } catch (err) {
+        return { success: false, error: err.message || 'បញ្ហាបណ្តាញ Internet' };
+      }
+    }
+
+    async function sendTransactionToTelegram(tx) {
+      const isExp = tx.type === 'expense';
+      const catList = CATEGORIES[tx.type] || [];
+      const catObj = catList.find(c => c.id === tx.category) || { name: tx.category };
+
+      const typeEmoji = isExp ? '💸 <b>ចំណាយថ្មី (Expense)</b>' : '💰 <b>ចំណូលថ្មី (Income)</b>';
+      const usdStr = '$' + Number(tx.amount).toFixed(2);
+      const khrStr = Math.round(tx.amount * EXCHANGE_RATE).toLocaleString() + ' ៛';
+
+      let amountPrimary = '';
+      if (tx.originalCurrency === 'KHR') {
+        amountPrimary = `<b>${Number(tx.originalAmount).toLocaleString()} ៛</b> (≈ ${usdStr})`;
+      } else {
+        amountPrimary = `<b>${usdStr}</b> (≈ ${khrStr})`;
+      }
+
+      const totals = calculateTotals();
+      const balanceStr = '$' + totals.net.toFixed(2) + ' | ' + Math.round(totals.net * EXCHANGE_RATE).toLocaleString() + ' ៛';
+
+      let msg = `${typeEmoji}\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `💵 <b>ចំនួនទឹកប្រាក់:</b> ${amountPrimary}\n`;
+      msg += `🏷️ <b>ប្រភេទ:</b> ${catObj.name}\n`;
+      msg += `📅 <b>កាលបរិច្ឆេទ:</b> ${tx.date}\n`;
+      if (tx.note) {
+        msg += `📝 <b>មុខទំនិញ/សម្គាល់:</b> ${escapeHtml(tx.note)}\n`;
+      }
+      if (telegramConfig.includeBalance) {
+        msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+        msg += `📊 <b>សមតុល្យសរុបបច្ចុប្បន្ន:</b> <code>${balanceStr}</code>\n`;
+      }
+      msg += `⏱ <i>${new Date().toLocaleTimeString('km-KH')}</i>`;
+
+      const res = await sendTelegramMessage(msg);
+      if (res.success) {
+        showToast('បានផ្ញើទៅ Telegram!', 'Bot បានបញ្ជូនសារដំណឹងទៅកាន់ Telegram របស់អ្នក', 'success');
+      } else {
+        showToast('Telegram Error', res.error, 'error');
+      }
+    }
+
+    async function sendTodayTransactionsToTelegram() {
+      if (!telegramConfig.botToken || !telegramConfig.chatId) {
+        openTelegramModal();
+        showToast('សូមភ្ជាប់ Telegram', 'សូមបំពេញ Bot Token និង Chat ID ជាមុនសិន', 'error');
+        return;
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayTx = transactions.filter(t => t.date === todayStr);
+
+      if (todayTx.length === 0) {
+        showToast('គ្មានទិន្នន័យ', 'មិនទាន់មានប្រតិបត្តិការណាមួយក្នុងថ្ងៃនេះទេ', 'info');
+        return;
+      }
+
+      showToast('កំពុងផ្ញើ...', 'កំពុងរៀបចំបញ្ជីថ្ងៃនេះទៅ Telegram', 'info');
+
+      let totalExp = 0;
+      let totalInc = 0;
+      const expItems = [];
+      const incItems = [];
+
+      todayTx.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if (t.type === 'expense') {
+          totalExp += amt;
+          expItems.push(t);
+        } else {
+          totalInc += amt;
+          incItems.push(t);
+        }
+      });
+
+      let msg = `📅 <b>របាយការណ៍សកម្មភាពថ្ងៃនេះ (${todayStr})</b>\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+      if (incItems.length > 0) {
+        msg += `🟢 <b>ចំណូលថ្ងៃនេះ (${incItems.length} ប្រភព):</b>\n`;
+        incItems.forEach((t, i) => {
+          const catObj = (CATEGORIES.income || []).find(c => c.id === t.category) || { name: t.category };
+          const title = t.note || catObj.name;
+          const khr = Math.round(t.amount * EXCHANGE_RATE).toLocaleString() + ' ៛';
+          msg += ` ${i + 1}. <b>${escapeHtml(title)}</b>: <code>+$${t.amount.toFixed(2)} (${khr})</code>\n`;
+        });
+        msg += `\n`;
+      }
+
+      if (expItems.length > 0) {
+        msg += `🔴 <b>មុខទំនិញបានចំណាយ (${expItems.length} មុខ):</b>\n`;
+        expItems.forEach((t, i) => {
+          const catObj = (CATEGORIES.expense || []).find(c => c.id === t.category) || { name: t.category };
+          const title = t.note || catObj.name;
+          const khr = Math.round(t.amount * EXCHANGE_RATE).toLocaleString() + ' ៛';
+          msg += ` ${i + 1}. <b>${escapeHtml(title)}</b> [${catObj.name}]: <code>-$${t.amount.toFixed(2)} (${khr})</code>\n`;
+        });
+        msg += `\n`;
+      }
+
+      msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `📈 <b>សរុបចំណូលថ្ងៃនេះ:</b> +$${totalInc.toFixed(2)} (${Math.round(totalInc * EXCHANGE_RATE).toLocaleString()} ៛)\n`;
+      msg += `📉 <b>សរុបចំណាយថ្ងៃនេះ:</b> -$${totalExp.toFixed(2)} (${Math.round(totalExp * EXCHANGE_RATE).toLocaleString()} ៛)\n`;
+      const netToday = totalInc - totalExp;
+      msg += `💎 <b>សមតុល្យសល់ថ្ងៃនេះ:</b> <b>${netToday >= 0 ? '+' : ''}$${netToday.toFixed(2)} (${Math.round(netToday * EXCHANGE_RATE).toLocaleString()} ៛)</b>\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `⏱ <i>${new Date().toLocaleTimeString('km-KH')}</i>`;
+
+      const res = await sendTelegramMessage(msg);
+      if (res.success) {
+        showToast('បានផ្ញើទៅ Telegram!', 'បញ្ជីមុខទំនិញថ្ងៃនេះបានបញ្ជូនជោគជ័យ', 'success');
+      } else {
+        showToast('Telegram Error', res.error, 'error');
+      }
+    }
+
+    async function sendMonthTransactionsToTelegram() {
+      if (!telegramConfig.botToken || !telegramConfig.chatId) {
+        openTelegramModal();
+        showToast('សូមភ្ជាប់ Telegram', 'សូមបំពេញ Bot Token និង Chat ID ជាមុនសិន', 'error');
+        return;
+      }
+
+      const picker = document.getElementById('reportMonthPicker');
+      const selectedMonth = picker && picker.value ? picker.value : new Date().toISOString().substring(0, 7);
+      const monthTx = transactions.filter(t => (t.date || '').startsWith(selectedMonth));
+
+      if (monthTx.length === 0) {
+        showToast('គ្មានទិន្នន័យ', `មិនទាន់មានប្រតិបត្តិការណាមួយក្នុងខែ ${selectedMonth} ទេ`, 'info');
+        return;
+      }
+
+      showToast('កំពុងផ្ញើ...', 'កំពុងរៀបចំបញ្ជីខែនេះទៅ Telegram', 'info');
+
+      let totalExp = 0;
+      let totalInc = 0;
+      const catMap = {};
+      const expItems = [];
+
+      monthTx.forEach(t => {
+        const amt = parseFloat(t.amount) || 0;
+        if (t.type === 'expense') {
+          totalExp += amt;
+          catMap[t.category] = (catMap[t.category] || 0) + amt;
+          expItems.push(t);
+        } else {
+          totalInc += amt;
+        }
+      });
+
+      let msg = `📊 <b>របាយការណ៍ចំណូលចំណាយខែ (${selectedMonth})</b>\n`;
+      msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `📉 <b>ចំណាយសរុបខែនេះ:</b> <code>$${totalExp.toFixed(2)} (${Math.round(totalExp * EXCHANGE_RATE).toLocaleString()} ៛)</code>\n`;
+      msg += `📈 <b>ចំណូលសរុបខែនេះ:</b> <code>$${totalInc.toFixed(2)} (${Math.round(totalInc * EXCHANGE_RATE).toLocaleString()} ៛)</code>\n`;
+      const net = totalInc - totalExp;
+      msg += `💎 <b>សមតុល្យសល់ខែនេះ:</b> <b>$${net.toFixed(2)} (${Math.round(net * EXCHANGE_RATE).toLocaleString()} ៛)</b>\n\n`;
+
+      // Category summary
+      msg += `🏷️ <b>ចំណាយច្រើនជាងគេតាមប្រភេទ:</b>\n`;
+      const sortedCats = Object.keys(catMap).sort((a, b) => catMap[b] - catMap[a]);
+      sortedCats.slice(0, 5).forEach((catId, idx) => {
+        const catObj = (CATEGORIES.expense || []).find(c => c.id === catId) || { name: catId };
+        const amt = catMap[catId];
+        const pct = totalExp > 0 ? ((amt / totalExp) * 100).toFixed(1) : 0;
+        msg += ` ${idx + 1}. ${catObj.name}: $${amt.toFixed(2)} (${pct}%)\n`;
+      });
+
+      // Itemized purchases (first 10 items to prevent message cutoff)
+      if (expItems.length > 0) {
+        msg += `\n🛒 <b>មុខទំនិញដែលបានចំណាយ (គំរូ ${Math.min(10, expItems.length)} មុខ):</b>\n`;
+        expItems.slice(0, 10).forEach((t, i) => {
+          const catObj = (CATEGORIES.expense || []).find(c => c.id === t.category) || { name: t.category };
+          const title = t.note || catObj.name;
+          msg += ` ${i + 1}. [${t.date}] <b>${escapeHtml(title)}</b>: $${t.amount.toFixed(2)}\n`;
+        });
+        if (expItems.length > 10) {
+          msg += ` <i>...និងមាន ${expItems.length - 10} មុខទំនិញផ្សេងទៀត</i>\n`;
+        }
+      }
+
+      msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      msg += `✨ <i>ផ្ញើចេញពី កម្មវិធីតាមដានចំណូលចំណាយ</i>`;
+
+      const res = await sendTelegramMessage(msg);
+      if (res.success) {
+        showToast('បានផ្ញើទៅ Telegram!', 'របាយការណ៍ប្រចាំខែបានបញ្ជូនជោគជ័យ', 'success');
+      } else {
+        showToast('Telegram Error', res.error, 'error');
+      }
+    }
+
+    function openTelegramModal() {
+      const tokenInput = document.getElementById('cfgBotToken');
+      const chatInput = document.getElementById('cfgChatId');
+      const autoSendCheck = document.getElementById('cfgAutoSend');
+      const balanceCheck = document.getElementById('cfgIncludeBalance');
+
+      if (tokenInput) tokenInput.value = telegramConfig.botToken || '';
+      if (chatInput) chatInput.value = telegramConfig.chatId || '';
+      if (autoSendCheck) autoSendCheck.checked = telegramConfig.autoSend !== false;
+      if (balanceCheck) balanceCheck.checked = telegramConfig.includeBalance !== false;
+
+      const modal = document.getElementById('telegramModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeTelegramModal() {
+      const modal = document.getElementById('telegramModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function saveTelegramConfig() {
+      const botToken = document.getElementById('cfgBotToken').value.trim();
+      const chatId = document.getElementById('cfgChatId').value.trim();
+      const autoSend = document.getElementById('cfgAutoSend').checked;
+      const includeBalance = document.getElementById('cfgIncludeBalance').checked;
+
+      telegramConfig = { botToken, chatId, autoSend, includeBalance };
+      localStorage.setItem('app_telegram_config', JSON.stringify(telegramConfig));
+
+      updateTelegramUIStatus();
+      closeTelegramModal();
+      showToast('រក្សាទុកការកំណត់', 'ព័ត៌មាន Telegram Bot ត្រូវបានរក្សាទុករួចរាល់', 'success');
+    }
+
+    function updateTelegramUIStatus() {
+      const badge = document.getElementById('tgStatusBadge');
+      const tag = document.getElementById('tgConnectionTag');
+      const infoText = document.getElementById('tgBotInfoText');
+      const banner = document.getElementById('tgAlertBanner');
+
+      if (telegramConfig.botToken && telegramConfig.chatId) {
+        if (badge) badge.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-800";
+        if (tag) {
+          tag.className = "text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+          tag.textContent = "បានភ្ជាប់ជោគជ័យ";
+        }
+        if (infoText) {
+          infoText.innerHTML = `Chat ID: <code class="font-mono text-slate-800 dark:text-slate-100 font-bold">${telegramConfig.chatId}</code> (ការជូនដំណឹង: ${telegramConfig.autoSend ? 'បើក' : 'បិទ'})`;
+        }
+        if (banner) banner.classList.add('hidden');
+      } else {
+        if (badge) badge.className = "w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-white dark:ring-slate-800";
+        if (tag) {
+          tag.className = "text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300";
+          tag.textContent = "មិនទាន់ភ្ជាប់";
+        }
+        if (infoText) {
+          infoText.textContent = "សូមបំពេញ Bot Token និង Chat ID ដើម្បីដំណើរការការជូនដំណឹងស្វ័យប្រវត្ត។";
+        }
+        if (banner) banner.classList.remove('hidden');
+      }
+    }
+
+    async function testTelegramConnection() {
+      if (!telegramConfig.botToken || !telegramConfig.chatId) {
+        openTelegramModal();
+        showToast('សូមបំពេញព័ត៌មាន Bot', 'សូមបញ្ចូល Bot Token និង Chat ID ជាមុនសិន', 'error');
+        return;
+      }
+
+      showToast('កំពុងតេស្ត...', 'កំពុងផ្ញើសារសាកល្បងទៅ Telegram', 'info');
+
+      const pingMsg = `🚀 <b>តេស្តការតភ្ជាប់ Telegram Bot ជោគជ័យ!</b>\n━━━━━━━━━━━━━━━━━━━━━\nកម្មវិធីតាមដានចំណូលចំណាយរបស់អ្នកត្រូវបានភ្ជាប់ជាមួយ Telegram រួចរាល់ហើយ។\n\n🕒 ម៉ោង: <i>${new Date().toLocaleTimeString('km-KH')}</i>`;
+      const res = await sendTelegramMessage(pingMsg);
+
+      if (res.success) {
+        showToast('ការតភ្ជាប់ជោគជ័យ!', 'សារ Ping ត្រូវបានផ្ញើចូលទៅ Telegram របស់អ្នកហើយ', 'success');
+      } else {
+        showToast('តភ្ជាប់មិនជោគជ័យ', res.error, 'error');
+      }
+    }
+
+    function exportToCSV() {
+      if (transactions.length === 0) {
+        showToast('គ្មានទិន្នន័យ', 'មិនមានប្រតិបត្តិការដើម្បី Export ឡើយ', 'error');
+        return;
+      }
+
+      let csv = "ID,Type,Category,Amount(USD),Date,Note\n";
+      transactions.forEach(t => {
+        csv += `"${t.id}","${t.type}","${t.category}","${t.amount.toFixed(2)}","${t.date}","${(t.note || '').replace(/"/g, '""')}"\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('ជោគជ័យ', 'បានទាញយកឯកសារ CSV រួចរាល់', 'success');
+    }
+
+    // Modal Helpers (Replacing alert/confirm)
+    let currentConfirmCallback = null;
+
+    function showConfirmModal(title, desc, onConfirm) {
+      const titleEl = document.getElementById('confirmTitle');
+      const descEl = document.getElementById('confirmDesc');
+      const modal = document.getElementById('confirmModal');
+      const actionBtn = document.getElementById('confirmActionBtn');
+
+      if (titleEl) titleEl.textContent = title;
+      if (descEl) descEl.textContent = desc;
+      currentConfirmCallback = onConfirm;
+      if (modal) modal.classList.remove('hidden');
+
+      if (actionBtn) {
+        actionBtn.onclick = function() {
+          if (currentConfirmCallback) currentConfirmCallback();
+          closeConfirmModal();
+        };
+      }
+    }
+
+    function closeConfirmModal() {
+      const modal = document.getElementById('confirmModal');
+      if (modal) modal.classList.add('hidden');
+      currentConfirmCallback = null;
+    }
+
+    function showToast(title, msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastMsg = document.getElementById('toastMsg');
+
+      if (!toast || !toastIcon || !toastTitle || !toastMsg) return;
+
+      toastTitle.textContent = title;
+      toastMsg.textContent = msg;
+
+      if (type === 'success') {
+        toastIcon.className = "w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0";
+        toastIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+      } else if (type === 'error') {
+        toastIcon.className = "w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0";
+        toastIcon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      } else {
+        toastIcon.className = "w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0";
+        toastIcon.innerHTML = '<i class="fa-solid fa-info"></i>';
+      }
+
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-20');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-20');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3500);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+    }
+
+    function renderAll() {
+      calculateTotals();
+      renderTodayBreakdown();
+      renderTransactions();
+      renderChart();
+      updateBudgetDisplay();
+    }
+  </script>
+</body>
+</html>
