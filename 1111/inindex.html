@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="km" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinSync Pro — ប្រព័ន្ធគ្រប់គ្រងហិរញ្ញវត្ថុ Cloud Realtime</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js for financial analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Firebase SDKs (Compat v10) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Google Fonts: Kantumruy Pro & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Kantumruy Pro"', '"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', '"Kantumruy Pro"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.35);
+      border-radius: 9999px;
+    }
+    .wallet-mesh {
+      background: radial-gradient(at 0% 0%, #059669 0px, transparent 55%),
+                  radial-gradient(at 100% 0%, #0ea5e9 0px, transparent 50%),
+                  radial-gradient(at 100% 100%, #047857 0px, transparent 50%),
+                  linear-gradient(135deg, #0f172a 0%, #064e3b 100%);
+    }
+    .glass-header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .dark .glass-header {
+      background: rgba(15, 23, 42, 0.85);
+    }
+    .cat-pill-active {
+      border-color: #10b981 !important;
+      background-color: rgba(16, 185, 129, 0.1) !important;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-[#f8fafc] dark:bg-[#0b1120] text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+  <header class="glass-header border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+      <!-- Left: Brand -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl wallet-mesh flex items-center justify-center text-white shadow-lg shadow-emerald-600/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">សៀវភៅហិរញ្ញវត្ថុ</h1>
+            <span id="cloudStatusBadge" class="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-0.5 rounded-full font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Cloud Live Sync
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">Sync រវាងកុំព្យូទ័រ & ទូរស័ព្ទដៃ Realtime</p>
+        </div>
+      </div>
+
+      <!-- Right: Action Pills & Profile -->
+      <div class="flex items-center space-x-2">
+        <button onclick="openRateModal()" class="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold">
+          <span class="text-slate-400">$1=</span>
+          <span id="headerExchangeRateText" class="font-bold text-emerald-600 dark:text-emerald-400">4,100៛</span>
+        </button>
+
+        <button onclick="openBudgetModal()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold">
+          <span>🎯</span>
+          <span class="hidden md:inline">កញ្ចប់ថវិកា</span>
+        </button>
+
+        <button onclick="toggleDarkMode()" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          🌓
+        </button>
+
+        <div id="userProfileWidget" class="flex items-center space-x-2 pl-2 border-l border-slate-200 dark:border-slate-700">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white font-bold text-xs flex items-center justify-center uppercase shadow-sm" id="userAvatarText">U</div>
+          <div class="hidden lg:block text-left leading-tight">
+            <div class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate max-w-[100px]" id="userNameDisplay">User</div>
+            <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Cloud Active</div>
+          </div>
+          <button onclick="handleLogout()" title="ចាកចេញពីគណនី" class="p-1.5 text-slate-400 hover:text-rose-500 transition">
+            🚪
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <!-- Top Bento Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div class="lg:col-span-5 wallet-mesh rounded-3xl p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[200px]">
+        <div class="flex items-center justify-between">
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-white/15 backdrop-blur-md">សមតុល្យសរុប (Net Balance)</span>
+          <span class="text-[11px] font-semibold bg-emerald-500/20 px-2 py-0.5 rounded-lg">⚡ Cloud Connected</span>
+        </div>
+        <div class="my-4">
+          <div class="text-3xl sm:text-4xl font-extrabold font-display" id="totalBalanceUSD">$0.00</div>
+          <div class="text-sm sm:text-base text-emerald-200 font-semibold mt-1" id="totalBalanceKHR">≈ 0 ៛</div>
+        </div>
+        <div class="pt-3 border-t border-white/15 flex items-center justify-between text-[11px]">
+          <span>Firebase Realtime Sync</span>
+          <button onclick="pingTelegramTest()" class="px-3 py-1 rounded-xl bg-white text-slate-900 font-bold hover:bg-emerald-50 transition">តេស្ត Telegram</button>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 flex flex-col justify-between gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700">
+            <span class="text-xs font-bold text-slate-400 uppercase">🟢 ចំណូលសរុប (Income)</span>
+            <div class="text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1" id="totalIncomeUSD">+$0.00</div>
+            <div class="text-xs text-slate-500 mt-0.5" id="totalIncomeKHR">≈ +0 ៛</div>
+          </div>
+          <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700">
+            <span class="text-xs font-bold text-slate-400 uppercase">🔴 ចំណាយសរុប (Expense)</span>
+            <div class="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1" id="totalExpenseUSD">-$0.00</div>
+            <div class="text-xs text-slate-500 mt-0.5" id="totalExpenseKHR">≈ -0 ៛</div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700">
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="font-bold">🎯 ថវិកាប្រចាំខែ</span>
+            <span>ចាយរួច <strong id="budgetSpentText">$0.00</strong> / <strong id="budgetCapText" class="text-emerald-500">$300.00</strong></span>
+          </div>
+          <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+            <div id="budgetProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Entry & History Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Input Form -->
+      <div class="lg:col-span-5 bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 space-y-4">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white border-b pb-3 border-slate-100 dark:border-slate-700">+ កត់ត្រាប្រតិបត្តិការថ្មី</h2>
+        
+        <form id="transactionForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+          <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl">
+            <button type="button" id="btnTypeExpense" onclick="setTxType('expense')" class="py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-rose-600 shadow-xs">🔴 ចំណាយ</button>
+            <button type="button" id="btnTypeIncome" onclick="setTxType('income')" class="py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-600">🟢 ចំណូល</button>
+          </div>
+
+          <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-600 dark:text-slate-300">ចំនួនទឹកប្រាក់ *</label>
+              <div class="inline-flex rounded-lg p-0.5 bg-slate-200 dark:bg-slate-800">
+                <button type="button" id="btnCurrKHR" onclick="setInputCurrency('KHR')" class="px-2.5 py-1 rounded text-xs font-bold bg-emerald-600 text-white">៛ រៀល</button>
+                <button type="button" id="btnCurrUSD" onclick="setInputCurrency('USD')" class="px-2.5 py-1 rounded text-xs font-bold text-slate-600 dark:text-slate-400">$ ដុល្លារ</button>
+              </div>
+            </div>
+            <div class="relative">
+              <span id="amountSymbolPrefix" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-600 font-extrabold text-xl">៛</span>
+              <input type="number" id="txAmount" step="any" min="0.01" required placeholder="0" class="w-full text-2xl font-extrabold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">ប្រភេទប្រតិបត្តិការ</label>
+            <select id="txCategory" class="w-full text-xs font-bold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 focus:outline-none"></select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">ឈ្មោះទំនិញ / ចំណាំ</label>
+            <input type="text" id="txNote" required placeholder="ឧ. បាយថ្ងៃត្រង់, ថ្លៃសាំង..." class="w-full text-xs sm:text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">កាលបរិច្ឆេទ</label>
+            <input type="date" id="txDate" required class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 focus:outline-none">
+          </div>
+
+          <button type="submit" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 transition">
+            រក្សាទុក & Sync ទៅ Cloud ☁️
+          </button>
+        </form>
+      </div>
+
+      <!-- Transaction History -->
+      <div class="lg:col-span-7 bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 space-y-4">
+        <div class="flex items-center justify-between border-b pb-3 border-slate-100 dark:border-slate-700">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">ប្រវត្តិប្រតិបត្តិការ (Realtime)</h3>
+            <p class="text-xs text-slate-400">ទិន្នន័យ Sync គ្នាភ្លាមៗរវាងកុំព្យូទ័រ និងទូរស័ព្ទដៃ</p>
+          </div>
+          <span id="txCountBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700">0 ប្រតិបត្តិការ</span>
+        </div>
+        <div id="transactionListContainer" class="space-y-2 max-h-[500px] overflow-y-auto pr-1"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Login/Auth Modal -->
+  <div id="authModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center">
+      <div class="w-12 h-12 rounded-2xl wallet-mesh mx-auto flex items-center justify-center text-white text-xl mb-3">☁️</div>
+      <h2 class="text-lg font-extrabold text-slate-900 dark:text-white">ចូលប្រើប្រាស់គណនី</h2>
+      <p class="text-xs text-slate-500 mt-1 mb-4">ប្រើ Username តែមួយនៅលើកុំព្យូទ័រ & ទូរស័ព្ទដើម្បី Sync ទិន្នន័យ</p>
+      
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-3">
+        <input type="text" id="authUsername" required placeholder="ឈ្មោះគណនី (Username) ឧ. senghorn" class="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 focus:outline-none">
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition">
+          ចូលប្រើប្រាស់ Cloud Sync
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // 1. YOUR FIREBASE CONFIG (ភ្ជាប់រួចរាល់ ១០០%)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAkJSMIxnc0AHHhKuSbNe15-9PcbxAsyLM",
+      authDomain: "my-sync-app-d868a.firebaseapp.com",
+      projectId: "my-sync-app-d868a",
+      storageBucket: "my-sync-app-d868a.firebasestorage.app",
+      messagingSenderId: "451662253907",
+      appId: "1:451662253907:web:81603c231e026438a0dea6",
+      measurementId: "G-8PHF94J426"
+    };
+
+    let db = null;
+    let unsubscribeSnapshot = null;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      console.log("Firebase Connected successfully!");
+    } catch (e) {
+      console.error("Firebase init error:", e);
+    }
+
+    // Telegram Bot Settings[cite: 1]
+    const TELEGRAM_BOT_TOKEN = '8801188196:AAGZHlsM9t_bhNRLVXO8kzM1_Ik6kbBI-Eg';
+    const TELEGRAM_CHAT_ID = '-1003527836779';
+
+    const CATEGORIES = {
+      expense: [
+        { id: 'food', name: 'អាហារ & ភេសជ្ជៈ', icon: '🍽️' },
+        { id: 'transport', name: 'សាំង & ធ្វើដំណើរ', icon: '🛵' },
+        { id: 'bills', name: 'ទឹកភ្លើង & Wi-Fi', icon: '💡' },
+        { id: 'shopping', name: 'ទិញទំនិញ', icon: '🛍️' },
+        { id: 'other', name: 'ចំណាយផ្សេងៗ', icon: '📦' }
+      ],
+      income: [
+        { id: 'salary', name: 'ប្រាក់ខែ / ជំនួញ', icon: '💵' },
+        { id: 'freelance', name: 'ការងារក្រៅម៉ោង / Design', icon: '💻' },
+        { id: 'other', name: 'ចំណូលផ្សេងៗ', icon: '💰' }
+      ]
+    };
+
+    let currentUser = localStorage.getItem('active_user') || null;
+    let transactions = [];
+    let exchangeRate = 4100;
+    let monthlyBudget = 300;
+    let currentInputCurrency = 'KHR';
+    let currentTxType = 'expense';
+
+    function initUserSession() {
+      if (!currentUser) {
+        document.getElementById('authModal').style.display = 'flex';
+      } else {
+        document.getElementById('authModal').style.display = 'none';
+        document.getElementById('userNameDisplay').textContent = currentUser;
+        document.getElementById('userAvatarText').textContent = currentUser.charAt(0).toUpperCase();
+        listenToCloudData();
+      }
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const user = document.getElementById('authUsername').value.trim().toLowerCase();
+      if (!user) return;
+      currentUser = user;
+      localStorage.setItem('active_user', user);
+      document.getElementById('authModal').style.display = 'none';
+      document.getElementById('userNameDisplay').textContent = user;
+      document.getElementById('userAvatarText').textContent = user.charAt(0).toUpperCase();
+      listenToCloudData();
+      showToast('ជោគជ័យ', `ស្វាគមន៍មកកាន់គណនី ${user}!`, 'success');
+    }
+
+    function handleLogout() {
+      if (confirm('តើអ្នកចង់ចាកចេញពីគណនីមែនទេ?')) {
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+        localStorage.removeItem('active_user');
+        currentUser = null;
+        transactions = [];
+        renderAll();
+        document.getElementById('authModal').style.display = 'flex';
+      }
+    }
+
+    // REALTIME CLOUD LISTENER (ពេលកុំព្យូទ័របញ្ចូល ទូរស័ព្ទលោតភ្លាម)
+    function listenToCloudData() {
+      if (!db || !currentUser) return;
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+      const userDocRef = db.collection('user_finance').doc(currentUser);
+      unsubscribeSnapshot = userDocRef.onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          transactions = data.transactions || [];
+          if (data.exchangeRate) exchangeRate = data.exchangeRate;
+          if (data.monthlyBudget) monthlyBudget = data.monthlyBudget;
+          renderAll();
+        } else {
+          // Initialize new cloud document
+          userDocRef.set({
+            transactions: [],
+            exchangeRate: 4100,
+            monthlyBudget: 300,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      }, (err) => {
+        console.error("Cloud sync error:", err);
+        showToast('Sync បរាជ័យ', 'សូមប្រាកដថាបានបើក Firestore Database ក្នុង test mode', 'error');
+      });
+    }
+
+    async function syncToCloud() {
+      if (!db || !currentUser) return;
+      try {
+        await db.collection('user_finance').doc(currentUser).set({
+          transactions,
+          exchangeRate,
+          monthlyBudget,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      } catch (err) {
+        console.error("Save cloud error:", err);
+      }
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const amountVal = parseFloat(document.getElementById('txAmount').value);
+      const cat = document.getElementById('txCategory').value;
+      const note = document.getElementById('txNote').value.trim();
+      const date = document.getElementById('txDate').value;
+
+      if (!amountVal || amountVal <= 0) return;
+
+      const amountUSD = currentInputCurrency === 'KHR' ? (amountVal / exchangeRate) : amountVal;
+      const amountKHR = currentInputCurrency === 'KHR' ? amountVal : Math.round(amountVal * exchangeRate);
+
+      const newTx = {
+        id: 'tx_' + Date.now(),
+        type: currentTxType,
+        amountUSD: parseFloat(amountUSD.toFixed(2)),
+        amountKHR: Math.round(amountKHR),
+        inputCurrency: currentInputCurrency,
+        originalAmount: amountVal,
+        category: cat,
+        note,
+        date: date || new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString()
+      };
+
+      transactions.unshift(newTx);
+      await syncToCloud(); // រុញចូល Cloud ភ្លាមៗ
+
+      document.getElementById('txAmount').value = '';
+      document.getElementById('txNote').value = '';
+      showToast('រក្សាទុកជោគជ័យ', `${newTx.note} ត្រូវបាន Sync ទៅ Cloud!`, 'success');
+      sendTelegramAlert(newTx);
+    }
+
+    async function deleteTx(id) {
+      if (confirm('តើអ្នកពិតជាចង់លុបប្រតិបត្តិការនេះ?')) {
+        transactions = transactions.filter(t => t.id !== id);
+        await syncToCloud();
+        showToast('បានលុប', 'ប្រតិបត្តិការត្រូវបានដកចេញ', 'info');
+      }
+    }
+
+    function setTxType(type) {
+      currentTxType = type;
+      const btnExp = document.getElementById('btnTypeExpense');
+      const btnInc = document.getElementById('btnTypeIncome');
+      if (type === 'expense') {
+        btnExp.className = "py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-rose-600 shadow-xs";
+        btnInc.className = "py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-600";
+      } else {
+        btnInc.className = "py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-blue-600 shadow-xs";
+        btnExp.className = "py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600";
+      }
+      populateCategories();
+    }
+
+    function setInputCurrency(curr) {
+      currentInputCurrency = curr;
+      const btnKHR = document.getElementById('btnCurrKHR');
+      const btnUSD = document.getElementById('btnCurrUSD');
+      const sym = document.getElementById('amountSymbolPrefix');
+      if (curr === 'KHR') {
+        btnKHR.className = "px-2.5 py-1 rounded text-xs font-bold bg-emerald-600 text-white";
+        btnUSD.className = "px-2.5 py-1 rounded text-xs font-bold text-slate-600 dark:text-slate-400";
+        sym.textContent = '៛';
+      } else {
+        btnUSD.className = "px-2.5 py-1 rounded text-xs font-bold bg-emerald-600 text-white";
+        btnKHR.className = "px-2.5 py-1 rounded text-xs font-bold text-slate-600 dark:text-slate-400";
+        sym.textContent = '$';
+      }
+    }
+
+    function populateCategories() {
+      const select = document.getElementById('txCategory');
+      const list = currentTxType === 'expense' ? CATEGORIES.expense : CATEGORIES.income;
+      select.innerHTML = list.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+    }
+
+    function renderAll() {
+      let inc = 0, exp = 0;
+      transactions.forEach(t => {
+        if (t.type === 'income') inc += t.amountUSD;
+        else exp += t.amountUSD;
+      });
+      const net = inc - exp;
+
+      document.getElementById('totalBalanceUSD').textContent = `$${net.toFixed(2)}`;
+      document.getElementById('totalBalanceKHR').textContent = `≈ ${Math.round(net * exchangeRate).toLocaleString()} ៛`;
+      document.getElementById('totalIncomeUSD').textContent = `+$${inc.toFixed(2)}`;
+      document.getElementById('totalIncomeKHR').textContent = `≈ +${Math.round(inc * exchangeRate).toLocaleString()} ៛`;
+      document.getElementById('totalExpenseUSD').textContent = `-$${exp.toFixed(2)}`;
+      document.getElementById('totalExpenseKHR').textContent = `≈ -${Math.round(exp * exchangeRate).toLocaleString()} ៛`;
+
+      // Budget
+      const curMonth = new Date().toISOString().substring(0, 7);
+      const mExp = transactions.filter(t => t.type === 'expense' && t.date.startsWith(curMonth)).reduce((s, t) => s + t.amountUSD, 0);
+      const pct = monthlyBudget > 0 ? Math.min(100, Math.round((mExp / monthlyBudget) * 100)) : 0;
+      document.getElementById('budgetSpentText').textContent = `$${mExp.toFixed(2)}`;
+      document.getElementById('budgetCapText').textContent = `$${monthlyBudget.toFixed(2)}`;
+      document.getElementById('budgetProgressBar').style.width = `${pct}%`;
+
+      // Transactions list
+      const container = document.getElementById('transactionListContainer');
+      document.getElementById('txCountBadge').textContent = `${transactions.length} ប្រតិបត្តិការ`;
+      if (transactions.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-slate-400 text-xs">☁️ មិនទាន់មានទិន្នន័យឡើយ</div>`;
+        return;
+      }
+
+      container.innerHTML = transactions.map(t => {
+        const isExp = t.type === 'expense';
+        return `
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+            <div>
+              <div class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">${escapeHTML(t.note)}</div>
+              <div class="text-[11px] text-slate-400">${t.date}</div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs sm:text-sm font-extrabold ${isExp ? 'text-rose-600' : 'text-blue-600'}">
+                ${isExp ? '-' : '+'}${t.inputCurrency === 'KHR' ? t.originalAmount.toLocaleString() + ' ៛' : '$' + t.originalAmount.toFixed(2)}
+              </span>
+              <button onclick="deleteTx('${t.id}')" class="p-1 text-slate-300 hover:text-rose-500">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function sendTelegramAlert(t) {
+      const isExp = t.type === 'expense';
+      const msg = `${isExp ? '🔴 <b>ការចំណាយថ្មី</b>' : '🟢 <b>ចំណូលថ្មី</b>'}\n`
+        + `• មុខទំនិញ: <b>${t.note}</b>\n`
+        + `• ចំនួន: <b>${t.inputCurrency === 'KHR' ? t.originalAmount.toLocaleString() + ' ៛' : '$' + t.originalAmount.toFixed(2)}</b>\n`
+        + `• គណនី Cloud: <code>${currentUser}</code>\n`
+        + `• កាលបរិច្ឆេទ: ${t.date}`;
+
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: msg, parse_mode: 'HTML' })
+        });
+      } catch (e) {}
+    }
+
+    async function pingTelegramTest() {
+      showToast('កំពុងតេស្ត...', 'កំពុងផ្ញើសារសាកល្បងទៅ Telegram', 'info');
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: `🔔 <b>Cloud Telegram Connected!</b>\nUser: ${currentUser}`, parse_mode: 'HTML' })
+        });
+        showToast('ជោគជ័យ', 'Telegram ដំណើរការល្អ!', 'success');
+      } catch (e) {
+        showToast('បរាជ័យ', 'មិនអាចផ្ញើសារបានទេ', 'error');
+      }
+    }
+
+    function showToast(title, message, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = `p-3 rounded-2xl shadow-lg border text-xs text-white max-w-xs ${type === 'success' ? 'bg-emerald-600 border-emerald-500' : type === 'error' ? 'bg-rose-600 border-rose-500' : 'bg-slate-900 border-slate-700'}`;
+      t.innerHTML = `<strong>${title}:</strong> ${message}`;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+    }
+    function escapeHTML(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    window.onload = function() {
+      document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+      populateCategories();
+      initUserSession();
+    };
+  </script>
+</body>
+</html>
