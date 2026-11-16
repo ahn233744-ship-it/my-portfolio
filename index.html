@@ -273,15 +273,15 @@
         </button>
 
         <!-- 1. Unified All-Functions Hub Launcher (មជ្ឈមណ្ឌលមុខងារទាំងអស់) -->
-        <button type="button" onclick="openAllFunctionsHubModal('all')" id="btnHeaderAllHub" title="បើកមជ្ឈមណ្ឌលមុខងារទាំងអស់ដែលបានរៀបចំតាមក្រុមយ៉ាងស្រួលប្រើ" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 shadow-sm border border-cyan-300/40">
+        <button type="button" onclick="openAllFunctionsHubModal('all')" id="btnHeaderAllHub" title="បើកមជ្ឈមណ្ឌលមុខងារទាំងអស់ដែលបានរៀបចំតាមក្រុមយ៉ាងស្រួលប្រើ" class="flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 shadow-sm border border-cyan-300/40 whitespace-nowrap shrink-0 touch-manipulation">
           <span>🧭</span>
-          <span>មុខងារទាំងអស់</span>
+          <span>មុខងារ<span class="hidden sm:inline">ទាំងអស់</span></span>
         </button>
 
         <!-- 2. Simple vs Full Mode Toggle (របៀបងាយស្រួល ⇄ ពេញលេញ) -->
-        <button type="button" onclick="toggleSimpleCleanUiMode()" id="btnHeaderSimpleMode" title="ប្ដូររវាង របៀបងាយស្រួល (Simple) និង របៀបពេញលេញ (Pro)" class="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-cyan-400/40 bg-[#142c50] text-xs font-extrabold text-cyan-200 hover:border-cyan-300 hover:text-white transition active:opacity-80">
+        <button type="button" onclick="toggleSimpleCleanUiMode()" id="btnHeaderSimpleMode" title="ប្ដូររវាង របៀបងាយស្រួល (Simple) និង របៀបពេញលេញ (Pro)" class="flex items-center gap-1 px-2.5 py-2 min-h-[40px] rounded-xl border border-cyan-400/40 bg-[#142c50] text-xs font-extrabold text-cyan-200 hover:border-cyan-300 hover:text-white transition active:opacity-80 whitespace-nowrap shrink-0 touch-manipulation">
           <span id="simpleModeIcon">⚡</span>
-          <span id="simpleModeLabel">របៀបងាយស្រួល</span>
+          <span id="simpleModeLabel" class="hidden sm:inline">របៀបងាយស្រួល</span>
         </button>
 
         <!-- 3. AI Copilot, E-Receipt & POS -->
@@ -785,11 +785,11 @@
 
     <!-- MODULE 1: TRANSACTIONS VIEW -->
     <div id="moduleView_transactions" class="min-h-[500px] space-y-6">
-    <!-- Mobile Ergonomic Quick Switcher (Sticky at top of Workspace) -->
-    <div class="flex items-center gap-1.5 p-1.5 rounded-2xl bank-tile sm:hidden mb-2 bg-[#0f223f]/90 backdrop-blur-xl border border-cyan-400/30 shadow-md">
-      <button type="button" onclick="openMobileQuickAddModal()" class="flex-1 py-2 px-2.5 rounded-xl text-xs font-black text-center bg-cyan-600 text-white shadow-sm flex items-center justify-center gap-1">➕ កត់ត្រាថ្មី</button>
-      <button type="button" onclick="document.getElementById('todayPulseCard')?.scrollIntoView({behavior: 'smooth', block: 'nearest'})" class="flex-1 py-2 px-2.5 rounded-xl text-xs font-bold text-center bg-cyan-500/15 text-cyan-300 border border-cyan-400/30">📋 ប្រតិបត្តិការ</button>
-      <button type="button" onclick="document.getElementById('categoryChartCard')?.scrollIntoView({behavior: 'smooth', block: 'nearest'})" class="flex-1 py-2 px-2.5 rounded-xl text-xs font-bold text-center text-slate-300 hover:text-white">📊 វិភាគ</button>
+    <!-- Mobile Ergonomic Quick Switcher (1-Tap Large Touch Targets) -->
+    <div class="flex items-center gap-2 p-2 rounded-2xl bank-tile lg:hidden mb-2 bg-[#0f223f]/95 backdrop-blur-xl border border-cyan-400/35 shadow-md">
+      <button type="button" onclick="openMobileQuickAddModal()" class="flex-1 min-h-[44px] py-2.5 px-2.5 rounded-xl text-xs font-black text-center bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm flex items-center justify-center gap-1 touch-manipulation">➕ កត់ត្រាថ្មី</button>
+      <button type="button" onclick="document.getElementById('transactionHistoryCard')?.scrollIntoView({behavior: 'smooth', block: 'start'})" class="flex-1 min-h-[44px] py-2.5 px-2.5 rounded-xl text-xs font-extrabold text-center bg-cyan-500/20 text-cyan-200 border border-cyan-400/35 flex items-center justify-center gap-1 touch-manipulation">📋 មើលប្រវត្តិ</button>
+      <button type="button" onclick="openAllFunctionsHubModal('all')" class="flex-1 min-h-[44px] py-2.5 px-2.5 rounded-xl text-xs font-extrabold text-center bg-[#142c50] text-cyan-200 border border-cyan-400/35 flex items-center justify-center gap-1 touch-manipulation">🧭 មុខងារ</button>
     </div>
     <div class="bank-card rounded-3xl p-4 sm:p-5 border-cyan-400/20">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -932,11 +932,11 @@
             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">🏷️ ស្លាកសម្គាល់គម្រោង / គ្រួសារ (Smart Tag)</label>
             <span class="flex flex-wrap items-center gap-1.5">
               <input type="hidden" id="txTagInput" value="#ផ្ទាល់ខ្លួន">
-              <button type="button" onclick="selectTxTag('#ផ្ទាល់ខ្លួន')" data-tag="#ផ្ទាល់ខ្លួន" class="tx-tag-chip px-2.5 py-1 rounded-xl text-[11px] font-bold bg-cyan-600 text-white border border-cyan-400/40 transition active:opacity-80">#ផ្ទាល់ខ្លួន</button>
-              <button type="button" onclick="selectTxTag('#គ្រួសារ')" data-tag="#គ្រួសារ" class="tx-tag-chip px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#0a182b] text-slate-300 border border-[#1e3d6b] hover:border-cyan-400/40 transition active:opacity-80">#គ្រួសារ</button>
-              <button type="button" onclick="selectTxTag('#អាជីវកម្ម')" data-tag="#អាជីវកម្ម" class="tx-tag-chip px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#0a182b] text-slate-300 border border-[#1e3d6b] hover:border-cyan-400/40 transition active:opacity-80">#អាជីវកម្ម</button>
-              <button type="button" onclick="selectTxTag('#ដំណើរកម្សាន្ត')" data-tag="#ដំណើរកម្សាន្ត" class="tx-tag-chip px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#0a182b] text-slate-300 border border-[#1e3d6b] hover:border-cyan-400/40 transition active:opacity-80">#ដំណើរកម្សាន្ត</button>
-              <button type="button" onclick="selectTxTag('#វិនិយោគ')" data-tag="#វិនិយោគ" class="tx-tag-chip px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#0a182b] text-slate-300 border border-[#1e3d6b] hover:border-cyan-400/40 transition active:opacity-80">#វិនិយោគ</button>
+              <button type="button" onclick="selectTxTag('#ផ្ទាល់ខ្លួន')" data-tag="#ផ្ទាល់ខ្លួន" class="tx-tag-chip px-3 py-2 min-h-[38px] rounded-xl text-xs font-bold touch-manipulation bg-cyan-600 text-white border border-cyan-400/40 transition active:opacity-80">#ផ្ទាល់ខ្លួន</button>
+              <button type="button" onclick="selectTxTag('#គ្រួសារ')" data-tag="#គ្រួសារ" class="tx-tag-chip px-3 py-2 min-h-[38px] rounded-xl text-xs font-bold touch-manipulation bg-[#0a182b] text-slate-300 border border-[#1e3d6b] hover:border-cyan-400/40 transition active:opacity-80">#គ្រួសារ</button>
+              <button type="button" onclick="selectTxTag('#អាជីវកម្ម')" data-tag="#អាជីវកម្ម" class="tx-tag-chip px-3 py-2 min-h-[38px] rounded-xl text-xs font-bold touch-manipulation bg-[#0a182b] text-slate-300 border border-[#1e3d6b] hover:border-cyan-400/40 transition active:opacity-80">#អាជីវកម្ម</button>
+              <button type="button" onclick="selectTxTag('#ដំណើរកម្សាន្ត')" data-tag="#ដំណើរកម្សាន្ត" class="tx-tag-chip px-3 py-2 min-h-[38px] rounded-xl text-xs font-bold touch-manipulation bg-[#0a182b] text-slate-300 border border-[#1e3d6b] hover:border-cyan-400/40 transition active:opacity-80">#ដំណើរកម្សាន្ត</button>
+              <button type="button" onclick="selectTxTag('#វិនិយោគ')" data-tag="#វិនិយោគ" class="tx-tag-chip px-3 py-2 min-h-[38px] rounded-xl text-xs font-bold touch-manipulation bg-[#0a182b] text-slate-300 border border-[#1e3d6b] hover:border-cyan-400/40 transition active:opacity-80">#វិនិយោគ</button>
             </span>
           </section>
 
@@ -944,15 +944,15 @@
           <div>
             <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">កាបូបលុយ / គណនី (Wallet / Account) *</label>
             <div id="txWalletSelector" class="grid grid-cols-3 gap-2">
-              <button type="button" onclick="selectTxWallet('cash')" id="btnWallet_cash" class="py-2 px-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition border-cyan-600 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 shadow-2xs">
+              <button type="button" onclick="selectTxWallet('cash')" id="btnWallet_cash" class="py-3 min-h-[44px] px-2 rounded-xl border text-xs font-extrabold touch-manipulation flex items-center justify-center gap-1.5 transition border-cyan-600 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 shadow-2xs">
                 <span>💵</span>
                 <span class="truncate">សាច់ប្រាក់</span>
               </button>
-              <button type="button" onclick="selectTxWallet('aba')" id="btnWallet_aba" class="py-2 px-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs">
+              <button type="button" onclick="selectTxWallet('aba')" id="btnWallet_aba" class="py-3 min-h-[44px] px-2 rounded-xl border text-xs font-extrabold touch-manipulation flex items-center justify-center gap-1.5 transition border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs">
                 <span>💳</span>
                 <span class="truncate">ABA Bank</span>
               </button>
-              <button type="button" onclick="selectTxWallet('wing_acleda')" id="btnWallet_wing_acleda" class="py-2 px-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs">
+              <button type="button" onclick="selectTxWallet('wing_acleda')" id="btnWallet_wing_acleda" class="py-3 min-h-[44px] px-2 rounded-xl border text-xs font-extrabold touch-manipulation flex items-center justify-center gap-1.5 transition border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-2xs">
                 <span>📱</span>
                 <span class="truncate">Wing/ACLEDA</span>
               </button>
@@ -1048,7 +1048,7 @@
       <div class="lg:col-span-7 order-2 lg:order-2 space-y-6">
 
         <!-- Card 3: Searchable & Filterable Transaction History -->
-        <div class="bank-card rounded-3xl text-white p-5 sm:p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+        <div id="transactionHistoryCard" class="bank-card rounded-3xl text-white p-5 sm:p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <div class="flex items-center gap-2">
@@ -1076,7 +1076,7 @@
                 <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <input type="text" id="searchTxInput" oninput="applyFilters()" placeholder="🔍 ស្វែងរកចំណាំ, ប្រភេទ, កាបូប, តម្លៃ..." class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                <input type="search" id="searchTxInput" name="tx_search_nofill_v2" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" oninput="this.dataset.userTyped='1'; applyFilters()" placeholder="🔍 ស្វែងរកចំណាំ, ប្រភេទ, កាបូប, តម្លៃ..." class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500">
               </div>
               <div class="sm:col-span-2">
                 <select id="filterType" onchange="applyFilters()" class="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 focus:outline-none">
@@ -18406,10 +18406,10 @@ function initLanguage() {
               ${items.map(item => {
                 const idx = ALL_ORGANIZED_FUNCTIONS.indexOf(item);
                 return `
-                  <button type="button" onclick="executeAllHubFunction(${idx})" class="p-3 rounded-2xl bg-[#0a182b] hover:bg-[#142c50] border border-cyan-400/25 hover:border-cyan-400/70 text-left flex items-start gap-3 transition active:opacity-80">
-                    <span class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-lg shrink-0">${item.icon}</span>
+                  <button type="button" onclick="executeAllHubFunction(${idx})" class="p-3.5 min-h-[68px] rounded-2xl bg-[#0a182b] hover:bg-[#142c50] border border-cyan-400/30 hover:border-cyan-400/75 text-left flex items-center gap-3 transition active:opacity-80 touch-manipulation">
+                    <span class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-xl shrink-0">${item.icon}</span>
                     <span class="min-w-0">
-                      <span class="block text-xs font-black text-white truncate">${escapeHTML(item.title)}</span>
+                      <span class="block text-xs sm:text-sm font-black text-white leading-tight">${escapeHTML(item.title)}</span>
                       <span class="block text-[11px] text-slate-300 leading-snug mt-0.5">${escapeHTML(item.desc)}</span>
                     </span>
                   </button>
@@ -18467,6 +18467,21 @@ function initLanguage() {
       );
     }
     setTimeout(applySimpleCleanUiState, 300);
+
+
+    // Prevent browser password/username autofill (e.g. 'himsenghorn') from filtering out transactions
+    function clearAccidentalSearchAutofill() {
+      const sInp = document.getElementById('searchTxInput');
+      if (!sInp || sInp.dataset.userTyped === '1') return;
+      const val = (sInp.value || '').trim().toLowerCase();
+      const uname = (typeof currentAuthUser !== 'undefined' && currentAuthUser?.username) ? currentAuthUser.username.toLowerCase() : 'himsenghorn';
+      if (val && (val === uname || val === 'himsenghorn')) {
+        sInp.value = '';
+        if (typeof applyFilters === 'function') applyFilters();
+      }
+    }
+    setTimeout(clearAccidentalSearchAutofill, 350);
+    setTimeout(clearAccidentalSearchAutofill, 1200);
 
     window.onload = function () {
       initTheme();
