@@ -4375,6 +4375,30 @@
           </button>
         </div>
         <div id="tgTopicsScanStatus" class="hidden text-[11px] p-2.5 rounded-xl bg-[#142c50] border border-cyan-400/25 text-cyan-200"></div>
+
+        <!-- Duplicate Forum Topic Cleaner (deleteForumTopic API) -->
+        <div class="pt-2.5 mt-2 border-t border-[#1e3d6b] space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-[11px] font-extrabold text-rose-300">🧹 សម្អាត & បង្កើត Topic ១ ឈុតស្អាតជាប់គណនី User៖</span>
+            <span class="flex flex-wrap gap-1.5">
+              <button type="button" onclick="resetAndBindAllUserTopics()" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-extrabold transition active:opacity-80">
+                🔥 លុប Topic ទាំងអស់ & បង្កើត ៥ ថ្មីជាប់ User
+              </button>
+              <button type="button" onclick="deleteAllTelegramTopicsAtOnce(false)" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-extrabold transition active:opacity-80">
+                🗑️ លុប Topic ទាំងអស់ចោល
+              </button>
+              <button type="button" onclick="autoCleanDuplicateTelegramTopics()" class="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-400/35 text-[11px] font-bold transition active:opacity-80">
+                🧹 លុបតែជួរជាន់គ្នា
+              </button>
+            </span>
+          </div>
+          <div class="flex flex-wrap sm:flex-nowrap gap-2">
+            <input type="text" id="tgDeleteTopicInput" placeholder="Paste Link Topic (https://t.me/c/.../641) ឬលេខ Topic ID 641 ឬ 641-660" class="flex-1 text-xs font-bold bg-[#142c50] border border-rose-400/35 rounded-xl px-3 py-2 text-white focus:outline-none">
+            <button type="button" onclick="handleManualDeleteTelegramTopic()" class="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-400/40 text-xs font-extrabold shrink-0 transition active:opacity-80">
+              🗑️ លុប Topic នេះ
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Auto-Delete Sync Banner & Remote Telegram Message Cleaner -->
@@ -5395,8 +5419,15 @@
       { key: 'task', icon: '✅', title: 'Topic ការងារ & វិក្កយបត្រអតិថិជន', forumName: '✅ ការងារ & វិក្កយបត្រ (Tasks & CRM)', desc: 'គម្រោងការងារ និងវិក្កយបត្រអតិថិជន (Invoice)' }
     ];
 
+    function getUserTopicsStorageKey() {
+      const uname = (typeof getValidAuthUsername === 'function' ? getValidAuthUsername() : '') || (typeof currentAuthUser !== 'undefined' ? currentAuthUser?.username : '') || 'default';
+      return `finsync_tg_topics_map_user_${uname}`;
+    }
+
     function getTelegramTopicsMap() {
       try {
+        const userRaw = localStorage.getItem(getUserTopicsStorageKey());
+        if (userRaw) return JSON.parse(userRaw);
         const raw = localStorage.getItem('finsync_tg_topics_map_v1');
         return raw ? JSON.parse(raw) : {};
       } catch (e) {
@@ -5405,7 +5436,41 @@
     }
 
     function saveTelegramTopicsMap(mapObj) {
-      localStorage.setItem('finsync_tg_topics_map_v1', JSON.stringify(mapObj || {}));
+      const cleanMap = mapObj || {};
+      localStorage.setItem('finsync_tg_topics_map_v1', JSON.stringify(cleanMap));
+      localStorage.setItem(getUserTopicsStorageKey(), JSON.stringify(cleanMap));
+      try {
+        const uname = (typeof getValidAuthUsername === 'function' ? getValidAuthUsername() : '') || (typeof currentAuthUser !== 'undefined' ? currentAuthUser?.username : '');
+        if (typeof firestoreDb !== 'undefined' && firestoreDb && uname) {
+          firestoreDb.collection('userData').doc(uname).set({
+            tgTopicsMap: cleanMap
+          }, { merge: true }).catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    function getDiscoveredTopicsHistory() {
+      try {
+        const raw = localStorage.getItem('finsync_discovered_tg_topics_log_v1');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function recordDiscoveredTopicEntry(threadId, topicName = '') {
+      if (!threadId) return;
+      const tid = String(threadId).trim();
+      if (!tid || tid === '0') return;
+      const list = getDiscoveredTopicsHistory();
+      const idx = list.findIndex(x => String(x.id) === tid);
+      if (idx === -1) {
+        list.push({ id: tid, name: String(topicName || '').trim(), seenAt: new Date().toISOString() });
+        localStorage.setItem('finsync_discovered_tg_topics_log_v1', JSON.stringify(list.slice(-100)));
+      } else if (topicName && !list[idx].name) {
+        list[idx].name = String(topicName).trim();
+        localStorage.setItem('finsync_discovered_tg_topics_log_v1', JSON.stringify(list.slice(-100)));
+      }
     }
 
     function parseTelegramTopicIdInput(rawVal) {
@@ -5808,7 +5873,7 @@
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               <input type="text" id="tgTopicInput_${ch.key}" value="${curVal}" onchange="handleTgTopicInputChange('${ch.key}', this.value)" placeholder="Topic ID ឬ Paste Link" class="w-36 sm:w-40 text-xs font-bold bg-[#142c50] border border-cyan-400/30 rounded-xl px-2.5 py-2 text-white focus:outline-none">
-              <button type="button" onclick="createSingleTelegramTopic('${ch.key}')" title="បង្កើត Topic នេះក្នុង Telegram ស្វ័យប្រវត្តិ" class="px-2.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/30 text-[11px] font-bold">➕ បង្កើត</button>
+              <button type="button" onclick="createSingleTelegramTopic('${ch.key}')" title="${curVal ? 'Topic នេះមានរួចហើយ (#' + curVal + ')' : 'បង្កើត Topic នេះក្នុង Telegram ស្វ័យប្រវត្តិ'}" class="px-2.5 py-2 rounded-xl ${curVal ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40' : 'bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/30'} text-[11px] font-bold whitespace-nowrap">${curVal ? '✅ មានរួច' : '➕ បង្កើត'}</button>
               <button type="button" onclick="testSingleTelegramTopic('${ch.key}')" title="ផ្ញើសារតេស្តចូល Topic នេះ" class="px-2.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold">📤 តេស្ត</button>
             </div>
           </div>
@@ -5845,14 +5910,83 @@
       showToast('បានសម្អាត Topic ID', 'សារទាំងអស់នឹងផ្ញើចូល General Chat ធម្មតាវិញ', 'info');
     }
 
+    async function discoverExistingTopicsInTelegramGroup() {
+      const discovered = {};
+      // First check persistent discovered topics history (even if getUpdates offset already moved)
+      const hist = getDiscoveredTopicsHistory();
+      for (const h of hist) {
+        const n = (h.name || '').toLowerCase();
+        if (!n) continue;
+        if (n.includes('ចំណូល') || n.includes('transaction') || n.includes('របាយការណ៍')) discovered.tx = String(h.id);
+        else if (n.includes('ចែកគ្នា') || n.includes('split')) discovered.split = String(h.id);
+        else if (n.includes('បំណុល') || n.includes('debt')) discovered.debt = String(h.id);
+        else if (n.includes('វិក្កយបត្រ') && n.includes('សន្សំ')) discovered.bill = String(h.id);
+        else if (n.includes('ការងារ') || n.includes('task')) discovered.task = String(h.id);
+      }
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?limit=100`);
+        const data = await res.json();
+        if (!data || !data.ok || !Array.isArray(data.result)) return discovered;
+
+        for (const upd of data.result) {
+          const msg = upd.message || upd.channel_post;
+          if (!msg || !msg.message_thread_id) continue;
+          const tid = String(msg.message_thread_id);
+          const createdName = (msg.forum_topic_created?.name || msg.reply_to_message?.forum_topic_created?.name || '').toLowerCase();
+          if (!createdName) continue;
+
+          if (createdName.includes('ចំណូល') || createdName.includes('transaction') || createdName.includes('របាយការណ៍')) {
+            discovered.tx = tid;
+          } else if (createdName.includes('ចែកគ្នា') || createdName.includes('split')) {
+            discovered.split = tid;
+          } else if (createdName.includes('បំណុល') || createdName.includes('debt')) {
+            discovered.debt = tid;
+          } else if (createdName.includes('វិក្កយបត្រ') && createdName.includes('សន្សំ')) {
+            discovered.bill = tid;
+          } else if (createdName.includes('ការងារ') || createdName.includes('task')) {
+            discovered.task = tid;
+          }
+        }
+      } catch (e) {
+        console.warn('discoverExistingTopicsInTelegramGroup error:', e);
+      }
+      return discovered;
+    }
+
     async function createSingleTelegramTopic(key) {
       const ch = TG_TOPIC_CHANNELS.find(c => c.key === key);
       if (!ch) return;
       const statusBox = document.getElementById('tgTopicsScanStatus');
+      const map = getTelegramTopicsMap();
+
+      // Guard 1: Already linked locally -> Do NOT create duplicate!
+      if (map[ch.key]) {
+        if (statusBox) {
+          statusBox.classList.remove('hidden');
+          statusBox.innerHTML = `ℹ️ Topic <b>"${ch.forumName}"</b> មានរួចហើយ (ID: <b>#${map[ch.key]}</b>) — ប្រព័ន្ធមិនបង្កើតជាន់គ្នាទេ!`;
+        }
+        showToast('Topic នេះមានរួចហើយ!', `"${ch.forumName}" (#${map[ch.key]}) ត្រូវបានភ្ជាប់រួចរាល់ — មិនបង្កើតជាន់គ្នាទេ`, 'info');
+        return;
+      }
+
       if (statusBox) {
         statusBox.classList.remove('hidden');
-        statusBox.textContent = `⏳ កំពុងបង្កើត Topic "${ch.forumName}" ក្នុង Telegram Group...`;
+        statusBox.textContent = `🔍 កំពុងពិនិត្យថាតើ Topic "${ch.forumName}" មាននៅក្នុង Telegram Group ហើយឬនៅ...`;
       }
+
+      // Guard 2: Scan Telegram Group for existing matching topic before creating!
+      const existingInTg = await discoverExistingTopicsInTelegramGroup();
+      if (existingInTg[ch.key]) {
+        map[ch.key] = existingInTg[ch.key];
+        saveTelegramTopicsMap(map);
+        renderTelegramTopicChannels();
+        if (statusBox) {
+          statusBox.innerHTML = `✅ រកឃើញ Topic <b>"${ch.forumName}"</b> ដែលមានស្រាប់ក្នុង Telegram (ID: <b>#${existingInTg[ch.key]}</b>) — បានភ្ជាប់ជូនដោយមិនបង្កើតជាន់គ្នាទេ!`;
+        }
+        showToast('បានភ្ជាប់ Topic ដែលមានស្រាប់!', `រកឃើញ "${ch.forumName}" (#${existingInTg[ch.key]}) ក្នុង Group រួចហើយ`, 'success');
+        return;
+      }
+
       try {
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/createForumTopic`;
         const res = await fetch(url, {
@@ -5866,11 +6000,11 @@
         const data = await res.json();
         if (data.ok && data.result && data.result.message_thread_id) {
           const tid = String(data.result.message_thread_id);
-          const map = getTelegramTopicsMap();
           map[ch.key] = tid;
           saveTelegramTopicsMap(map);
           renderTelegramTopicChannels();
-          await sendRawTelegramMessage(`✅ <b>${ch.forumName}</b>\nបានភ្ជាប់ជាមួយប្រព័ន្ធ FinSync Pro ដោយស្វ័យប្រវត្តិ (Topic ID: <code>#${tid}</code>)!`, ch.key);
+          await sendRawTelegramMessage(`✅ <b>${ch.forumName}</b>
+បានភ្ជាប់ជាមួយប្រព័ន្ធ FinSync Pro ដោយស្វ័យប្រវត្តិ (Topic ID: <code>#${tid}</code>)!`, ch.key);
           if (statusBox) statusBox.innerHTML = `✅ បង្កើត <b>${ch.forumName}</b> ជោគជ័យ! (Topic ID: <b>#${tid}</b>)`;
           showToast('បង្កើត Topic ជោគជ័យ!', `${ch.forumName} ត្រូវបានបង្កើតក្នុង Telegram (ID: #${tid})`, 'success');
         } else {
@@ -5889,17 +6023,38 @@
 
     async function autoCreateAllTelegramTopics() {
       const statusBox = document.getElementById('tgTopicsScanStatus');
+      const map = getTelegramTopicsMap();
+
+      // Guard 1: Check if all 5 topics are already configured locally
+      const missingChannels = TG_TOPIC_CHANNELS.filter(ch => !map[ch.key]);
+      if (missingChannels.length === 0) {
+        if (statusBox) {
+          statusBox.classList.remove('hidden');
+          statusBox.innerHTML = `✅ Topics ទាំង <b>5/5</b> មាន និងភ្ជាប់រួចរាល់ហើយ — <b>ប្រព័ន្ធមិនបង្កើតជាន់គ្នាម្តងទៀតទេ!</b>`;
+        }
+        showToast('Topics ទាំង ៥ មានរួចហើយ! ✅', 'ប្រព័ន្ធមិនបង្កើត Topic ថ្មីជាន់គ្នាទៀតទេ ដើម្បីកុំឱ្យរញ៉េរញ៉ៃក្នុង Telegram', 'info');
+        return;
+      }
+
       if (statusBox) {
         statusBox.classList.remove('hidden');
-        statusBox.textContent = '⏳ កំពុងបង្កើត Topics ទាំង ៥ ក្នុង Telegram Group របស់អ្នក...';
+        statusBox.textContent = '🔍 កំពុងពិនិត្យ Topics ដែលមានស្រាប់ក្នុង Telegram Group មុននឹងបង្កើត...';
       }
-      const map = getTelegramTopicsMap();
+
+      // Guard 2: Scan Telegram Group first so existing topics are reused instead of duplicated
+      const existingInTg = await discoverExistingTopicsInTelegramGroup();
+      let linkedCount = 0;
       let createdCount = 0;
       let lastError = '';
 
       for (const ch of TG_TOPIC_CHANNELS) {
         if (map[ch.key]) {
-          createdCount++;
+          linkedCount++;
+          continue;
+        }
+        if (existingInTg[ch.key]) {
+          map[ch.key] = existingInTg[ch.key];
+          linkedCount++;
           continue;
         }
         try {
@@ -5929,15 +6084,166 @@
       saveTelegramTopicsMap(map);
       renderTelegramTopicChannels();
 
-      if (createdCount > 0) {
-        if (statusBox) statusBox.innerHTML = `✅ បានបង្កើត និងភ្ជាប់ Topics ចំនួន <b>${createdCount}/5</b> ដោយជោគជ័យ!`;
-        showToast('ភ្ជាប់ Telegram Topics ជោគជ័យ!', `បានភ្ជាប់ Topics ចំនួន ${createdCount} ក្នុង Telegram Group`, 'success');
+      const totalReady = linkedCount + createdCount;
+      if (totalReady > 0) {
+        if (statusBox) {
+          statusBox.innerHTML = createdCount > 0
+            ? `✅ បានបង្កើតថ្មី <b>${createdCount}</b> និងរក្សាទុកដែលមានស្រាប់ <b>${linkedCount}</b> (សរុប <b>${totalReady}/5</b> Topics)!`
+            : `✅ Topics ទាំង <b>${totalReady}/5</b> មានរួចហើយ និងបានភ្ជាប់ដោយមិនបង្កើតជាន់គ្នាទេ!`;
+        }
+        showToast('ភ្ជាប់ Telegram Topics រួចរាល់!', `មានស្រាប់ ${linkedCount} • បង្កើតថ្មី ${createdCount} (មិនជាន់គ្នា)`, 'success');
       } else {
         if (statusBox) {
           statusBox.innerHTML = `⚠️ Telegram Group របស់អ្នកមិនទាន់បើកមុខងារ <b>Topics</b> ឬ Bot មិនទាន់មានសិទ្ធិ <b>Manage Topics</b> (${lastError || 'Not a forum'})។ សូមបើក Topics ក្នុង Group Settings ជាមុនសិន ឬវាយលេខ Topic ID ដោយដៃ!`;
         }
         showToast('សូមបើក Topics ក្នុង Group', 'សូមបើកមុខងារ Topics ក្នុង Telegram Group Settings និងផ្តល់សិទ្ធិ Manage Topics ដល់ Bot', 'warning');
       }
+    }
+
+
+    async function deleteTelegramForumTopicById(threadId) {
+      if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID || !threadId) return false;
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteForumTopic`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            message_thread_id: Number(threadId)
+          })
+        });
+        const data = await res.json();
+        return Boolean(data && data.ok);
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function handleManualDeleteTelegramTopic() {
+      const inp = document.getElementById('tgDeleteTopicInput');
+      const statusBox = document.getElementById('tgTopicsScanStatus');
+      const raw = (inp?.value || '').trim();
+      if (!raw) {
+        showToast('សូមបញ្ចូល Topic ID ឬ Link', 'ឧទាហរណ៍៖ 641 ឬ 641-660 ឬ Paste Link Topic', 'error');
+        return;
+      }
+
+      const idsToDelete = [];
+      const rangeMatch = raw.match(/^(\d+)\s*[-–]\s*(\d+)$/);
+      if (rangeMatch) {
+        const startId = parseInt(rangeMatch[1], 10);
+        const endId = parseInt(rangeMatch[2], 10);
+        if (endId >= startId && (endId - startId) <= 50) {
+          for (let i = startId; i <= endId; i++) idsToDelete.push(i);
+        }
+      } else {
+        const parsedId = parseTelegramTopicIdInput(raw);
+        if (parsedId) idsToDelete.push(Number(parsedId));
+      }
+
+      if (idsToDelete.length === 0) {
+        showToast('ទម្រង់មិនត្រឹមត្រូវ', 'សូមវាយលេខ Topic ID (ឧ. 641) ឬជួរលេខ (ឧ. 641-655)', 'error');
+        return;
+      }
+
+      if (statusBox) {
+        statusBox.classList.remove('hidden');
+        statusBox.textContent = `⏳ កំពុងលុប Topic ចំនួន ${idsToDelete.length} ចេញពី Telegram Group...`;
+      }
+
+      let deletedCount = 0;
+      const map = getTelegramTopicsMap();
+      for (const tid of idsToDelete) {
+        const ok = await deleteTelegramForumTopicById(tid);
+        if (ok) {
+          deletedCount++;
+          for (const k of Object.keys(map)) {
+            if (String(map[k]) === String(tid)) delete map[k];
+          }
+        }
+      }
+
+      saveTelegramTopicsMap(map);
+      renderTelegramTopicChannels();
+      if (inp) inp.value = '';
+
+      if (statusBox) {
+        statusBox.innerHTML = deletedCount > 0
+          ? `✅ បានលុប Topic ចំនួន <b>${deletedCount}</b> ចេញពី Telegram Group រួចរាល់!`
+          : `ℹ️ មិនមាន Topic ដែលត្រូវលុបនៅក្នុងលេខ ID នេះទេ (ឬ Topic ត្រូវបានលុបរួចហើយ)។`;
+      }
+      showToast(deletedCount > 0 ? 'លុប Topic ជោគជ័យ! 🧹' : 'រួចរាល់', `បានលុប Topic ចំនួន ${deletedCount} ចេញពី Telegram`, deletedCount > 0 ? 'success' : 'info');
+    }
+
+    async function autoCleanDuplicateTelegramTopics() {
+      const statusBox = document.getElementById('tgTopicsScanStatus');
+      if (statusBox) {
+        statusBox.classList.remove('hidden');
+        statusBox.textContent = '🔍 កំពុងស្កេនស្វែងរក Topic ដែលជាន់គ្នាទាំងអស់ក្នុង Telegram Group...';
+      }
+
+      // 1. Collect all discovered topic IDs + recent getUpdates
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?limit=100`);
+        const data = await res.json();
+        if (data && data.ok && Array.isArray(data.result)) {
+          for (const upd of data.result) {
+            const m = upd.message || upd.channel_post;
+            if (m && m.message_thread_id) {
+              recordDiscoveredTopicEntry(m.message_thread_id, m.forum_topic_created?.name || m.reply_to_message?.forum_topic_created?.name || '');
+            }
+          }
+        }
+      } catch (e) {}
+
+      const map = getTelegramTopicsMap();
+      const keepIds = new Set(Object.values(map).map(v => String(v)));
+      const hist = getDiscoveredTopicsHistory();
+
+      // If map is empty, keep the latest 1 ID per category from history
+      if (keepIds.size === 0) {
+        const latestByCat = {};
+        for (const h of hist) {
+          const n = (h.name || '').toLowerCase();
+          if (n.includes('ចំណូល') || n.includes('transaction') || n.includes('របាយការណ៍')) latestByCat.tx = String(h.id);
+          else if (n.includes('ចែកគ្នា') || n.includes('split')) latestByCat.split = String(h.id);
+          else if (n.includes('បំណុល') || n.includes('debt')) latestByCat.debt = String(h.id);
+          else if (n.includes('វិក្កយបត្រ') && n.includes('សន្សំ')) latestByCat.bill = String(h.id);
+          else if (n.includes('ការងារ') || n.includes('task')) latestByCat.task = String(h.id);
+        }
+        Object.entries(latestByCat).forEach(([k, v]) => {
+          map[k] = v;
+          keepIds.add(v);
+        });
+        saveTelegramTopicsMap(map);
+        renderTelegramTopicChannels();
+      }
+
+      // Delete all duplicate topic IDs in history (plus known duplicate range 635..675 if not in keepIds)
+      const candidates = new Set();
+      hist.forEach(h => {
+        if (!keepIds.has(String(h.id))) candidates.add(Number(h.id));
+      });
+      for (let i = 635; i <= 685; i++) {
+        if (!keepIds.has(String(i))) candidates.add(i);
+      }
+
+      let deletedCount = 0;
+      for (const tid of candidates) {
+        const ok = await deleteTelegramForumTopicById(tid);
+        if (ok) deletedCount++;
+      }
+
+      // Clean history to only kept IDs
+      const cleanedHist = hist.filter(h => keepIds.has(String(h.id)));
+      localStorage.setItem('finsync_discovered_tg_topics_log_v1', JSON.stringify(cleanedHist));
+
+      if (statusBox) {
+        statusBox.innerHTML = deletedCount > 0
+          ? `✅ បានសម្អាត និងលុប Topic ជាន់គ្នាចំនួន <b>${deletedCount}</b> ចេញពី Telegram ដោយរក្សាទុកតែ ១ ឈុតស្អាត!`
+          : `✅ គ្មាន Topic ជាន់គ្នាបន្ថែមទៀតទេ! (កំពុងរក្សាទុក <b>${keepIds.size}</b> Topics)`;
+      }
+      showToast('សម្អាត Topic ជាន់គ្នារួចរាល់! 🧹', `បានលុប Topic ជាន់គ្នាចំនួន ${deletedCount} ចេញពី Telegram Group`, 'success');
     }
 
     async function scanExistingTelegramTopics() {
@@ -6585,6 +6891,11 @@
               tasks = data.tasks;
               changed = true;
             }
+            if (data.tgTopicsMap && typeof data.tgTopicsMap === 'object' && Object.keys(data.tgTopicsMap).length > 0) {
+              localStorage.setItem('finsync_tg_topics_map_v1', JSON.stringify(data.tgTopicsMap));
+              localStorage.setItem(getUserTopicsStorageKey(), JSON.stringify(data.tgTopicsMap));
+              if (typeof renderTelegramTopicChannels === 'function') renderTelegramTopicChannels();
+            }
             if (Array.isArray(data.walletTransfers)) {
               walletTransfers = data.walletTransfers;
               changed = true;
@@ -6715,6 +7026,7 @@
           savingsGoals: savingsGoals || [],
           recurringBills: recurringBills || [],
           tasks: tasks || [],
+          tgTopicsMap: (typeof getTelegramTopicsMap === 'function' ? getTelegramTopicsMap() : {}),
           updatedAt: new Date().toISOString(),
           device: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'
         };
@@ -13920,8 +14232,113 @@ function initLanguage() {
       return false;
     }
 
-    function parseAndRecordTelegramCommandText(rawText, sourceLabel = 'Telegram', linkedMsgId = null) {
-      const text = String(rawText || '').trim().replace(/^\/add\s+/i, '');
+    function convertKhmerDigitsToAscii(str = '') {
+      const khDigits = '០១២៣៤៥៦៧៨៩';
+      return String(str || '').replace(/[០-៩]/g, ch => {
+        const idx = khDigits.indexOf(ch);
+        return idx !== -1 ? String(idx) : ch;
+      });
+    }
+
+    function extractReceiptOrBankDateTime(rawText = '', fallbackUnixSec = null) {
+      const normalized = convertKhmerDigitsToAscii(rawText);
+      const now = fallbackUnixSec ? new Date(fallbackUnixSec * 1000) : new Date();
+      let year = now.getFullYear();
+      let month = now.getMonth() + 1;
+      let day = now.getDate();
+      let foundDate = false;
+
+      // 1. Khmer Month Names: e.g. "16 វិច្ឆិកា 2026"
+      const khMonths = {
+        'មករា': 1, 'កុម្ភៈ': 2, 'មីនា': 3, 'មេសា': 4, 'ឧសភា': 5, 'មិថុនា': 6,
+        'កក្កដា': 7, 'សីហា': 8, 'កញ្ញា': 9, 'តុលា': 10, 'វិច្ឆិកា': 11, 'ធ្នូ': 12
+      };
+      const khDateMatch = normalized.match(/\b(\d{1,2})\s+(មករា|កុម្ភៈ|មីនា|មេសា|ឧសភា|មិថុនា|កក្កដា|សីហា|កញ្ញា|តុលា|វិច្ឆិកា|ធ្នូ)(?:\s+(\d{4}))?/);
+      if (khDateMatch) {
+        day = parseInt(khDateMatch[1], 10);
+        month = khMonths[khDateMatch[2]] || month;
+        if (khDateMatch[3]) year = parseInt(khDateMatch[3], 10);
+        foundDate = true;
+      }
+
+      // 2. English Month Names: e.g. "Nov 15", "Nov 15, 2026", "15 Nov 2026"
+      if (!foundDate) {
+        const enMonths = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+        const enMatch1 = normalized.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{1,2})(?:[,\s]+(202\d))?/i);
+        const enMatch2 = normalized.match(/\b(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*(?:[,\s]+(202\d))?/i);
+        if (enMatch1) {
+          month = enMonths[enMatch1[1].toLowerCase()] || month;
+          day = parseInt(enMatch1[2], 10);
+          if (enMatch1[3]) year = parseInt(enMatch1[3], 10);
+          foundDate = true;
+        } else if (enMatch2) {
+          day = parseInt(enMatch2[1], 10);
+          month = enMonths[enMatch2[2].toLowerCase()] || month;
+          if (enMatch2[3]) year = parseInt(enMatch2[3], 10);
+          foundDate = true;
+        }
+      }
+
+      // 3. Numeric DD/MM/YYYY or DD/MM or YYYY-MM-DD
+      if (!foundDate) {
+        const isoMatch = normalized.match(/\b(202\d)-(0?[1-9]|1[0-2])-(0?[1-9]|[12]\d|3[01])\b/);
+        const dmyMatch = normalized.match(/\b(0?[1-9]|[12]\d|3[01])[\/\-](0?[1-9]|1[0-2])(?:[\/\-](202\d|\d{2}))?\b/);
+        if (isoMatch) {
+          year = parseInt(isoMatch[1], 10);
+          month = parseInt(isoMatch[2], 10);
+          day = parseInt(isoMatch[3], 10);
+          foundDate = true;
+        } else if (dmyMatch) {
+          day = parseInt(dmyMatch[1], 10);
+          month = parseInt(dmyMatch[2], 10);
+          if (dmyMatch[3]) {
+            const yNum = parseInt(dmyMatch[3], 10);
+            year = yNum < 100 ? (2000 + yNum) : yNum;
+          }
+          foundDate = true;
+        }
+      }
+
+      // 4. Canadia / ACLEDA Reference Date: e.g. 20261115183819985
+      if (!foundDate) {
+        const refDateMatch = normalized.match(/\b(202\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{6,10}\b/);
+        if (refDateMatch) {
+          year = parseInt(refDateMatch[1], 10);
+          month = parseInt(refDateMatch[2], 10);
+          day = parseInt(refDateMatch[3], 10);
+          foundDate = true;
+        }
+      }
+
+      // 5. Extract Time (e.g. "04:58 PM", "04:58 ល្ងាច", "06:38 PM", "18:38")
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      let timeLabel = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      const timeMatch = normalized.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM|ព្រឹក|រសៀល|ល្ងាច|យប់)?/i);
+      if (timeMatch) {
+        let h = parseInt(timeMatch[1], 10);
+        const m = parseInt(timeMatch[2], 10);
+        const mer = (timeMatch[3] || '').toLowerCase();
+        if ((mer === 'pm' || mer === 'រសៀល' || mer === 'ល្ងាច' || mer === 'យប់') && h < 12) h += 12;
+        if ((mer === 'am' || mer === 'ព្រឹក') && h === 12) h = 0;
+        if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+          hours = h;
+          minutes = m;
+          const dispH = hours % 12 || 12;
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          timeLabel = `${String(dispH).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+        }
+      }
+
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dtObj = new Date(year, month - 1, day, hours, minutes, 0);
+      const isoStr = isNaN(dtObj.getTime()) ? now.toISOString() : dtObj.toISOString();
+
+      return { dateStr, timeLabel, isoStr, foundDate };
+    }
+
+    function parseAndRecordTelegramCommandText(rawText, sourceLabel = 'Telegram', linkedMsgId = null, msgUnixDate = null) {
+      const text = convertKhmerDigitsToAscii(String(rawText || '').trim().replace(/^\/add\s+/i, ''));
       if (!text || isSystemOwnOutgoingTelegramAlert(text)) return null;
 
       // 1. Detect Bank / Wallet (ABA, Wing/ACLEDA, or Cash)
@@ -14014,8 +14431,8 @@ function initLanguage() {
         wallet: walletId,
         tag: '#ផ្ទាល់ខ្លួន',
         note: finalNote,
-        date: new Date().toISOString().split('T')[0],
-        createdAt: new Date().toISOString(),
+        date: (extractReceiptOrBankDateTime(text, msgUnixDate)).dateStr,
+        createdAt: (extractReceiptOrBankDateTime(text, msgUnixDate)).isoStr,
         tgMessageId: linkedMsgId ? Number(linkedMsgId) : undefined
       };
 
@@ -14024,6 +14441,11 @@ function initLanguage() {
       }
 
       transactions.unshift(newTx);
+      transactions.sort((a, b) => {
+        const da = (b.date || '') + 'T' + (b.createdAt ? b.createdAt.slice(11) : '00:00:00');
+        const db = (a.date || '') + 'T' + (a.createdAt ? a.createdAt.slice(11) : '00:00:00');
+        return da.localeCompare(db);
+      });
       saveActiveTransactions();
       renderAll();
       return newTx;
@@ -14158,7 +14580,7 @@ function initLanguage() {
       }
     }
 
-    function parseKhqrBankReceiptOcrText(ocrText = '', captionText = '', isFromPhoto = false) {
+    function parseKhqrBankReceiptOcrText(ocrText = '', captionText = '', isFromPhoto = false, msgUnixDate = null) {
       const combined = `${captionText || ''}\n${ocrText || ''}`.trim();
       if (!combined) return null;
 
@@ -14278,12 +14700,11 @@ function initLanguage() {
       else if (/aba\s*bank/i.test(combined)) otherBank = 'ABA Bank';
       else if (/wing\s*bank/i.test(combined) && bankBadge !== '📲 Wing KHQR') otherBank = 'Wing Bank';
 
-      // 6. Extract Date
-      let txDate = new Date().toISOString().split('T')[0];
-      const refDateMatch = combined.match(/\b(202\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{6,10}\b/);
-      if (refDateMatch) {
-        txDate = `${refDateMatch[1]}-${refDateMatch[2]}-${refDateMatch[3]}`;
-      }
+      // 6. Extract Exact Transfer Date & Time (Khmer/English/Numeric/Ref/Telegram timestamp)
+      const dtInfo = extractReceiptOrBankDateTime(combined, msgUnixDate);
+      const txDate = dtInfo.dateStr;
+      const txCreatedAt = dtInfo.isoStr;
+      const txTimeLabel = dtInfo.timeLabel;
 
       const amountUSD = isKHR ? Number((amountVal / exchangeRate).toFixed(2)) : Number(amountVal.toFixed(2));
       const amountKHR = isKHR ? Math.round(amountVal) : Math.round(amountVal * exchangeRate);
@@ -14309,6 +14730,8 @@ function initLanguage() {
         walletId,
         note: finalNote,
         date: txDate,
+        createdAt: txCreatedAt,
+        timeLabel: txTimeLabel,
         refNo: extractedRefNo,
         category: txType === 'income' ? 'business' : 'other_expense'
       };
@@ -14348,7 +14771,7 @@ function initLanguage() {
         }
       }
 
-      const parsed = parseKhqrBankReceiptOcrText(ocrText, captionText, true);
+      const parsed = parseKhqrBankReceiptOcrText(ocrText, captionText, true, msg.date || null);
       if (!parsed || !parsed.amountUSD) {
         return null;
       }
@@ -14383,8 +14806,9 @@ function initLanguage() {
         tag: '#ផ្ទាល់ខ្លួន',
         note: parsed.note,
         date: parsed.date,
+        txTime: parsed.timeLabel || '',
         receiptImg: receiptDataUrl,
-        createdAt: new Date().toISOString(),
+        createdAt: parsed.createdAt || new Date().toISOString(),
         tgMessageId: msg.message_id ? Number(msg.message_id) : undefined
       };
 
@@ -14393,6 +14817,11 @@ function initLanguage() {
       }
 
       transactions.unshift(newTx);
+      transactions.sort((a, b) => {
+        const da = (b.date || '') + 'T' + (b.createdAt ? b.createdAt.slice(11) : '00:00:00');
+        const db = (a.date || '') + 'T' + (a.createdAt ? a.createdAt.slice(11) : '00:00:00');
+        return da.localeCompare(db);
+      });
       saveActiveTransactions();
       renderAll();
       return newTx;
@@ -14432,6 +14861,11 @@ function initLanguage() {
         for (const item of data.result) {
           if (item.update_id > maxUpdateId) maxUpdateId = item.update_id;
           if (importedSet.has(item.update_id)) continue;
+          const chkMsg = item.message || item.channel_post;
+          if (chkMsg && chkMsg.message_id && (transactions || []).some(t => Number(t.tgMessageId) === Number(chkMsg.message_id))) {
+            importedSet.add(item.update_id);
+            continue;
+          }
 
           // Function 1: Handle Interactive Inline Button Clicks (callback_query)
           if (item.callback_query) {
@@ -14467,7 +14901,9 @@ function initLanguage() {
 
           const topicMap = getTelegramTopicsMap();
           const msgThreadId = msg.message_thread_id ? String(msg.message_thread_id) : '';
-          const topicNameHint = (msg.reply_to_message?.forum_topic_created?.name || '').toLowerCase();
+          const rawTopicName = msg.forum_topic_created?.name || msg.reply_to_message?.forum_topic_created?.name || '';
+          if (msgThreadId) recordDiscoveredTopicEntry(msgThreadId, rawTopicName);
+          const topicNameHint = rawTopicName.toLowerCase();
           let matchedChannelKey = 'tx';
           if (msgThreadId) {
             for (const [k, v] of Object.entries(topicMap)) {
@@ -14549,7 +14985,7 @@ function initLanguage() {
                 const replyTopic = msgThreadId || 'task';
                 await sendRawTelegramMessage(`✅ 📌 <b>បានបញ្ចូលទៅក្នុងផ្នែក «ការងារត្រូវធ្វើ (Tasks)» ស្វ័យប្រវត្តិ!</b>\n• ការងារ: <b>${escapeHTML(newTask.title)}</b>`, replyTopic, newTask.id);
               } else {
-                added = parseAndRecordTelegramCommandText(msgText, 'Telegram', msg.message_id);
+                added = parseAndRecordTelegramCommandText(msgText, 'Telegram', msg.message_id, msg.date || null);
               }
             }
           }
@@ -14563,6 +14999,7 @@ function initLanguage() {
               + `• ប្រភេទ: <b>${added.type === 'income' ? '🟢 ចំណូល (Income)' : '🔴 ចំណាយ (Expense)'}</b>\n`
               + `• ចំនួន: <b>${added.currency === 'KHR' ? added.amountKHR.toLocaleString() + ' ៛ ($' + added.amountUSD.toFixed(2) + ')' : '$' + added.amountUSD.toFixed(2) + ' (' + added.amountKHR.toLocaleString() + ' ៛)'}</b>\n`
               + `• កាបូបធនាគារ: <b>${walletLabel}</b>\n`
+              + `• កាលបរិច្ឆេទផ្ទេរ: <b>${added.date}${added.txTime ? ' (' + added.txTime + ')' : ''}</b>\n`
               + `• បរិយាយ: <b>${escapeHTML(added.note)}</b>\n`
               + `• រូបវិក្កយបត្រ: <b>🖼️ បានភ្ជាប់ចូលក្នុង System រួចរាល់!</b>`;
             const replyTopic = msgThreadId || 'tx';
@@ -14726,6 +15163,14 @@ function initLanguage() {
     }
     setTimeout(repairFalse23000UsdOcrAndDeleteAlert, 900);
 
+
+
+    // One-time re-scan of recent Telegram text messages with Khmer digits (e.g. "បាយ ២០០០៛")
+    if (localStorage.getItem('finsync_khmer_digits_recheck_v1') !== 'done') {
+      localStorage.setItem('finsync_khmer_digits_recheck_v1', 'done');
+      localStorage.removeItem('finsync_tg_last_update_id');
+      localStorage.removeItem('finsync_tg_imported_updates_v1');
+    }
 
     // Start Real-Time Background Telegram Bank Listener (every 6 seconds)
     setInterval(() => {
@@ -17914,6 +18359,11 @@ function initLanguage() {
       };
 
       transactions.unshift(newTx);
+      transactions.sort((a, b) => {
+        const da = (b.date || '') + 'T' + (b.createdAt ? b.createdAt.slice(11) : '00:00:00');
+        const db = (a.date || '') + 'T' + (a.createdAt ? a.createdAt.slice(11) : '00:00:00');
+        return da.localeCompare(db);
+      });
       saveActiveTransactions();
       renderAll();
 
@@ -18040,6 +18490,11 @@ function initLanguage() {
         createdAt: new Date().toISOString()
       };
       transactions.unshift(newTx);
+      transactions.sort((a, b) => {
+        const da = (b.date || '') + 'T' + (b.createdAt ? b.createdAt.slice(11) : '00:00:00');
+        const db = (a.date || '') + 'T' + (a.createdAt ? a.createdAt.slice(11) : '00:00:00');
+        return da.localeCompare(db);
+      });
       saveActiveTransactions();
       renderAll();
       await sendRawTelegramMessage(
