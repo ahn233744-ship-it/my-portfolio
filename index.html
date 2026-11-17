@@ -5618,21 +5618,39 @@
       return await deleteTelegramMessageById(targetMsgId, false);
     }
 
-    async function editTelegramMessageForEntity(entityId, newText, directMsgId = null) {
+    function buildTxInlineKeyboard(entityId) {
+      return {
+        inline_keyboard: [
+          [
+            { text: '🔄 ប្ដូរ ចំណូល/ចំណាយ', callback_data: `flip_tx:${entityId}` },
+            { text: '💳 ប្ដូរកាបូប', callback_data: `wallet_tx:${entityId}` }
+          ],
+          [
+            { text: '🗑️ លុបចេញពី System & TG', callback_data: `del_tx:${entityId}` }
+          ]
+        ]
+      };
+    }
+
+    async function editTelegramMessageForEntity(entityId, newText, directMsgId = null, keepInlineBtns = false) {
       const map = getTgEntityMessageMap();
       const targetMsgId = directMsgId || (entityId ? map[entityId] : null);
-      if (!targetMsgId || !TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return false;
+      if (!targetMsgId || !TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID || !newText) return false;
       try {
+        const payload = {
+          chat_id: TELEGRAM_CHAT_ID,
+          message_id: Number(targetMsgId),
+          text: newText,
+          parse_mode: 'HTML'
+        };
+        if (keepInlineBtns && entityId && String(entityId).startsWith('tx_')) {
+          payload.reply_markup = buildTxInlineKeyboard(entityId);
+        }
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`;
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            message_id: Number(targetMsgId),
-            text: newText,
-            parse_mode: 'HTML'
-          })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         return Boolean(data && data.ok);
@@ -6895,6 +6913,12 @@
               localStorage.setItem('finsync_tg_topics_map_v1', JSON.stringify(data.tgTopicsMap));
               localStorage.setItem(getUserTopicsStorageKey(), JSON.stringify(data.tgTopicsMap));
               if (typeof renderTelegramTopicChannels === 'function') renderTelegramTopicChannels();
+            }
+            if (data.botWorkerLastHeartbeat) {
+              window._last24_7WorkerHeartbeatMs = Number(data.botWorkerLastHeartbeat) || 0;
+            }
+            if (Array.isArray(data.pendingTgPhotos) && data.pendingTgPhotos.length > 0 && typeof processPendingCloudTgPhotos === 'function') {
+              processPendingCloudTgPhotos(data.pendingTgPhotos);
             }
             if (Array.isArray(data.walletTransfers)) {
               walletTransfers = data.walletTransfers;
@@ -14827,7 +14851,41 @@ function initLanguage() {
       return newTx;
     }
 
+    let isProcessingCloudPendingPhotos = false;
+    async function processPendingCloudTgPhotos(pendingList = []) {
+      if (isProcessingCloudPendingPhotos || !Array.isArray(pendingList) || pendingList.length === 0) return;
+      isProcessingCloudPendingPhotos = true;
+      try {
+        for (const p of pendingList) {
+          if (!p || !p.file_id) continue;
+          const fakeMsg = {
+            photo: [{ file_id: p.file_id }],
+            message_id: p.message_id,
+            message_thread_id: p.message_thread_id,
+            date: p.date,
+            caption: ''
+          };
+          const added = await processTelegramPhotoMessage(fakeMsg);
+          if (added) {
+            const replyTopic = p.message_thread_id ? String(p.message_thread_id) : 'tx';
+            await sendRawTelegramMessage(formatTransactionTelegramCardHtml(added), replyTopic, added.id);
+          }
+        }
+        if (typeof firestoreDb !== 'undefined' && firestoreDb) {
+          const uname = (typeof getValidAuthUsername === 'function' ? getValidAuthUsername() : '') || 'himsenghorn';
+          await firestoreDb.collection('userData').doc(uname).set({ pendingTgPhotos: [] }, { merge: true });
+        }
+      } catch (e) {
+        console.warn('processPendingCloudTgPhotos error:', e);
+      } finally {
+        isProcessingCloudPendingPhotos = false;
+      }
+    }
+
     async function syncTransactionsFromTelegram(isBackgroundPoll = false) {
+      if (isBackgroundPoll && window._last24_7WorkerHeartbeatMs && (Date.now() - window._last24_7WorkerHeartbeatMs) < 20000) {
+        return; // 24/7 Background Python Worker is handling Telegram -> Firebase live!
+      }
       if (isTgSyncRunning) return;
       isTgSyncRunning = true;
 
@@ -14846,7 +14904,8 @@ function initLanguage() {
         const lastOffset = parseInt(localStorage.getItem('finsync_tg_last_update_id') || '0', 10);
         const importedSet = getImportedTgUpdateIds();
         const queryOffset = (!isBackgroundPoll || lastOffset === 0) ? -25 : (lastOffset + 1);
-        const url = `https://api.telegram.org/bot${token}/getUpdates?offset=${queryOffset}&limit=25`;
+        const allowedUpdatesParam = encodeURIComponent(JSON.stringify(['message', 'channel_post', 'callback_query']));
+        const url = `https://api.telegram.org/bot${token}/getUpdates?offset=${queryOffset}&limit=25&allowed_updates=${allowedUpdatesParam}`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -15177,7 +15236,7 @@ function initLanguage() {
       if (tgLiveAutoPollEnabled) {
         syncTransactionsFromTelegram(true);
       }
-    }, 6000);
+    }, 2500);
 
     /* --------------------------------------------------------------------------
        FEATURE 4: 6-MONTH & 7-DAY CASHFLOW TREND BAR CHART (INCOME VS EXPENSE)
@@ -16923,50 +16982,82 @@ function initLanguage() {
       } catch (e) {}
     }
 
+    function formatTransactionTelegramCardHtml(tx) {
+      const walletLabel = typeof getWalletName === 'function' ? getWalletName(tx.wallet) : (tx.wallet || 'Cash');
+      const amtStr = tx.currency === 'KHR'
+        ? `${Number(tx.amountKHR || 0).toLocaleString()} ៛ ($${Number(tx.amountUSD || 0).toFixed(2)})`
+        : `$${Number(tx.amountUSD || 0).toFixed(2)} (${Number(tx.amountKHR || 0).toLocaleString()} ៛)`;
+      return `🏦 ✅ <b>បានបញ្ចូលប្រតិបត្តិការចូលប្រព័ន្ធ FinSync Pro រួចរាល់!</b>
+`
+        + `• ប្រភេទ: <b>${tx.type === 'income' ? '🟢 ចំណូល (Income)' : '🔴 ចំណាយ (Expense)'}</b>
+`
+        + `• ចំនួន: <b>${amtStr}</b>
+`
+        + `• កាបូបធនាគារ: <b>${escapeHTML(walletLabel)}</b>
+`
+        + `• កាលបរិច្ឆេទផ្ទេរ: <b>${tx.date || ''}${tx.txTime ? ' (' + tx.txTime + ')' : ''}</b>
+`
+        + `• បរិយាយ: <b>${escapeHTML(tx.note || '')}</b>`;
+    }
+
     async function handleTelegramCallbackQuery(cbQuery) {
       if (!cbQuery || !cbQuery.data) return;
       const dataStr = String(cbQuery.data);
-      const [action, entityId] = dataStr.split(':');
+      const colonIdx = dataStr.indexOf(':');
+      if (colonIdx === -1) return;
+      const action = dataStr.slice(0, colonIdx);
+      const entityId = dataStr.slice(colonIdx + 1);
       if (!entityId) return;
 
+      const msgId = cbQuery.message?.message_id || null;
       const tx = (transactions || []).find(t => t.id === entityId);
-      if (!tx) {
-        await answerTelegramCallbackQuery(cbQuery.id, '⚠️ រកមិនឃើញប្រតិបត្តិការនេះក្នុង System ទេ');
+
+      if (action === 'del_tx') {
+        await answerTelegramCallbackQuery(cbQuery.id, '🗑️ បានលុបចេញពី System & Telegram រួចរាល់!');
+        if (tx) {
+          if (typeof isTransactionLockedByPeriod === 'function' && isTransactionLockedByPeriod(tx)) {
+            showToast('🔒 ប្រតិបត្តិការត្រូវបានចាក់សោ', `ទិន្នន័យថ្ងៃទី ${tx.date} មិនអាចលុបបានទេ`, 'error');
+            return;
+          }
+          pushTransactionToTrash(tx);
+          transactions = (transactions || []).filter(t => t.id !== tx.id);
+          saveActiveTransactions();
+          renderAll();
+          showToast('លុបតាមប៊ូតុង Telegram ជោគជ័យ! 🗑️', `បានលុប "${tx.note}" ចេញពី System`, 'info');
+        }
+        if (msgId) {
+          await deleteTelegramMessageById(msgId, true);
+        }
         return;
       }
 
-      if (isTransactionLockedByPeriod(tx)) {
+      if (!tx) {
+        await answerTelegramCallbackQuery(cbQuery.id, '⚠️ រកមិនឃើញប្រតិបត្តិការនេះក្នុង System ទេ (អាចត្រូវបានលុបរួចហើយ)');
+        return;
+      }
+
+      if (typeof isTransactionLockedByPeriod === 'function' && isTransactionLockedByPeriod(tx)) {
         await answerTelegramCallbackQuery(cbQuery.id, `🔒 ទិន្នន័យថ្ងៃទី ${tx.date} ត្រូវបានចាក់សោ!`);
         return;
       }
 
       if (action === 'flip_tx') {
         tx.type = tx.type === 'income' ? 'expense' : 'income';
+        await answerTelegramCallbackQuery(cbQuery.id, `✅ បានប្ដូរទៅជា ${tx.type === 'income' ? 'ចំណូល (Income)' : 'ចំណាយ (Expense)'}!`);
         saveActiveTransactions();
         renderAll();
-        await editTelegramMessageForEntity(tx);
-        await answerTelegramCallbackQuery(cbQuery.id, `✅ បានប្ដូរទៅជា ${tx.type === 'income' ? 'ចំណូល (Income)' : 'ចំណាយ (Expense)'}!`);
+        await editTelegramMessageForEntity(tx.id, formatTransactionTelegramCardHtml(tx), msgId || tx.tgMessageId, true);
         showToast('បញ្ជាពី Telegram ជោគជ័យ! 🤖', `បានប្ដូរ "${tx.note}" ទៅជា ${tx.type === 'income' ? 'ចំណូល' : 'ចំណាយ'}`, 'success');
       } else if (action === 'wallet_tx') {
         const order = ['cash', 'aba', 'wing_acleda'];
         const curIdx = order.indexOf(tx.wallet || 'cash');
         tx.wallet = order[(curIdx + 1) % order.length];
-        saveActiveTransactions();
-        renderAll();
-        await editTelegramMessageForEntity(tx);
         const wName = typeof getWalletName === 'function' ? getWalletName(tx.wallet) : tx.wallet;
         await answerTelegramCallbackQuery(cbQuery.id, `💳 បានប្ដូរទៅកាបូប ${wName}!`);
-        showToast('បញ្ជាពី Telegram ជោគជ័យ! 🤖', `បានប្ដូរកាបូបទៅជា ${wName}`, 'success');
-      } else if (action === 'del_tx') {
-        pushTransactionToTrash(tx);
-        transactions = (transactions || []).filter(t => t.id !== tx.id);
         saveActiveTransactions();
         renderAll();
-        await answerTelegramCallbackQuery(cbQuery.id, '🗑️ បានលុបចេញពី System រួចរាល់!');
-        if (cbQuery.message && cbQuery.message.message_id) {
-          await deleteTelegramMessageById(cbQuery.message.message_id);
-        }
-        showToast('លុបតាមប៊ូតុង Telegram ជោគជ័យ! 🗑️', `បានលុប "${tx.note}" ចេញពី System`, 'info');
+        await editTelegramMessageForEntity(tx.id, formatTransactionTelegramCardHtml(tx), msgId || tx.tgMessageId, true);
+        showToast('បញ្ជាពី Telegram ជោគជ័យ! 🤖', `បានប្ដូរកាបូបទៅជា ${wName}`, 'success');
       }
     }
 
