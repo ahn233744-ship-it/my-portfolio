@@ -1,11 +1,13 @@
 import json
 import re
+import sys
 import time
 import urllib.request
 import urllib.parse
+import urllib.error
 from datetime import datetime, timezone
 
-TELEGRAM_BOT_TOKEN = "8801188196:AAGZHlsM9t_bhNRLVXO8kzM1_Ik6kbBI-Eg"
+TELEGRAM_BOT_TOKEN = "8801188196:AAEaoqqmzMeRuIAWr5bpICHBVNaQ9YLjmwE"
 TELEGRAM_CHAT_ID = "-1003527836779"
 FIREBASE_PROJECT_ID = "himsenghorn"
 FIREBASE_API_KEY = "AIzaSyDgjmb6s-dvTrN0aQXBWWX4ThAvhIF1EAM"
@@ -23,8 +25,16 @@ def http_json(url, method="GET", payload=None, timeout=25):
     if payload is not None:
         data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as he:
+        try:
+            return json.loads(he.read().decode("utf-8"))
+        except Exception:
+            return {"ok": False, "error_code": he.code, "description": str(he)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 
 def tg_api(method_name, payload=None, timeout=25):
@@ -34,6 +44,17 @@ def tg_api(method_name, payload=None, timeout=25):
     except Exception as e:
         print(f"[TG ERROR] {method_name}: {e}")
         return {"ok": False}
+
+
+def purge_conflicting_webhook():
+    """Purges any external webhook (such as Campaign Mudra or third-party bots) blocking getUpdates."""
+    try:
+        res = tg_api("deleteWebhook", {"drop_pending_updates": False})
+        print(f"[TG WEBHOOK PURGED] Successfully detached external webhook: {res}")
+        return bool(res and res.get("ok"))
+    except Exception as e:
+        print(f"[TG PURGE ERROR] {e}")
+        return False
 
 
 def fs_to_py(val):
@@ -294,7 +315,14 @@ def handle_slash_command(cmd_text, user_data, thread_id=None):
 
 
 def main():
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+    except Exception:
+        pass
     print("=== FinSync Pro 24/7 Telegram & Firebase Background Worker Started ===")
+    print(f"-> Bot Token: {TELEGRAM_BOT_TOKEN[:15]}...")
+    print(f"-> Authorized Group: {TELEGRAM_CHAT_ID} (Also accepts private DMs)")
+    purge_conflicting_webhook()
     last_offset = 0
     last_hb = 0
 
@@ -312,6 +340,9 @@ def main():
             )
             data = http_json(url, timeout=22)
             if not data.get("ok"):
+                if data.get("error_code") == 409 or "webhook" in str(data.get("description", "")).lower():
+                    print("[TG CONFLICT] Active external webhook detected (e.g. Campaign Mudra)! Auto-purging...")
+                    purge_conflicting_webhook()
                 time.sleep(2)
                 continue
 
@@ -372,13 +403,28 @@ def main():
                 msg = item.get("message") or item.get("channel_post")
                 if not msg:
                     continue
-                if str(msg.get("chat", {}).get("id", "")) != str(TELEGRAM_CHAT_ID):
+
+                chat_obj = msg.get("chat", {})
+                chat_id = str(chat_obj.get("id", ""))
+                chat_type = chat_obj.get("type", "")
+                is_authorized_chat = (chat_id == str(TELEGRAM_CHAT_ID)) or (chat_type == "private")
+
+                from_obj = msg.get("from", {})
+                from_id = str(from_obj.get("id", ""))
+                from_name = from_obj.get("first_name", "") or from_obj.get("username", "")
+
+                msg_text = (msg.get("text") or msg.get("caption") or "").strip()
+                thread_id = msg.get("message_thread_id")
+
+                print(f"[TG UPDATE] msg_id={msg.get('message_id')} chat={chat_id} from={from_name}({from_id}) text='{msg_text}'")
+
+                if not is_authorized_chat:
+                    print(f"  -> Ignored: Chat {chat_id} not authorized (Group: {TELEGRAM_CHAT_ID})")
                     continue
-                if msg.get("from") and str(msg["from"].get("id", "")) == "8801188196":
+                if from_id == "8801188196":
                     continue
 
-                thread_id = msg.get("message_thread_id")
-                msg_text = (msg.get("text") or msg.get("caption") or "").strip()
+                target_chat_id = chat_id or TELEGRAM_CHAT_ID
 
                 if re.match(r"^/(balance|today|month|debt|help)\b", msg_text, re.I):
                     handle_slash_command(msg_text, user_data, thread_id)
@@ -394,16 +440,16 @@ def main():
                             txs.insert(0, parsed)
                             txs_changed = True
                             send_p = {
-                                "chat_id": TELEGRAM_CHAT_ID,
+                                "chat_id": target_chat_id,
                                 "text": format_tx_card(parsed),
                                 "parse_mode": "HTML",
                                 "reply_markup": build_tx_inline_keyboard(parsed["id"]),
                             }
-                            if thread_id:
+                            if thread_id and chat_type != "private":
                                 send_p["message_thread_id"] = int(thread_id)
                             tg_api("sendMessage", send_p)
+                            print(f"  -> [FS RECORDED PHOTO+TEXT] {parsed['note']} | {parsed['amountKHR']} KHR (${parsed['amountUSD']})")
                     else:
-                        # Queue photo in Firebase so index.html scans OCR immediately when opened
                         photos = msg.get("photo") or []
                         file_id = photos[-1]["file_id"] if photos else msg["document"]["file_id"]
                         pending = user_data.get("pendingTgPhotos", []) or []
@@ -415,13 +461,14 @@ def main():
                         })
                         patch_firebase_fields({"pendingTgPhotos": pending[-30:]})
                         ack_p = {
-                            "chat_id": TELEGRAM_CHAT_ID,
+                            "chat_id": target_chat_id,
                             "text": "🖼️ ✅ <b>Bot 24/7 បានទទួលរូបវិក្កយបត្រទុកក្នុង Cloud រួចរាល់!</b>\n<i>(នឹងស្កេន OCR បញ្ចូលតួលេខស្វ័យប្រវត្តិពេលបើក System ឬវាយចំនួនទឹកប្រាក់ភ្ជាប់រូបដើម្បីកត់ភ្លាមៗ)</i>",
                             "parse_mode": "HTML",
                         }
-                        if thread_id:
+                        if thread_id and chat_type != "private":
                             ack_p["message_thread_id"] = int(thread_id)
                         tg_api("sendMessage", ack_p)
+                        print(f"  -> [FS QUEUED PHOTO OCR] file_id={file_id}")
                     continue
 
                 # Text transaction (including Khmer digits e.g. បាយ ២០០០៛)
@@ -434,14 +481,15 @@ def main():
                         txs.insert(0, parsed)
                         txs_changed = True
                         send_p = {
-                            "chat_id": TELEGRAM_CHAT_ID,
+                            "chat_id": target_chat_id,
                             "text": format_tx_card(parsed),
                             "parse_mode": "HTML",
                             "reply_markup": build_tx_inline_keyboard(parsed["id"]),
                         }
-                        if thread_id:
+                        if thread_id and chat_type != "private":
                             send_p["message_thread_id"] = int(thread_id)
-                        tg_api("sendMessage", send_p)
+                        res_send = tg_api("sendMessage", send_p)
+                        print(f"  -> [FS RECORDED TX] {parsed['note']} | {parsed['amountKHR']} KHR (${parsed['amountUSD']}) -> Sent reply: {bool(res_send and res_send.get('ok'))}")
 
             if txs_changed:
                 patch_firebase_fields({

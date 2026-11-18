@@ -3764,6 +3764,9 @@
           <button type="button" onclick="syncTransactionsFromTelegram(false)" class="flex-1 py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs transition active:opacity-80 flex items-center justify-center gap-1.5">
             <span>🔄 ទាញប្រតិបត្តិការពី Telegram ឥឡូវនេះ</span>
           </button>
+          <button type="button" onclick="purgeTelegramConflictingWebhook(null, true)" class="py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs transition active:opacity-80 flex items-center justify-center gap-1.5" title="ផ្ដាច់ Webhook ខាងក្រៅ (ដូចជា Campaign Mudra) ដើម្បីឲ្យទាញសារចូលធម្មតាវិញ">
+            <span>🛡️ កម្ចាត់ Webhook Spam</span>
+          </button>
           <button type="button" onclick="openTelegramTopicsModal()" class="py-2.5 px-3 rounded-xl bg-[#142c50] hover:bg-[#1a3866] text-cyan-300 border border-cyan-400/30 font-extrabold text-xs transition active:opacity-80 flex items-center justify-center gap-1.5">
             <span>📂 កំណត់ Topic</span>
           </button>
@@ -4389,6 +4392,9 @@
               </button>
               <button type="button" onclick="autoCleanDuplicateTelegramTopics()" class="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-400/35 text-[11px] font-bold transition active:opacity-80">
                 🧹 លុបតែជួរជាន់គ្នា
+              </button>
+              <button type="button" onclick="purgeTelegramConflictingWebhook(null, true)" class="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-400/35 text-[11px] font-bold transition active:opacity-80" title="ផ្ដាច់ Webhook ខាងក្រៅ">
+                🛡️ ផ្ដាច់ Webhook Spam
               </button>
             </span>
           </div>
@@ -5078,7 +5084,7 @@
     ];
 
     /* Hardcoded & Embedded Telegram Credentials */
-    const TELEGRAM_BOT_TOKEN = '8801188196:AAGZHlsM9t_bhNRLVXO8kzM1_Ik6kbBI-Eg';
+    const TELEGRAM_BOT_TOKEN = '8801188196:AAEaoqqmzMeRuIAWr5bpICHBVNaQ9YLjmwE';
     const TELEGRAM_CHAT_ID = '-1003527836779';
 
     /* Embedded Firebase Config (ភ្ជាប់ Cloud ដោយស្វ័យប្រវត្តិគ្រប់ Browser & គ្រប់ Device) */
@@ -14882,6 +14888,51 @@ function initLanguage() {
       }
     }
 
+    async function purgeTelegramConflictingWebhook(token = null, notifyUser = false) {
+      const botToken = token || (typeof TELEGRAM_BOT_TOKEN !== 'undefined' ? TELEGRAM_BOT_TOKEN : '');
+      if (!botToken) {
+        if (notifyUser) showToast('បរាជ័យ', 'មិនមាន Bot Token សម្រាប់សម្អាតឡើយ', 'error');
+        return false;
+      }
+      try {
+        const delRes = await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook?drop_pending_updates=false`);
+        const delData = await delRes.json();
+
+        let webhookInfoText = '';
+        try {
+          const infoRes = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`);
+          const infoData = await infoRes.json();
+          if (infoData && infoData.ok && infoData.result) {
+            webhookInfoText = infoData.result.url ? ` (ធ្លាប់ភ្ជាប់ទៅ: ${infoData.result.url})` : '';
+          }
+        } catch (_) {}
+
+        if (delData && delData.ok) {
+          console.log('[Telegram] Successfully purged webhook:', delData);
+          if (notifyUser) {
+            showToast(
+              '🛡️ បានកម្ចាត់ Webhook ខាងក្រៅជោគជ័យ!',
+              `បានផ្ដាច់ Webhook របស់ Campaign Mudra${webhookInfoText} ចេញពី Bot រួចរាល់! ប្រព័ន្ធទាញសារ (getUpdates) ដំណើរការពេញលេញវិញហើយ។`,
+              'success'
+            );
+          }
+          return true;
+        } else {
+          if (notifyUser) {
+            showToast('បរាជ័យ', (delData && delData.description) || 'មិនអាចលុប Webhook បានឡើយ', 'error');
+          }
+          return false;
+        }
+      } catch (err) {
+        console.error('[Telegram] Error purging webhook:', err);
+        if (notifyUser) {
+          showToast('បញ្ហាភ្ជាប់បណ្ដាញ', 'មិនអាចទាក់ទងទៅ Telegram API បានទេ សូមពិនិត្យ Internet', 'error');
+        }
+        return false;
+      }
+    }
+    window.purgeTelegramConflictingWebhook = purgeTelegramConflictingWebhook;
+
     async function syncTransactionsFromTelegram(isBackgroundPoll = false) {
       if (isBackgroundPoll && window._last24_7WorkerHeartbeatMs && (Date.now() - window._last24_7WorkerHeartbeatMs) < 20000) {
         return; // 24/7 Background Python Worker is handling Telegram -> Firebase live!
@@ -14901,17 +14952,41 @@ function initLanguage() {
           return;
         }
 
+        // Auto-detect token rotation and flush outdated offset/cache immediately
+        const lastKnownToken = localStorage.getItem('finsync_tg_active_token_v3');
+        if (lastKnownToken !== token) {
+          localStorage.setItem('finsync_tg_active_token_v3', token);
+          localStorage.removeItem('finsync_tg_last_update_id');
+          localStorage.removeItem('finsync_tg_imported_updates_v1');
+          console.log('[Telegram] New Bot Token detected. Stored update offset and cache reset.');
+        }
+
         const lastOffset = parseInt(localStorage.getItem('finsync_tg_last_update_id') || '0', 10);
         const importedSet = getImportedTgUpdateIds();
         const queryOffset = (!isBackgroundPoll || lastOffset === 0) ? -25 : (lastOffset + 1);
         const allowedUpdatesParam = encodeURIComponent(JSON.stringify(['message', 'channel_post', 'callback_query']));
         const url = `https://api.telegram.org/bot${token}/getUpdates?offset=${queryOffset}&limit=25&allowed_updates=${allowedUpdatesParam}`;
-        const res = await fetch(url);
-        const data = await res.json();
+        let res = await fetch(url);
+        let data = await res.json();
 
         if (!data || !data.ok || !Array.isArray(data.result)) {
-          isTgSyncRunning = false;
-          return;
+          if (data && data.error_code === 409) {
+            console.warn('[Telegram] 409 Conflict: external webhook is active! Auto-purging...');
+            const purged = await purgeTelegramConflictingWebhook(token, false);
+            if (purged) {
+              try {
+                const retryRes = await fetch(url);
+                const retryData = await retryRes.json();
+                if (retryData && retryData.ok && Array.isArray(retryData.result)) {
+                  data = retryData;
+                }
+              } catch (_) {}
+            }
+          }
+          if (!data || !data.ok || !Array.isArray(data.result)) {
+            isTgSyncRunning = false;
+            return;
+          }
         }
 
         let importedCount = 0;
@@ -14940,11 +15015,13 @@ function initLanguage() {
           }
 
           // Layer 2 Cybersecurity: Telegram Bot Chat-ID Whitelist Firewall
+          const isPrivateChat = msg.chat && msg.chat.type === 'private';
+          const isWhitelistedGroup = msg.chat && String(msg.chat.id) === String(TELEGRAM_CHAT_ID);
           const botFirewallOn = localStorage.getItem('finsync_sec_bot_whitelist') !== 'false';
-          if (botFirewallOn && msg.chat && String(msg.chat.id) !== String(TELEGRAM_CHAT_ID)) {
+          if (botFirewallOn && !isWhitelistedGroup && !isPrivateChat) {
             const intruderName = msg.from ? (`${msg.from.first_name || ''} (@${msg.from.username || msg.from.id})`) : 'Unknown';
             if (typeof recordSecurityLog === 'function') {
-              recordSecurityLog(`🚫 បានប្លុកសារពីគណនីក្រៅប្រព័ន្ធ៖ ${intruderName} (Chat: ${msg.chat.id})`);
+              recordSecurityLog(`🚫 បានប្លុកសារពីគណនីក្រៅប្រព័ន្ធ៖ ${intruderName} (Chat: ${msg.chat ? msg.chat.id : 'unknown'})`);
             }
             importedSet.add(item.update_id);
             continue;
@@ -15230,6 +15307,15 @@ function initLanguage() {
       localStorage.removeItem('finsync_tg_last_update_id');
       localStorage.removeItem('finsync_tg_imported_updates_v1');
     }
+
+    // Auto-purge any external webhook (Campaign Mudra conflict) on startup
+    setTimeout(() => {
+      try {
+        if (typeof purgeTelegramConflictingWebhook === 'function') {
+          purgeTelegramConflictingWebhook(TELEGRAM_BOT_TOKEN, false);
+        }
+      } catch (_) {}
+    }, 1800);
 
     // Start Real-Time Background Telegram Bank Listener (every 6 seconds)
     setInterval(() => {
