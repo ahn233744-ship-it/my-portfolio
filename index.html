@@ -272,6 +272,13 @@
           <span id="headerExchangeRateText" class="font-extrabold text-cyan-300">4,100៛</span>
         </button>
 
+        <!-- MULTI-BOOK SWITCHER (ALL VS BUSINESS VS PERSONAL) -->
+        <div class="hidden sm:flex items-center gap-1 p-1 rounded-xl bg-[#0f2442] border border-cyan-400/30 shrink-0">
+          <button type="button" onclick="switchActiveBook('all')" id="btnBook_all" class="px-2 py-1 rounded-lg text-xs font-black transition text-white bg-cyan-600 shadow-sm">🌐 ទាំងអស់</button>
+          <button type="button" onclick="switchActiveBook('business')" id="btnBook_business" class="px-2 py-1 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">🏢 អាជីវកម្ម</button>
+          <button type="button" onclick="switchActiveBook('personal')" id="btnBook_personal" class="px-2 py-1 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">🏠 ផ្ទាល់ខ្លួន</button>
+        </div>
+
         <!-- 1. Unified All-Functions Hub Launcher (មជ្ឈមណ្ឌលមុខងារទាំងអស់) -->
         <button type="button" onclick="openAllFunctionsHubModal('all')" id="btnHeaderAllHub" title="បើកមជ្ឈមណ្ឌលមុខងារទាំងអស់ដែលបានរៀបចំតាមក្រុមយ៉ាងស្រួលប្រើ" class="flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 shadow-sm border border-cyan-300/40 whitespace-nowrap shrink-0 touch-manipulation">
           <span>🧭</span>
@@ -3000,23 +3007,67 @@
   </div>
 
   <!-- BACKUP & RESTORE MODAL -->
-  <div id="backupModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-        <h3 class="text-base font-extrabold text-slate-900 dark:text-white">💾 Backup & Restore ទិន្នន័យ</h3>
-        <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+  <div id="backupModal" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-[#071324] text-white w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-5 sm:p-6 shadow-2xl border border-cyan-400/35 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-cyan-400/20">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-lg">💾</div>
+          <div>
+            <h3 class="text-sm sm:text-base font-extrabold text-white">Backup & Restore ទិន្នន័យ (ស្វ័យប្រវត្តិ & ដោយដៃ)</h3>
+            <p class="text-[11px] text-cyan-200/80">ប្រព័ន្ធ Backup រៀងរាល់ម៉ោង ១២ យប់ (00:00) និង 1-Click Restore គ្រប់ពេលវេលា</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeBackupModal()" class="w-8 h-8 rounded-full bg-[#142c50] text-slate-300 hover:text-white flex items-center justify-center text-sm">✕</button>
       </div>
-      <div class="p-4 rounded-2xl bg-cyan-50/70 dark:bg-cyan-950/40 border border-cyan-200/60 dark:border-cyan-800/50 space-y-2">
-        <h4 class="text-xs font-bold text-cyan-800 dark:text-cyan-300">📤 ទាញយកទិន្នន័យទុកការពារ (Export Backup)</h4>
-        <p class="text-[11px] text-slate-600 dark:text-slate-400">រក្សាទុករាល់ប្រតិបត្តិការ បំណុល គោលដៅសន្សំ និងវិក្កយបត្រទាំងអស់ជាឯកសារ (.json) ទុកក្នុងទូរស័ព្ទ ឬកុំព្យូទ័រ។</p>
-        <button type="button" onclick="downloadFullBackupJSON()" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-sm transition">
-          ⬇️ ទាញយកឯកសារ Backup (.JSON)
+
+      <!-- AUTO-MIDNIGHT BACKUP STATUS & 1-CLICK SNAPSHOT BANNER -->
+      <div class="p-3.5 rounded-2xl bg-[#0d223d] border border-cyan-400/30 flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">🌙</span>
+          <div>
+            <div class="text-xs font-black text-cyan-300">Backup ស្វ័យប្រវត្តិ ម៉ោង ១២ យប់ (00:00)</div>
+            <div class="text-[10px] text-slate-300">ដំណើរការរាល់ថ្ងៃទាំងលើ Cloud & Local Storage</div>
+          </div>
+        </div>
+        <button type="button" onclick="createMidnightSnapshot(true)" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 flex items-center gap-1.5">
+          <span>⚡</span><span>Backup ឥឡូវនេះ (Snapshot Now)</span>
         </button>
       </div>
-      <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 space-y-2">
-        <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">📥 ទាញយកទិន្នន័យចូលវិញ (Restore Data)</h4>
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">ជ្រើសរើសឯកសារ Backup (.json) ដែលធ្លាប់បានរក្សាទុក ដើម្បីយកទិន្នន័យមកវិញទាំងអស់។</p>
-        <input type="file" id="restoreBackupFileInput" accept=".json" onchange="handleRestoreBackupJSON(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-200 dark:file:bg-slate-700 file:text-slate-800 dark:file:text-slate-200 cursor-pointer">
+
+      <!-- SECTION 1: AUTO MIDNIGHT RESTORE POINTS LIST -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-black text-cyan-300 flex items-center gap-1.5">
+            <span>📅</span><span>បញ្ជីចំណុច Restore ស្វ័យប្រវត្តិ (Midnight Restore Points)</span>
+          </h4>
+          <span class="text-[10px] text-slate-400">រក្សាទុក ៣០ ថ្ងៃចុងក្រោយ</span>
+        </div>
+        <div id="midnightRestorePointsList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+          <!-- Dynamically populated by renderMidnightRestorePoints() -->
+        </div>
+      </div>
+
+      <!-- SECTION 2: MANUAL EXPORT & RESTORE JSON -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-cyan-400/20">
+        <!-- Manual Export -->
+        <div class="p-3.5 rounded-2xl bg-[#0d223d] border border-cyan-400/25 space-y-2">
+          <h4 class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+            <span>📤</span><span>ទាញយកទុកការពារ (Export)</span>
+          </h4>
+          <p class="text-[10px] text-slate-300">រក្សាទុកប្រតិបត្តិការ និងបំណុលទាំងអស់ជាឯកសារ .json ទុកក្នុងម៉ាស៊ីន។</p>
+          <button type="button" onclick="downloadFullBackupJSON()" class="w-full py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition">
+            ⬇️ ទាញយក Backup (.JSON)
+          </button>
+        </div>
+
+        <!-- Manual Restore -->
+        <div class="p-3.5 rounded-2xl bg-[#0d223d] border border-cyan-400/25 space-y-2">
+          <h4 class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+            <span>📥</span><span>បញ្ចូលទិន្នន័យ (Restore)</span>
+          </h4>
+          <p class="text-[10px] text-slate-300">ជ្រើសរើសឯកសារ .json ដែលធ្លាប់ Save ពីមុន ដើម្បីយកទិន្នន័យមកវិញ។</p>
+          <input type="file" id="restoreBackupFileInput" accept=".json" onchange="handleRestoreBackupJSON(event)" class="w-full text-[11px] text-slate-300 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-[#18365f] file:text-cyan-200 hover:file:bg-[#204477] cursor-pointer">
+        </div>
       </div>
     </div>
   </div>
@@ -3542,8 +3593,16 @@
         <button type="button" onclick="handlePinBackspace()" class="h-14 rounded-2xl bg-white/5 hover:bg-white/15 active:opacity-80 text-slate-300 font-bold text-base transition">⌫</button>
       </div>
 
+      <!-- WebAuthn Biometric FaceID / Fingerprint Unlock Button -->
+      <div id="biometricUnlockBtnWrap" class="pt-1">
+        <button type="button" onclick="authenticateWithBiometrics()" id="btnBiometricUnlock" class="w-full py-2.5 px-3 rounded-2xl bg-cyan-600/30 hover:bg-cyan-600/45 border border-cyan-400/40 text-cyan-200 hover:text-white font-extrabold text-xs transition flex items-center justify-center gap-2">
+          <span class="text-base">👆</span>
+          <span>ស្កេនក្រយៅដៃ ឬ FaceID ដើម្បីដោះសោ</span>
+        </button>
+      </div>
+
       <!-- Emergency Reset via Telegram -->
-      <div class="pt-2">
+      <div class="pt-1">
         <button type="button" onclick="requestTelegramPinUnlockOtp()" class="text-xs text-cyan-400 hover:underline font-bold">ភ្លេច PIN? ផ្ញើ OTP តាម Telegram ↗</button>
       </div>
     </div>
@@ -3576,6 +3635,9 @@
         <div class="pt-2 flex flex-col gap-2">
           <button type="button" onclick="saveNewPinCode()" class="w-full py-3 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-md transition">រក្សាទុកលេខកូដ PIN</button>
           <button type="button" id="btnDisablePin" onclick="disablePinLock()" class="hidden w-full py-2.5 rounded-2xl bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 font-bold text-xs transition">បិទការចាក់សោ PIN</button>
+          <button type="button" id="btnEnrollBiometric" onclick="registerBiometricCredential()" class="w-full py-2.5 rounded-2xl bg-[#142c50] hover:bg-cyan-600 border border-cyan-400/30 text-cyan-200 hover:text-white font-bold text-xs transition flex items-center justify-center gap-2">
+            <span>👆</span><span>ចុះឈ្មោះ FaceID / ក្រយៅដៃ (Biometric)</span>
+          </button>
         </div>
       </div>
     </div>
@@ -5095,6 +5157,17 @@
             <button type="button" onclick="setupTelegramMiniAppButton()" class="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 shrink-0">📲 ដំឡើងប៊ូតុង Mini App</button>
           </div>
         </div>
+
+        <!-- Function 1B: Telegram 1-Tap Quick-Expense Keyboard -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">⚡ ⌨️ Telegram 1-Tap Quick-Expense Keyboard</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">ផ្ញើប៊ូតុងក្ដារចុច 1-Tap ជាប់លើទូរស័ព្ទក្នុង Telegram ➔ ចុចកត់ត្រា 🍔 ម្ហូប, ☕ កាហ្វេ, ⛽ សាំង ភ្លាមៗមិនបាច់វាយអក្សរ!</p>
+            </div>
+            <button type="button" onclick="sendQuickReplyKeyboardToTelegram()" class="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">⌨️ ផ្ញើប៊ូតុង 1-Tap ទៅ Telegram</button>
+          </div>
+        </div>
       </div>
 
       <!-- TAB 2: VOICE NOTE TO TRANSACTION & SCHEDULED AUTO-REPORTS (FUNCTIONS 2 & 4) -->
@@ -5224,11 +5297,16 @@
             <video id="m10BarcodeVideo" class="w-full h-48 object-cover" autoplay playsinline muted></video>
             <div class="absolute inset-x-8 top-1/2 h-0.5 bg-rose-500/80"></div>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
-            <input type="text" id="m10BarcodeCodeInput" placeholder="លេខ Barcode (ឧ. 8850001)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
-            <input type="text" id="m10BarcodeNameInput" placeholder="ឈ្មោះទំនិញ (ឧ. កូកាកូឡា)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
-            <input type="number" step="0.01" id="m10BarcodePriceInput" placeholder="តម្លៃ ($ ឧ. 0.75)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
-            <button type="button" onclick="saveMega10BarcodeProduct()" class="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">➕ រក្សាទុកទំនិញ</button>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <input type="text" id="m10BarcodeCodeInput" placeholder="លេខ Barcode" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="text" id="m10BarcodeNameInput" placeholder="ឈ្មោះទំនិញ" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="number" step="0.01" id="m10BarcodeCostInput" placeholder="ថ្លៃដើម ($ ឧ. 0.45)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="number" step="0.01" id="m10BarcodePriceInput" placeholder="តម្លៃលក់ ($)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="number" id="m10BarcodeStockInput" placeholder="ស្ដុក (ចំនួន)" value="24" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="text-[11px] text-cyan-200">📦 គ្រប់គ្រងស្ដុក & ថ្លៃដើម (COGS)៖ ពេលលក់ ស្ដុកនឹងដកស្វ័យប្រវត្តិ។ បើស្ដុក ≤ ៥ នឹង Alert ទៅ Telegram ភ្លាម!</div>
+            <button type="button" onclick="saveMega10BarcodeProduct()" class="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 shrink-0">➕ រក្សាទុកទំនិញ & ស្ដុក</button>
           </div>
           <div id="m10BarcodeCatalogList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto"></div>
         </div>
@@ -5265,6 +5343,7 @@
             <button type="button" onclick="exportMega10FormattedExcel()" class="flex-1 py-2.5 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">📗 ទាញយក Excel ផ្លូវការ (.xls)</button>
             <button type="button" onclick="exportMega10BrandedPdfStatement()" class="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80">📕 បោះពុម្ព / Save PDF ផ្លូវការ</button>
           </div>
+          <button type="button" onclick="sendOfficialExcelStatementToTelegram()" class="w-full py-2.5 px-4 rounded-xl bg-[#142c50] hover:bg-cyan-600 border border-cyan-400/40 text-cyan-200 hover:text-white text-xs font-black transition active:opacity-80">✈️ ផ្ញើឯកសារ Excel (.xls) ទៅកាន់ Telegram Group ផ្ទាល់</button>
         </div>
 
         <!-- Function 10: Multi-User / Staff Cashier Mode -->
@@ -9116,6 +9195,7 @@
       let totalExpUSD = 0;
 
       transactions.forEach(t => {
+        if (typeof isTxInActiveBook === 'function' && !isTxInActiveBook(t)) return;
         if (t.type === 'income') totalIncUSD += t.amountUSD;
         else totalExpUSD += t.amountUSD;
       });
@@ -11030,6 +11110,7 @@
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         modal.style.display = 'flex';
+        renderMidnightRestorePoints();
       }
     }
 
@@ -11102,6 +11183,267 @@
       };
       reader.readAsText(file);
     }
+
+    /* ==========================================================================
+       AUTOMATED MIDNIGHT (12:00 AM / 00:00) BACKUP & RESTORE POINT MANAGER
+       ========================================================================== */
+    const MIDNIGHT_BACKUPS_STORAGE_KEY = 'finsync_midnight_backups_v1';
+    const MIDNIGHT_BACKUP_LAST_DATE_KEY = 'finsync_last_midnight_backup_date';
+
+    function getMidnightBackupsList() {
+      try {
+        const raw = localStorage.getItem(MIDNIGHT_BACKUPS_STORAGE_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        return Array.isArray(list) ? list : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveMidnightBackupsList(list) {
+      try {
+        const safe = Array.isArray(list) ? list.slice(0, 30) : [];
+        localStorage.setItem(MIDNIGHT_BACKUPS_STORAGE_KEY, JSON.stringify(safe));
+        if (typeof firestoreDb !== 'undefined' && firestoreDb && currentAuthUser) {
+          const uName = (typeof getValidAuthUsername === 'function' ? getValidAuthUsername() : '') || currentAuthUser.username || 'himsenghorn';
+          firestoreDb.collection('userData').doc(uName).set({
+            autoMidnightBackups: safe.map(b => ({
+              id: b.id,
+              date: b.date,
+              time: b.time,
+              timestamp: b.timestamp,
+              label: b.label,
+              txCount: b.txCount,
+              debtCount: b.debtCount,
+              taskCount: b.taskCount,
+              totalUSD: b.totalUSD,
+              sizeKB: b.sizeKB,
+              payload: b.payload
+            }))
+          }, { merge: true }).catch(e => console.warn('[Firestore AutoBackup Sync]', e));
+        }
+      } catch (e) {
+        console.warn('[saveMidnightBackupsList Error]', e);
+      }
+    }
+
+    function createMidnightSnapshot(isManual = false) {
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      const timeStr = isManual 
+        ? now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) 
+        : '12:00 AM (00:00)';
+      
+      const uName = (typeof getValidAuthUsername === 'function' ? getValidAuthUsername() : '') || (currentAuthUser ? currentAuthUser.username : 'himsenghorn');
+      
+      const payload = {
+        version: '2.1',
+        exportedAt: now.toISOString(),
+        date: todayStr,
+        user: uName,
+        exchangeRate: typeof exchangeRate !== 'undefined' ? exchangeRate : 4100,
+        monthlyBudget: typeof monthlyBudget !== 'undefined' ? monthlyBudget : 300,
+        transactions: Array.isArray(transactions) ? JSON.parse(JSON.stringify(transactions)) : [],
+        debts: Array.isArray(debts) ? JSON.parse(JSON.stringify(debts)) : [],
+        savingsGoals: Array.isArray(savingsGoals) ? JSON.parse(JSON.stringify(savingsGoals)) : [],
+        recurringBills: Array.isArray(recurringBills) ? JSON.parse(JSON.stringify(recurringBills)) : [],
+        tasks: Array.isArray(tasks) ? JSON.parse(JSON.stringify(tasks)) : []
+      };
+
+      const payloadStr = JSON.stringify(payload);
+      const sizeKB = Number((payloadStr.length / 1024).toFixed(1));
+      const totUSD = (payload.transactions || []).reduce((acc, t) => acc + (t.type === 'income' ? Number(t.amountUSD || 0) : -Number(t.amountUSD || 0)), 0);
+
+      const entry = {
+        id: `bk_${todayStr}_${isManual ? Date.now() : 'midnight'}`,
+        date: todayStr,
+        time: timeStr,
+        timestamp: now.toISOString(),
+        isManual: !!isManual,
+        label: isManual ? `⚡ Snapshot ដោយដៃ (${timeStr})` : `🌙 Backup ស្វ័យប្រវត្តិម៉ោង ១២ យប់ (${timeStr})`,
+        txCount: payload.transactions.length,
+        debtCount: payload.debts.length,
+        taskCount: payload.tasks.length,
+        totalUSD: Number(totUSD.toFixed(2)),
+        sizeKB: sizeKB,
+        payload: payload
+      };
+
+      let list = getMidnightBackupsList();
+      if (!isManual) {
+        list = list.filter(b => !(b.date === todayStr && !b.isManual));
+      }
+      list.unshift(entry);
+      saveMidnightBackupsList(list);
+      localStorage.setItem(MIDNIGHT_BACKUP_LAST_DATE_KEY, todayStr);
+
+      renderMidnightRestorePoints();
+
+      if (isManual) {
+        showToast('📸 បង្កើតចំណុច Backup រួចរាល់!', `បានរក្សាទុក Snapshot ${todayStr} (${timeStr}) ក្នុង Cloud & ម៉ាស៊ីន`, 'success');
+      } else {
+        console.log(`[AutoBackup] Completed midnight backup snapshot for ${todayStr}`);
+      }
+
+      if (typeof sendRawTelegramMessage === 'function') {
+        const msgText = `🌙 💾 <b>ប្រព័ន្ធបាន Backup ទិន្នន័យស្វ័យប្រវត្តិ${isManual ? ' (Snapshot)' : 'ម៉ោង ១២ យប់'} រួចរាល់!</b>\n`
+          + `• កាលបរិច្ឆេទ: <b>${todayStr} (${timeStr})</b>\n`
+          + `• ប្រតិបត្តិការ: <b>${entry.txCount}</b> | បំណុល: <b>${entry.debtCount}</b> | កិច្ចការ: <b>${entry.taskCount}</b>\n`
+          + `• ទំហំ: <b>${entry.sizeKB} KB</b> | គណនី: <b>${uName}</b>\n`
+          + `💎 <b>ស្ថានភាព: បានរក្សាទុកក្នុង Cloud & បង្កើតចំណុច 1-Click Restore រួចរាល់!</b>`;
+        sendRawTelegramMessage(msgText, 'tx').catch(() => {});
+      }
+    }
+    window.createMidnightSnapshot = createMidnightSnapshot;
+
+    function restoreFromMidnightPoint(pointId) {
+      const list = getMidnightBackupsList();
+      const point = list.find(b => b.id === pointId);
+      if (!point || !point.payload) {
+        showToast('បរាជ័យ', 'រកមិនឃើញចំណុច Restore នេះទេ', 'error');
+        return;
+      }
+
+      const confirmMsg = `តើបងពិតជាចង់ Restore ទិន្នន័យត្រឡប់ទៅចំណុច៖\n«${point.date} ${point.time}» (${point.txCount} ប្រតិបត្តិការ)?\n\n⚠️ ទិន្នន័យបច្ចុប្បន្ននឹងត្រូវបានជំនួសដោយទិន្នន័យនៃចំណុចនេះ!`;
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const safetyBackup = {
+          version: '2.1',
+          exportedAt: new Date().toISOString(),
+          date: new Date().toISOString().split('T')[0],
+          user: currentAuthUser?.username || 'himsenghorn',
+          transactions: [...transactions],
+          debts: [...debts],
+          savingsGoals: [...savingsGoals],
+          recurringBills: [...recurringBills],
+          tasks: [...tasks]
+        };
+        localStorage.setItem('finsync_pre_restore_safety_backup', JSON.stringify(safetyBackup));
+      } catch (_) {}
+
+      const data = point.payload;
+      if (Array.isArray(data.transactions)) transactions = data.transactions;
+      if (Array.isArray(data.debts)) debts = data.debts;
+      if (Array.isArray(data.savingsGoals)) savingsGoals = data.savingsGoals;
+      if (Array.isArray(data.recurringBills)) recurringBills = data.recurringBills;
+      if (Array.isArray(data.tasks)) tasks = data.tasks;
+      if (data.exchangeRate) exchangeRate = parseFloat(data.exchangeRate);
+      if (data.monthlyBudget) monthlyBudget = parseFloat(data.monthlyBudget);
+
+      saveActiveTransactions();
+      saveActiveDebts();
+      saveActiveSavings();
+      saveActiveBills();
+      saveActiveTasks();
+
+      if (currentAuthUser) {
+        localStorage.setItem(`app_rate_${currentAuthUser.username}`, exchangeRate);
+        localStorage.setItem(`app_budget_${currentAuthUser.username}`, monthlyBudget);
+      }
+
+      updateExchangeRateDisplay();
+      renderAll();
+      closeBackupModal();
+
+      showToast('✨ Restore ជោគជ័យ!', `បានទាញយកទិន្នន័យត្រឡប់មកចំណុច ${point.date} (${point.time}) រួចរាល់!`, 'success');
+
+      if (typeof sendRawTelegramMessage === 'function') {
+        const msg = `🔄 🛡️ <b>ប្រព័ន្ធបាន Restore ទិន្នន័យត្រឡប់មកចំណុចមុនជោគជ័យ!</b>\n`
+          + `• ចំណុចដែលបាន Restore: <b>${point.date} (${point.time})</b>\n`
+          + `• ចំនួនប្រតិបត្តិការដែលបានស្ដារ: <b>${point.txCount}</b>\n`
+          + `• ធ្វើឡើងដោយ Admin លើប្រព័ន្ធ FinSync Pro`;
+        sendRawTelegramMessage(msg, 'tx').catch(() => {});
+      }
+    }
+    window.restoreFromMidnightPoint = restoreFromMidnightPoint;
+
+    function downloadMidnightPointJSON(pointId) {
+      const list = getMidnightBackupsList();
+      const point = list.find(b => b.id === pointId);
+      if (!point || !point.payload) return;
+      const blob = new Blob([JSON.stringify(point.payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `FinSync_Snapshot_${point.date}_${point.id}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    window.downloadMidnightPointJSON = downloadMidnightPointJSON;
+
+    function renderMidnightRestorePoints() {
+      const container = document.getElementById('midnightRestorePointsList');
+      if (!container) return;
+      const list = getMidnightBackupsList();
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="p-4 rounded-2xl bg-[#0f2442] border border-cyan-400/20 text-center space-y-2">
+            <div class="text-2xl">🌙</div>
+            <div class="text-xs font-bold text-cyan-200">មិនទាន់មានចំណុច Restore កាលពីមុនទេ</div>
+            <p class="text-[11px] text-slate-300">ប្រព័ន្ធនឹង Backup ស្វ័យប្រវត្តរាល់ម៉ោង ១២ យប់ (00:00) ឬបងអាចចុចប៊ូតុងខាងក្រោមដើម្បីបង្កើត Snapshot ដំបូងឥឡូវនេះ!</p>
+            <button type="button" onclick="createMidnightSnapshot(true)" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition">
+              ⚡ បង្កើតចំណុច Backup ដំបូង (Snapshot Now)
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(item => `
+        <div class="p-3.5 rounded-2xl bg-[#0f2442] border border-cyan-400/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm">${item.isManual ? '⚡' : '🌙'}</span>
+              <span class="text-xs font-black text-white">${escapeHTML(item.label)}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/30">🟢 ពេញលេញ</span>
+            </div>
+            <div class="text-[11px] text-slate-300 flex flex-wrap gap-x-3 gap-y-0.5">
+              <span>🧾 ប្រតិបត្តិការ: <b>${item.txCount}</b></span>
+              <span>🤝 បំណុល: <b>${item.debtCount}</b></span>
+              <span>📝 កិច្ចការ: <b>${item.taskCount || 0}</b></span>
+              <span>💾 ទំហំ: <b>${item.sizeKB} KB</b></span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" onclick="restoreFromMidnightPoint('${item.id}')" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition flex items-center gap-1">
+              <span>🔄</span><span>Restore មកចំណុចនេះ</span>
+            </button>
+            <button type="button" onclick="downloadMidnightPointJSON('${item.id}')" title="ទាញយក File JSON នៃថ្ងៃនេះ" class="p-1.5 rounded-xl bg-[#18365f] hover:bg-[#204477] text-cyan-300 border border-cyan-400/30 transition">
+              ⬇️
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    window.renderMidnightRestorePoints = renderMidnightRestorePoints;
+
+    let midnightSchedulerInterval = null;
+    function initMidnightAutoBackupSystem() {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const lastBkDate = localStorage.getItem(MIDNIGHT_BACKUP_LAST_DATE_KEY);
+      const list = getMidnightBackupsList();
+      if (lastBkDate !== todayStr || list.length === 0) {
+        createMidnightSnapshot(false);
+      }
+
+      if (midnightSchedulerInterval) clearInterval(midnightSchedulerInterval);
+      midnightSchedulerInterval = setInterval(() => {
+        const now = new Date();
+        const curDate = now.toISOString().split('T')[0];
+        const curHM = now.toTimeString().slice(0, 5);
+        const lastRan = localStorage.getItem(MIDNIGHT_BACKUP_LAST_DATE_KEY);
+
+        if (curHM === '00:00' && lastRan !== curDate) {
+          console.log('[Scheduler] It is 00:00 Midnight! Triggering daily auto-backup...');
+          createMidnightSnapshot(false);
+        }
+      }, 35000);
+    }
+    window.initMidnightAutoBackupSystem = initMidnightAutoBackupSystem;
 
     /* ==================== FEATURE 1: 🎙️ VOICE-TO-TEXT SPEECH RECOGNITION ==================== */
     let speechRecognitionInstance = null;
@@ -12133,6 +12475,13 @@ function initPinLock() {
     overlay.classList.add('flex');
     currentEnteredPin = '';
     renderPinDots();
+    if (typeof updateBiometricUiState === 'function') updateBiometricUiState();
+    const isEnrolled = !!localStorage.getItem('finsync_bio_credential_' + currentAuthUser.username);
+    if (isEnrolled && typeof isWebAuthnSupported === 'function' && isWebAuthnSupported()) {
+      setTimeout(() => {
+        if (typeof authenticateWithBiometrics === 'function') authenticateWithBiometrics().catch(() => {});
+      }, 350);
+    }
   }
 }
 
@@ -12237,6 +12586,7 @@ function openPinSettingsModal() {
     const inpConf = document.getElementById('inputConfirmPin');
     if (inpNew) inpNew.value = '';
     if (inpConf) inpConf.value = '';
+    if (typeof updateBiometricUiState === 'function') updateBiometricUiState();
   }
 }
 
@@ -13639,6 +13989,9 @@ function applyFilters() {
   const endDate = document.getElementById('filterEndDate')?.value;
 
   let filtered = [...transactions];
+  if (typeof isTxInActiveBook === 'function') {
+    filtered = filtered.filter(isTxInActiveBook);
+  }
 
   // Type filter
   if (typeFilter !== 'all') {
@@ -19876,35 +20229,49 @@ function initLanguage() {
     }
     window.applyMega10KhrRateToSystem = applyMega10KhrRateToSystem;
 
-    // --- FUNCTION 7: CAMERA BARCODE SCANNER FOR MINI-POS ---
+    // --- FUNCTION 7: CAMERA BARCODE SCANNER FOR MINI-POS & INVENTORY ---
     function getMega10BarcodeCatalog() {
       try {
-        return JSON.parse(localStorage.getItem('finsync_m10_barcode_catalog') || '[{"code":"8850001","name":"កូកាកូឡា (Coca-Cola)","price":0.75},{"code":"8850002","name":"កាហ្វេទឹកដោះគោទឹកកក","price":1.50}]');
+        return JSON.parse(localStorage.getItem('finsync_m10_barcode_catalog') || '[{"code":"8850001","name":"កូកាកូឡា (Coca-Cola)","cost":0.45,"price":0.75,"stockQty":24,"lowStockThreshold":5},{"code":"8850002","name":"កាហ្វេទឹកដោះគោទឹកកក","cost":0.80,"price":1.50,"stockQty":15,"lowStockThreshold":5}]');
       } catch (_) { return []; }
     }
 
     function saveMega10BarcodeProduct() {
       const code = (document.getElementById('m10BarcodeCodeInput')?.value || '').trim();
       const name = (document.getElementById('m10BarcodeNameInput')?.value || '').trim();
+      const cost = parseFloat(document.getElementById('m10BarcodeCostInput')?.value || '0') || 0;
       const price = parseFloat(document.getElementById('m10BarcodePriceInput')?.value || '0');
+      const stock = parseInt(document.getElementById('m10BarcodeStockInput')?.value || '20', 10) || 20;
       if (!code || !name || !price || price <= 0) {
-        showToast('សូមបំពេញព័ត៌មានទំនិញ', 'ត្រូវការលេខ Barcode, ឈ្មោះទំនិញ និងតម្លៃ ($)', 'warning');
+        showToast('សូមបំពេញព័ត៌មានទំនិញ', 'ត្រូវការលេខ Barcode, ឈ្មោះទំនិញ និងតម្លៃលក់ ($)', 'warning');
         return;
       }
       const list = getMega10BarcodeCatalog().filter(p => p.code !== code);
-      list.unshift({ code, name, price });
+      list.unshift({ code, name, cost, price, stockQty: stock, lowStockThreshold: 5 });
       localStorage.setItem('finsync_m10_barcode_catalog', JSON.stringify(list));
       document.getElementById('m10BarcodeCodeInput').value = '';
       document.getElementById('m10BarcodeNameInput').value = '';
+      if (document.getElementById('m10BarcodeCostInput')) document.getElementById('m10BarcodeCostInput').value = '';
       document.getElementById('m10BarcodePriceInput').value = '';
+      if (document.getElementById('m10BarcodeStockInput')) document.getElementById('m10BarcodeStockInput').value = '24';
       renderMega10BarcodeCatalog();
-      showToast('✅ បានរក្សាទុក Barcode ទំនិញ!', `${name} ($${price.toFixed(2)})`, 'success');
+      showToast('✅ បានរក្សាទុកទំនិញ & ស្ដុក!', `${name} (លក់: $${price.toFixed(2)} | ស្ដុក: ${stock})`, 'success');
     }
     window.saveMega10BarcodeProduct = saveMega10BarcodeProduct;
 
     function quickSellMega10BarcodeItem(code) {
-      const item = getMega10BarcodeCatalog().find(p => p.code === code);
+      const list = getMega10BarcodeCatalog();
+      const item = list.find(p => p.code === code);
       if (!item) return;
+
+      const curStock = item.stockQty !== undefined ? item.stockQty : 20;
+      item.stockQty = Math.max(0, curStock - 1);
+      localStorage.setItem('finsync_m10_barcode_catalog', JSON.stringify(list));
+
+      const costVal = Number(item.cost || 0);
+      const profitVal = Number(item.price || 0) - costVal;
+      const profitLabel = costVal > 0 ? ` (ចំណេញ: +$${profitVal.toFixed(2)})` : '';
+
       const newTx = {
         id: 'tx_pos_bc_' + Date.now(),
         type: 'income',
@@ -19916,7 +20283,7 @@ function initLanguage() {
         category: 'business',
         wallet: 'cash',
         tag: '#BarcodePOS',
-        note: `[📷 POS Barcode ${item.code}] លក់ ${item.name}` + getMega10StaffTagSuffix(),
+        note: `[📷 POS Barcode ${item.code}] លក់ ${item.name}${profitLabel}` + getMega10StaffTagSuffix(),
         date: new Date().toISOString().split('T')[0],
         txTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         createdAt: new Date().toISOString()
@@ -19924,23 +20291,71 @@ function initLanguage() {
       transactions.unshift(newTx);
       saveActiveTransactions();
       renderAll();
-      showToast('📷 លក់ទំនិញតាម Barcode ជោគជ័យ!', `${item.name} (+$${item.price.toFixed(2)})`, 'success');
+      renderMega10BarcodeCatalog();
+
+      showToast('📷 លក់ទំនិញជោគជ័យ!', `${item.name} (+$${item.price.toFixed(2)}) — នៅសល់ស្ដុក: ${item.stockQty}`, 'success');
+
+      if (item.stockQty <= (item.lowStockThreshold || 5)) {
+        showToast('⚠️ ជិតអស់ពីស្ដុក!', `ទំនិញ «${item.name}» នៅសល់ត្រឹមតែ ${item.stockQty} ប៉ុណ្ណោះ! សូមទិញចូលថែម!`, 'warning');
+        if (typeof sendRawTelegramMessage === 'function') {
+          const alertMsg = `⚠️ 📦 <b>ដំណឹងទំនិញជិតអស់ពីស្ដុក (Low-Stock Alert)!</b>\n`
+            + `• ទំនិញ: <b>${escapeHTML(item.name)}</b> (Barcode: <code>${escapeHTML(item.code)}</code>)\n`
+            + `• នៅសល់ក្នុងស្ដុក: <b>${item.stockQty}</b>\n`
+            + `• តម្លៃលក់: <b>$${Number(item.price).toFixed(2)}</b>\n`
+            + `🚨 សូមទិញចូលបំពេញស្ដុកបន្ថែម!`;
+          sendRawTelegramMessage(alertMsg, 'tx').catch(() => {});
+        }
+      }
     }
     window.quickSellMega10BarcodeItem = quickSellMega10BarcodeItem;
+
+    function restockMega10BarcodeItem(code, addQty = 10) {
+      const list = getMega10BarcodeCatalog();
+      const item = list.find(p => p.code === code);
+      if (!item) return;
+      item.stockQty = (item.stockQty || 0) + addQty;
+      localStorage.setItem('finsync_m10_barcode_catalog', JSON.stringify(list));
+      renderMega10BarcodeCatalog();
+      showToast('📥 បញ្ចូលស្ដុកថែមជោគជ័យ!', `${item.name} (+${addQty} ➔ សរុប: ${item.stockQty})`, 'success');
+    }
+    window.restockMega10BarcodeItem = restockMega10BarcodeItem;
+
+    function deleteMega10BarcodeItem(code) {
+      const list = getMega10BarcodeCatalog().filter(p => p.code !== code);
+      localStorage.setItem('finsync_m10_barcode_catalog', JSON.stringify(list));
+      renderMega10BarcodeCatalog();
+      showToast('🗑️ បានលុប', 'បានលុបទំនិញចេញពីបញ្ជី Barcode POS', 'info');
+    }
+    window.deleteMega10BarcodeItem = deleteMega10BarcodeItem;
 
     function renderMega10BarcodeCatalog() {
       const box = document.getElementById('m10BarcodeCatalogList');
       if (!box) return;
       const list = getMega10BarcodeCatalog();
-      box.innerHTML = list.map(p => `
-        <div class="p-2.5 rounded-xl bg-[#102444] border border-cyan-400/25 flex items-center justify-between gap-2">
-          <div class="min-w-0">
-            <div class="text-xs font-black text-white truncate">${escapeHTML(p.name)}</div>
-            <div class="text-[10px] text-cyan-300">Barcode: ${escapeHTML(p.code)} • $${Number(p.price).toFixed(2)}</div>
+      box.innerHTML = list.map(p => {
+        const qty = p.stockQty !== undefined ? p.stockQty : 20;
+        const isLow = qty <= (p.lowStockThreshold || 5);
+        const stockBadge = isLow
+          ? `<span class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-400/40 text-[10px]">⚠️ សល់តែ ${qty}</span>`
+          : `<span class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/30 text-[10px]">📦 ស្ដុក: ${qty}</span>`;
+        const costStr = p.cost ? ` • ដើម: $${Number(p.cost).toFixed(2)}` : '';
+        return `
+          <div class="p-2.5 rounded-xl bg-[#102444] border ${isLow ? 'border-rose-400/40' : 'border-cyan-400/25'} flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-black text-white truncate">${escapeHTML(p.name)}</span>
+                ${stockBadge}
+              </div>
+              <div class="text-[10px] text-cyan-300">Barcode: ${escapeHTML(p.code)} • លក់: $${Number(p.price).toFixed(2)}${costStr}</div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="quickSellMega10BarcodeItem('${escapeHTML(p.code)}')" class="px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-black transition active:opacity-80">💰 លក់</button>
+              <button type="button" onclick="restockMega10BarcodeItem('${escapeHTML(p.code)}', 10)" title="ថែម ១០ ក្នុងស្ដុក" class="px-2 py-1.5 rounded-lg bg-[#18365f] hover:bg-[#204477] text-cyan-200 text-[10px] font-bold border border-cyan-400/30 transition">+10</button>
+              <button type="button" onclick="deleteMega10BarcodeItem('${escapeHTML(p.code)}')" title="លុបទំនិញ" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 transition">✕</button>
+            </div>
           </div>
-          <button type="button" onclick="quickSellMega10BarcodeItem('${escapeHTML(p.code)}')" class="px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-black transition active:opacity-80 shrink-0">💰 លក់ភ្លាម</button>
-        </div>
-      `).join('') || '<div class="text-xs text-slate-400">មិនទាន់មានទំនិញ Barcode ទេ</div>';
+        `;
+      }).join('') || '<div class="text-xs text-slate-400">មិនទាន់មានទំនិញ Barcode ទេ</div>';
     }
 
     async function toggleMega10BarcodeCamera() {
@@ -20281,9 +20696,355 @@ function initLanguage() {
       }
     })();
 
+
+    /* ==========================================================================
+       NEXT-LEVEL ENTERPRISE EXTENSIONS:
+       1. Multi-Book Switcher (Personal vs Business / Multi-Branch)
+       2. Telegram 1-Tap Quick-Expense Reply Keyboard
+       3. Automated Telegram Statement Delivery (.xls via sendDocument)
+       4. WebAuthn Biometric FaceID / TouchID Unlock
+       ========================================================================== */
+
+    // --- 1. MULTI-BOOK SWITCHER ---
+    let currentActiveBook = localStorage.getItem('finsync_active_book') || 'all';
+
+    function switchActiveBook(mode) {
+      currentActiveBook = mode;
+      localStorage.setItem('finsync_active_book', mode);
+      updateBookSwitcherUi();
+      if (typeof applyFilters === 'function') applyFilters();
+      if (typeof calculateTotals === 'function') calculateTotals();
+      const title = mode === 'business' ? '🏢 អាជីវកម្ម (Business)' : mode === 'personal' ? '🏠 ផ្ទាល់ខ្លួន (Personal)' : '🌐 ទាំងអស់ (All Books)';
+      showToast('📖 ប្តូរសៀវភៅកត់ត្រា', `ប្តូរទៅកាន់ ${title}`, 'info');
+    }
+    window.switchActiveBook = switchActiveBook;
+
+    function updateBookSwitcherUi() {
+      const books = ['all', 'business', 'personal'];
+      books.forEach(b => {
+        const el = document.getElementById(`btnBook_${b}`);
+        if (!el) return;
+        if (b === currentActiveBook) {
+          el.className = "px-2 py-1 rounded-lg text-xs font-black transition text-white bg-cyan-600 shadow-sm border border-cyan-400/40";
+        } else {
+          el.className = "px-2 py-1 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white bg-transparent";
+        }
+      });
+    }
+    window.updateBookSwitcherUi = updateBookSwitcherUi;
+
+    function isTxInActiveBook(t) {
+      if (!t) return false;
+      if (currentActiveBook === 'all') return true;
+      const isBiz = t.book === 'business'
+        || t.tag === '#អាជីវកម្ម'
+        || t.tag === '#BarcodePOS'
+        || t.category === 'business'
+        || (typeof t.note === 'string' && /អាជីវកម្ម|barcode|pos|business|លក់|ទិញចូល/i.test(t.note));
+      if (currentActiveBook === 'business') return !!isBiz;
+      if (currentActiveBook === 'personal') return !isBiz;
+      return true;
+    }
+    window.isTxInActiveBook = isTxInActiveBook;
+
+    // --- 2. TELEGRAM 1-TAP QUICK-EXPENSE KEYBOARD ---
+    async function sendQuickReplyKeyboardToTelegram() {
+      const token = localStorage.getItem('finsync_tg_bot_token') || '8801188196:AAEaoqqmzMeRuIAWr5bpICHBVNaQ9YLjmwE';
+      const chatId = localStorage.getItem('finsync_tg_chat_id') || '-1003527836779';
+      if (!token || !chatId) {
+        showToast('⚠️ ខ្វះព័ត៌មាន Telegram', 'សូមភ្ជាប់ Bot Token និង Chat ID ជាមុនសិន!', 'warning');
+        return;
+      }
+
+      const payload = {
+        chat_id: chatId,
+        text: "⌨️ <b>ក្ដារចុច 1-Tap Quick-Expense ត្រូវបានភ្ជាប់!</b>\n\n"
+          + "លោកអ្នកអាចចុចលើប៊ូតុងខាងក្រោមលើអេក្រង់ Telegram ដើម្បីកត់ត្រាចំណាយរហ័ស 1-Tap ដោយមិនបាច់វាយអក្សរឡើយ៖\n\n"
+          + "• 🍔 <b>ម្ហូប 5000៛</b>\n"
+          + "• ☕ <b>កាហ្វេ $1.50</b>\n"
+          + "• ⛽ <b>សាំង 10000៛</b>\n"
+          + "• 💰 <b>/balance</b> (ពិនិត្យលុយគ្រប់កាបូប)\n"
+          + "• 📊 <b>/today</b> • 📈 <b>/month</b> • 📁 <b>/export</b>",
+        parse_mode: "HTML",
+        reply_markup: {
+          keyboard: [
+            [{ text: "🍔 ម្ហូប 5000៛" }, { text: "☕ កាហ្វេ $1.50" }],
+            [{ text: "⛽ សាំង 10000៛" }, { text: "💰 /balance" }],
+            [{ text: "📊 /today" }, { text: "📈 /month" }, { text: "📁 /export" }]
+          ],
+          resize_keyboard: true,
+          is_persistent: true
+        }
+      };
+
+      try {
+        showToast('⏳ កំពុងផ្ញើក្ដារចុច...', 'កំពុងភ្ជាប់ Reply Keyboard ទៅកាន់ Telegram...', 'info');
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('✅ ជោគជ័យ!', 'ក្ដារចុច 1-Tap ត្រូវបានផ្ញើ និងភ្ជាប់ទៅ Telegram រួចរាល់!', 'success');
+        } else {
+          showToast('❌ បរាជ័យ', data.description || 'មិនអាចផ្ញើក្ដារចុចបានទេ', 'error');
+        }
+      } catch (err) {
+        console.error('Error sending quick keyboard:', err);
+        showToast('❌ បរាជ័យក្នុងការតភ្ជាប់', 'សូមពិនិត្យអ៊ីនធឺណិត ឬ Bot Token', 'error');
+      }
+    }
+    window.sendQuickReplyKeyboardToTelegram = sendQuickReplyKeyboardToTelegram;
+
+    // --- 3. AUTOMATED TELEGRAM STATEMENT DELIVERY (.xls via sendDocument) ---
+    async function sendOfficialExcelStatementToTelegram() {
+      const token = localStorage.getItem('finsync_tg_bot_token') || '8801188196:AAEaoqqmzMeRuIAWr5bpICHBVNaQ9YLjmwE';
+      const chatId = localStorage.getItem('finsync_tg_chat_id') || '-1003527836779';
+      if (!token || !chatId) {
+        showToast('⚠️ ខ្វះព័ត៌មាន Telegram', 'សូមភ្ជាប់ Bot Token និង Chat ID ជាមុនសិន!', 'warning');
+        return;
+      }
+
+      showToast('⏳ កំពុងបង្កើតរបាយការណ៍ Excel...', 'កំពុងរៀបចំឯកសារ និងផ្ញើទៅ Telegram...', 'info');
+
+      const list = transactions || [];
+      let totalInc = 0;
+      let totalExp = 0;
+      list.forEach(t => {
+        if (t.type === 'income') totalInc += (t.amountUSD || 0);
+        else totalExp += (t.amountUSD || 0);
+      });
+      const netUSD = totalInc - totalExp;
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `FinSync_Statement_${dateStr}.xls`;
+
+      let rowsXml = '';
+      list.forEach((t, idx) => {
+        const isInc = t.type === 'income';
+        const typeLabel = isInc ? 'ចំណូល (Income)' : 'ចំណាយ (Expense)';
+        const amtStr = `${isInc ? '+' : '-'}$${(t.amountUSD || 0).toFixed(2)}`;
+        const amtKHR = `${(t.amountKHR || 0).toLocaleString()} ៛`;
+        const note = String(t.note || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const cat = String(t.category || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const wallet = String(t.wallet || 'cash');
+
+        rowsXml += `
+          <Row>
+            <Cell><Data ss:Type="Number">${idx + 1}</Data></Cell>
+            <Cell><Data ss:Type="String">${t.date || ''}</Data></Cell>
+            <Cell><Data ss:Type="String">${t.txTime || ''}</Data></Cell>
+            <Cell><Data ss:Type="String">${typeLabel}</Data></Cell>
+            <Cell><Data ss:Type="String">${amtStr}</Data></Cell>
+            <Cell><Data ss:Type="String">${amtKHR}</Data></Cell>
+            <Cell><Data ss:Type="String">${cat}</Data></Cell>
+            <Cell><Data ss:Type="String">${wallet}</Data></Cell>
+            <Cell><Data ss:Type="String">${note}</Data></Cell>
+          </Row>
+        `;
+      });
+
+      const xmlContent = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Worksheet ss:Name="FinSync Statement">
+  <Table>
+   <Column ss:Width="40"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="60"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="90"/>
+   <Column ss:Width="90"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="200"/>
+   <Row>
+    <Cell><Data ss:Type="String">ល.រ</Data></Cell>
+    <Cell><Data ss:Type="String">កាលបរិច្ឆេទ</Data></Cell>
+    <Cell><Data ss:Type="String">ម៉ោង</Data></Cell>
+    <Cell><Data ss:Type="String">ប្រភេទ</Data></Cell>
+    <Cell><Data ss:Type="String">ចំនួន ($)</Data></Cell>
+    <Cell><Data ss:Type="String">ចំនួន (៛)</Data></Cell>
+    <Cell><Data ss:Type="String">ជំពូក</Data></Cell>
+    <Cell><Data ss:Type="String">កាបូប</Data></Cell>
+    <Cell><Data ss:Type="String">កំណត់សម្គាល់</Data></Cell>
+   </Row>
+   ${rowsXml}
+  </Table>
+ </Worksheet>
+</Workbook>`;
+
+      try {
+        const blob = new Blob([xmlContent], { type: 'application/vnd.ms-excel' });
+        const formData = new FormData();
+        formData.append('chat_id', chatId);
+        formData.append('document', blob, filename);
+        const caption = `📊 <b>របាយការណ៍ហិរញ្ញវត្ថុផ្លូវការ FinSync Pro (.xls)</b>\n`
+          + `📅 កាលបរិច្ឆេទ: <b>${dateStr}</b>\n`
+          + `📝 ចំនួនប្រតិបត្តិការ: <b>${list.length} កំណត់ត្រា</b>\n`
+          + `• 🟢 ចំណូលសរុប: <b>+$${totalInc.toFixed(2)}</b>\n`
+          + `• 🔴 ចំណាយសរុប: <b>-$${totalExp.toFixed(2)}</b>\n`
+          + `💎 <b>សមតុល្យសុទ្ធ: $${netUSD.toFixed(2)} (${Math.round(netUSD * exchangeRate).toLocaleString()} ៛)</b>`;
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'HTML');
+
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('✅ ជោគជ័យ!', 'ឯកសារ Excel Statement ត្រូវបានផ្ញើទៅ Telegram Group រួចរាល់!', 'success');
+        } else {
+          showToast('❌ បរាជ័យក្នុងការផ្ញើ', data.description || 'មិនអាចផ្ញើឯកសារបានទេ', 'error');
+        }
+      } catch (err) {
+        console.error('Error sending Excel statement:', err);
+        showToast('❌ បរាជ័យក្នុងការតភ្ជាប់', 'សូមពិនិត្យអ៊ីនធឺណិត ឬទំហំឯកសារ', 'error');
+      }
+    }
+    window.sendOfficialExcelStatementToTelegram = sendOfficialExcelStatementToTelegram;
+
+    // --- 4. WEBAUTHN BIOMETRIC FACEID / TOUCHID UNLOCK ---
+    function isWebAuthnSupported() {
+      return !!(window.isSecureContext && window.PublicKeyCredential && typeof navigator.credentials?.create === 'function');
+    }
+    window.isWebAuthnSupported = isWebAuthnSupported;
+
+    async function registerBiometricCredential() {
+      if (!isWebAuthnSupported()) {
+        showToast('⚠️ មិនគាំទ្រ Biometric', 'ឧបករណ៍ ឬ Browser នេះមិនទាន់បើក WebAuthn Biometric ទេ (ត្រូវការ HTTPS / Localhost)', 'warning');
+        return;
+      }
+      try {
+        const user = currentAuthUser || { username: 'himsenghorn', fullName: 'Him Senghorn' };
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+        const userId = new TextEncoder().encode(user.username || 'user');
+
+        const credential = await navigator.credentials.create({
+          publicKey: {
+            challenge: challenge,
+            rp: { name: "FinSync Pro", id: window.location.hostname },
+            user: {
+              id: userId,
+              name: user.username || 'user',
+              displayName: user.fullName || 'FinSync User'
+            },
+            pubKeyCredParams: [
+              { alg: -7, type: "public-key" },
+              { alg: -257, type: "public-key" }
+            ],
+            authenticatorSelection: {
+              authenticatorAttachment: "platform",
+              userVerification: "preferred"
+            },
+            timeout: 60000
+          }
+        });
+
+        if (credential && credential.id) {
+          const bioData = {
+            id: credential.id,
+            rawId: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
+            username: user.username,
+            enrolledAt: new Date().toISOString()
+          };
+          localStorage.setItem('finsync_bio_credential_' + user.username, JSON.stringify(bioData));
+          localStorage.setItem('finsync_bio_enabled_' + user.username, 'true');
+          updateBiometricUiState();
+          showToast('✅ ចុះឈ្មោះ Biometric ជោគជ័យ!', 'អ្នកអាចប្រើ FaceID ឬ ស្កេនក្រយៅដៃដើម្បីដោះសោ FinSync ភ្លាមៗ!', 'success');
+        }
+      } catch (err) {
+        console.warn('Biometric registration canceled or failed:', err);
+        if (err.name !== 'NotAllowedError') {
+          showToast('❌ បរាជ័យក្នុងការចុះឈ្មោះ', err.message || 'មានបញ្ហាក្នុងការស្កេន Biometric', 'error');
+        }
+      }
+    }
+    window.registerBiometricCredential = registerBiometricCredential;
+
+    async function authenticateWithBiometrics() {
+      const user = currentAuthUser || { username: 'himsenghorn' };
+      const rawBio = localStorage.getItem('finsync_bio_credential_' + user.username);
+      if (!rawBio) {
+        showToast('ℹ️ មិនទាន់ចុះឈ្មោះ Biometric', 'សូមចុះឈ្មោះ FaceID/Fingerprint នៅក្នុង Settings ជាមុនសិន!', 'info');
+        return;
+      }
+      if (!isWebAuthnSupported()) {
+        showToast('⚠️ មិនគាំទ្រ Biometric', 'ឧបករណ៍នេះមិនគាំទ្រ WebAuthn Biometric ទេ', 'warning');
+        return;
+      }
+
+      try {
+        const bioData = JSON.parse(rawBio);
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+
+        const credential = await navigator.credentials.get({
+          publicKey: {
+            challenge: challenge,
+            allowCredentials: [{
+              id: Uint8Array.from(atob(bioData.rawId), c => c.charCodeAt(0)),
+              type: 'public-key'
+            }],
+            userVerification: 'preferred',
+            timeout: 60000
+          }
+        });
+
+        if (credential) {
+          const overlay = document.getElementById('pinLockOverlay');
+          if (overlay) {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+          }
+          currentEnteredPin = '';
+          if (typeof playPinSuccessChime === 'function') playPinSuccessChime();
+          showToast('🔓 ដោះសោរជោគជ័យ!', 'ស្វាគមន៍មកកាន់ FinSync Pro តាមរយៈ Biometric / FaceID', 'success');
+        }
+      } catch (err) {
+        console.warn('Biometric authentication failed or canceled:', err);
+        if (err.name !== 'NotAllowedError') {
+          showToast('❌ បរាជ័យក្នុងការផ្ទៀងផ្ទាត់', 'មិនអាចផ្ទៀងផ្ទាត់ក្រយៅដៃ/FaceID បានទេ សូមវាយលេខកូដ PIN ជំនួសវិញ', 'warning');
+        }
+      }
+    }
+    window.authenticateWithBiometrics = authenticateWithBiometrics;
+
+    function updateBiometricUiState() {
+      const user = currentAuthUser || { username: 'himsenghorn' };
+      const isEnrolled = !!localStorage.getItem('finsync_bio_credential_' + user.username);
+      const unlockWrap = document.getElementById('biometricUnlockBtnWrap');
+      if (unlockWrap) {
+        if (isEnrolled && isWebAuthnSupported()) {
+          unlockWrap.classList.remove('hidden');
+        } else if (!isWebAuthnSupported()) {
+          unlockWrap.classList.add('hidden');
+        }
+      }
+      const enrollBtn = document.getElementById('btnEnrollBiometric');
+      if (enrollBtn) {
+        if (isEnrolled) {
+          enrollBtn.innerHTML = `<span>✅</span><span>FaceID / ក្រយៅដៃ (បានចុះឈ្មោះរួចរាល់ - ចុចដើម្បីចុះឈ្មោះឡើងវិញ)</span>`;
+        } else {
+          enrollBtn.innerHTML = `<span>👆</span><span>ចុះឈ្មោះ FaceID / ក្រយៅដៃ (Biometric)</span>`;
+        }
+      }
+    }
+    window.updateBiometricUiState = updateBiometricUiState;
+
+
     function initMega10SuperSuite() {
       initTelegramMiniApp();
       startMega10ReportScheduler();
+      initMidnightAutoBackupSystem();
+      if (typeof updateBookSwitcherUi === 'function') updateBookSwitcherUi();
+      if (typeof updateBiometricUiState === 'function') updateBiometricUiState();
       setTimeout(applyMega10StaffModeProtection, 600);
     }
 

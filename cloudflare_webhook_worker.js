@@ -176,6 +176,18 @@ function parseTextTransaction(rawText, msgUnixDate, exchangeRate = 4100) {
   };
 }
 
+function buildQuickReplyKeyboard() {
+  return {
+    keyboard: [
+      [{ text: "🍔 ម្ហូប 5000៛" }, { text: "☕ កាហ្វេ $1.50" }],
+      [{ text: "⛽ សាំង 10000៛" }, { text: "💰 /balance" }],
+      [{ text: "📊 /today" }, { text: "📈 /month" }, { text: "📁 /export" }]
+    ],
+    resize_keyboard: true,
+    is_persistent: true
+  };
+}
+
 function buildTxKeyboard(id) {
   return {
     inline_keyboard: [
@@ -268,9 +280,10 @@ export default {
       const threadId = chatType === "private" ? undefined : msg.message_thread_id;
       const text = (msg.text || msg.caption || "").trim();
 
-      // Slash Commands
-      if (/^\/(balance|today|month)\b/i.test(text)) {
-        const cmd = text.toLowerCase().split(/\s+/)[0];
+      // Slash Commands & 1-Tap Keyboard Commands
+      if (/\/(balance|today|month|debt|help|start|keyboard|menu|k|export|statement|excel)\b/i.test(text)) {
+        const m = text.match(/\/([a-zA-Z0-9_]+)/);
+        const cmd = m ? ("/" + m[1].toLowerCase()) : text.toLowerCase().split(/\s+/)[0];
         let reply = "";
         if (cmd === "/balance") {
           const bals = { cash: 0, aba: 0, wing_acleda: 0 };
@@ -280,15 +293,31 @@ export default {
           }
           const tot = bals.cash + bals.aba + bals.wing_acleda;
           reply = `💰 <b>សមតុល្យសរុប (Cloud 24/7)</b>\n• 💵 Cash: <b>$${bals.cash.toFixed(2)}</b>\n• 🏦 ABA: <b>$${bals.aba.toFixed(2)}</b>\n• 📲 Wing/ACLEDA: <b>$${bals.wing_acleda.toFixed(2)}</b>\n━━━━━━━━━━\n💎 សរុប: <b>$${tot.toFixed(2)}</b>`;
-        } else {
+        } else if (cmd === "/today" || cmd === "/month") {
           const today = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
           const prefix = cmd === "/month" ? today.slice(0, 7) : today;
           const filtered = txs.filter((t) => String(t.date || "").startsWith(prefix));
           const inc = filtered.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
           const exp = filtered.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
           reply = `📊 <b>របាយការណ៍ (${prefix})</b>\n• 🟢 ចំណូល: <b>+$${inc.toFixed(2)}</b>\n• 🔴 ចំណាយ: <b>-$${exp.toFixed(2)}</b>\n• 💎 សល់: <b>$${(inc - exp).toFixed(2)}</b>`;
+        } else if (cmd === "/keyboard" || cmd === "/menu" || cmd === "/k") {
+          reply = `⌨️ <b>ក្ដារចុច 1-Tap Quick-Expense ត្រូវបានភ្ជាប់!</b>\nចុចប៊ូតុងខាងក្រោមលើអេក្រង់ Telegram ដើម្បីកត់ត្រាចំណាយរហ័ស 1-Tap ភ្លាមៗ៖\n• 🍔 ម្ហូប 5000៛\n• ☕ កាហ្វេ $1.50\n• ⛽ សាំង 10000៛\n• 💰 /balance\n• 📊 /today • 📈 /month • 📁 /export`;
+        } else if (cmd === "/start" || cmd === "/help") {
+          reply = `🤖 <b>ស្វាគមន៍មកកាន់ FinSync Pro Bot (Cloud Webhook 24/7)!</b>\n• កត់ត្រាចំណូល/ចំណាយ: វាយអក្សរធម្មតា ឬចុចប៊ូតុង 1-Tap ខាងក្រោម\n• <code>/balance</code>: ពិនិត្យសមតុល្យ\n• <code>/today</code>: របាយការណ៍ថ្ងៃនេះ\n• <code>/month</code>: របាយការណ៍ខែនេះ\n• <code>/export</code>: ទាញយករបាយការណ៍\n• <code>/keyboard</code>: បើកក្ដារចុច 1-Tap`;
+        } else if (cmd === "/export" || cmd === "/statement" || cmd === "/excel") {
+          const today = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+          const inc = txs.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+          const exp = txs.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+          reply = `📊 <b>របាយការណ៍ហិរញ្ញវត្ថុផ្លូវការ FinSync Pro</b>\n📅 កាលបរិច្ឆេទ: <b>${today}</b>\n📝 ចំនួនប្រតិបត្តិការ: <b>${txs.length} កំណត់ត្រា</b>\n• 🟢 ចំណូលសរុប: <b>+$${inc.toFixed(2)}</b>\n• 🔴 ចំណាយសរុប: <b>-$${exp.toFixed(2)}</b>\n💎 <b>សមតុល្យសុទ្ធ: $${(inc - exp).toFixed(2)}</b>\n\n<i>(លោកអ្នកក៏អាចទាញយកឯកសារ Excel .xls ពេញលេញតាមរយៈ FinSync App ➔ Mega 10 Suite ➔ Excel & Staff)</i>`;
+        } else {
+          reply = `🤖 ពាក្យបញ្ជា៖ <code>/balance</code>, <code>/today</code>, <code>/month</code>, <code>/export</code>, <code>/keyboard</code>`;
         }
-        const p = { chat_id: chatId, text: reply, parse_mode: "HTML" };
+        const p = {
+          chat_id: chatId,
+          text: reply,
+          parse_mode: "HTML",
+          reply_markup: buildQuickReplyKeyboard()
+        };
         if (threadId) p.message_thread_id = threadId;
         await tgApi("sendMessage", p);
         return new Response("OK");

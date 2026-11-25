@@ -262,8 +262,69 @@ def parse_text_transaction(raw_text, msg_unix_date=None, exchange_rate=4100):
     }
 
 
+
+def build_quick_reply_keyboard():
+    return {
+        "keyboard": [
+            [{"text": "🍔 ម្ហូប 5000៛"}, {"text": "☕ កាហ្វេ $1.50"}],
+            [{"text": "⛽ សាំង 10000៛"}, {"text": "💰 /balance"}],
+            [{"text": "📊 /today"}, {"text": "📈 /month"}, {"text": "📁 /export"}]
+        ],
+        "resize_keyboard": True,
+        "is_persistent": True
+    }
+
+
+def tg_send_document(filename, file_bytes, caption="", chat_id=TELEGRAM_CHAT_ID, thread_id=None):
+    boundary = f"----WebKitFormBoundary{int(time.time()*1000)}"
+    crlf = b"\r\n"
+    b_boundary = f"--{boundary}".encode("utf-8")
+    body = bytearray()
+    
+    # chat_id
+    body.extend(b_boundary + crlf)
+    body.extend(b'Content-Disposition: form-data; name="chat_id"' + crlf + crlf)
+    body.extend(str(chat_id).encode("utf-8") + crlf)
+    
+    if thread_id:
+        body.extend(b_boundary + crlf)
+        body.extend(b'Content-Disposition: form-data; name="message_thread_id"' + crlf + crlf)
+        body.extend(str(thread_id).encode("utf-8") + crlf)
+        
+    if caption:
+        body.extend(b_boundary + crlf)
+        body.extend(b'Content-Disposition: form-data; name="caption"' + crlf + crlf)
+        body.extend(str(caption).encode("utf-8") + crlf)
+        body.extend(b_boundary + crlf)
+        body.extend(b'Content-Disposition: form-data; name="parse_mode"' + crlf + crlf)
+        body.extend(b"HTML" + crlf)
+        
+    # document
+    body.extend(b_boundary + crlf)
+    body.extend(f'Content-Disposition: form-data; name="document"; filename="{filename}"'.encode("utf-8") + crlf)
+    body.extend(b"Content-Type: application/vnd.ms-excel" + crlf + crlf)
+    body.extend(file_bytes)
+    body.extend(crlf)
+    body.extend(f"--{boundary}--".encode("utf-8") + crlf)
+    
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument",
+        data=bytes(body),
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        print(f"[TG ERROR] sendDocument: {e}")
+        return {"ok": False, "error": str(e)}
+
+
 def handle_slash_command(cmd_text, user_data, thread_id=None):
-    cmd = cmd_text.strip().lower().split()[0]
+    # Extract clean command word even if preceded by emoji (e.g. '💰 /balance' or '/balance@bot')
+    m = re.search(r"/([a-zA-Z0-9_]+)", cmd_text)
+    cmd = ("/" + m.group(1).lower()) if m else cmd_text.strip().lower().split()[0]
     txs = user_data.get("transactions", []) or []
     debts = user_data.get("debts", []) or []
     rate = float(user_data.get("exchangeRate", 4100) or 4100)
@@ -280,44 +341,138 @@ def handle_slash_command(cmd_text, user_data, thread_id=None):
             bals[w] += amt if t.get("type") == "income" else -amt
         tot = sum(bals.values())
         reply = (
-            "💰 <b>របាយការណ៍សមតុល្យគ្រប់កាបូប (24/7 Cloud)</b>\n"
-            f"• 💵 Cash: <b>${bals['cash']:.2f}</b>\n"
-            f"• 🏦 ABA: <b>${bals['aba']:.2f}</b>\n"
-            f"• 📲 Wing/ACLEDA: <b>${bals['wing_acleda']:.2f}</b>\n"
-            f"💎 <b>សរុបរួម: ${tot:.2f} ({round(tot*rate):,} ៛)</b>"
-        )
+            f"""💰 <b>របាយការណ៍សមតុល្យគ្រប់កាបូប (24/7 Cloud)</b>\n"""
+            f"""• 💵 Cash: <b>${bals['cash']:.2f}</b>\n"""
+            f"""• 🏦 ABA: <b>${bals['aba']:.2f}</b>\n"""
+            f"""• 📲 Wing/ACLEDA: <b>${bals['wing_acleda']:.2f}</b>\n"""
+            f"""💎 <b>សរុបរួម: ${tot:.2f} ({round(tot*rate):,} ៛)</b>"""
+        ).replace('\\n', '\n')
     elif cmd == "/today":
         inc = sum(float(t.get("amountUSD", 0)) for t in txs if t.get("date") == today_str and t.get("type") == "income")
         exp = sum(float(t.get("amountUSD", 0)) for t in txs if t.get("date") == today_str and t.get("type") != "income")
         reply = (
-            f"📅 <b>របាយការណ៍ថ្ងៃនេះ ({today_str})</b>\n"
-            f"• 🟢 ចំណូល: <b>+${inc:.2f}</b>\n"
-            f"• 🔴 ចំណាយ: <b>-${exp:.2f}</b>\n"
-            f"• ✨ សល់សុទ្ធ: <b>${(inc - exp):.2f}</b>"
-        )
+            f"""📅 <b>របាយការណ៍ថ្ងៃនេះ ({today_str})</b>\n"""
+            f"""• 🟢 ចំណូល: <b>+${inc:.2f}</b>\n"""
+            f"""• 🔴 ចំណាយ: <b>-${exp:.2f}</b>\n"""
+            f"""• ✨ សល់សុទ្ធ: <b>${(inc - exp):.2f}</b>"""
+        ).replace('\\n', '\n')
     elif cmd == "/month":
         inc = sum(float(t.get("amountUSD", 0)) for t in txs if str(t.get("date", "")).startswith(month_prefix) and t.get("type") == "income")
         exp = sum(float(t.get("amountUSD", 0)) for t in txs if str(t.get("date", "")).startswith(month_prefix) and t.get("type") != "income")
         reply = (
-            f"📊 <b>របាយការណ៍ប្រចាំខែ ({month_prefix})</b>\n"
-            f"• 🟢 ចំណូលខែនេះ: <b>+${inc:.2f}</b>\n"
-            f"• 🔴 ចំណាយខែនេះ: <b>-${exp:.2f}</b>\n"
-            f"• 💎 សល់សុទ្ធ: <b>${(inc - exp):.2f}</b>"
-        )
+            f"""📊 <b>របាយការណ៍ប្រចាំខែ ({month_prefix})</b>\n"""
+            f"""• 🟢 ចំណូលខែនេះ: <b>+${inc:.2f}</b>\n"""
+            f"""• 🔴 ចំណាយខែនេះ: <b>-${exp:.2f}</b>\n"""
+            f"""• 💎 សល់សុទ្ធ: <b>${(inc - exp):.2f}</b>"""
+        ).replace('\\n', '\n')
     elif cmd == "/debt":
         unpaid = [d for d in debts if d.get("status") != "paid"]
         lent = sum(float(d.get("amountUSD", 0)) for d in unpaid if d.get("type") == "lent")
         borr = sum(float(d.get("amountUSD", 0)) for d in unpaid if d.get("type") != "lent")
-        reply = f"🤝 <b>បញ្ជីបំណុលមិនទាន់ទូទាត់</b>\n• 🟢 គេជំពាក់យើង: <b>${lent:.2f}</b>\n• 🔴 យើងជំពាក់គេ: <b>${borr:.2f}</b>"
+        reply = f"""🤝 <b>បញ្ជីបំណុលមិនទាន់ទូទាត់</b>\n• 🟢 គេជំពាក់យើង: <b>${lent:.2f}</b>\n• 🔴 យើងជំពាក់គេ: <b>${borr:.2f}</b>""".replace('\\n', '\n')
+    elif cmd in ("/keyboard", "/menu", "/k"):
+        reply = (
+            """⌨️ <b>ក្ដារចុច 1-Tap Quick-Expense ត្រូវបានភ្ជាប់!</b>\n\n"""
+            """លោកអ្នកអាចចុចលើប៊ូតុងខាងក្រោមលើអេក្រង់ Telegram ដើម្បីកត់ត្រាចំណាយរហ័ស 1-Tap ដោយមិនបាច់វាយអក្សរឡើយ៖\n\n"""
+            """• 🍔 <b>ម្ហូប 5000៛</b>\n"""
+            """• ☕ <b>កាហ្វេ $1.50</b>\n"""
+            """• ⛽ <b>សាំង 10000៛</b>\n"""
+            """• 💰 <b>/balance</b>\n"""
+            """• 📊 <b>/today</b> • 📈 <b>/month</b> • 📁 <b>/export</b>"""
+        ).replace('\\n', '\n')
+    elif cmd in ("/start", "/help"):
+        reply = (
+            """🤖 <b>ស្វាគមន៍មកកាន់ FinSync Pro Bot 24/7!</b>\n\n"""
+            """• កត់ត្រាចំណូល/ចំណាយ: វាយអក្សរធម្មតា ឬចុចប៊ូតុង 1-Tap ខាងក្រោម\n"""
+            """• <code>/balance</code>: ពិនិត្យសមតុល្យលុយគ្រប់កាបូប\n"""
+            """• <code>/today</code>: របាយការណ៍ចំណូលចំណាយថ្ងៃនេះ\n"""
+            """• <code>/month</code>: របាយការណ៍ប្រចាំខែ\n"""
+            """• <code>/debt</code>: បញ្ជីបំណុល\n"""
+            """• <code>/export</code>: ទាញយកឯកសារ Excel (.xls) ផ្ទាល់\n"""
+            """• <code>/keyboard</code>: បើកក្ដារចុច 1-Tap Quick Keyboard"""
+        ).replace('\\n', '\n')
+    elif cmd in ("/export", "/statement", "/excel"):
+        today_date = datetime.now().strftime("%Y-%m-%d")
+        fn = f"FinSync_Statement_{today_date}.xls"
+        
+        total_inc = sum(float(t.get("amountUSD", 0) or 0) for t in txs if t.get("type") == "income")
+        total_exp = sum(float(t.get("amountUSD", 0) or 0) for t in txs if t.get("type") != "income")
+        net_usd = total_inc - total_exp
+        
+        rows_xml = []
+        for idx, t in enumerate(txs):
+            is_inc = t.get("type") == "income"
+            type_lbl = "ចំណូល (Income)" if is_inc else "ចំណាយ (Expense)"
+            amt_usd = f"{'+' if is_inc else '-'}${float(t.get('amountUSD', 0) or 0):.2f}"
+            amt_khr = f"{int(t.get('amountKHR', 0) or 0):,} ៛"
+            cat = str(t.get("category", "")).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            w = str(t.get("wallet", "cash"))
+            note = str(t.get("note", "")).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            date_val = str(t.get("date", ""))
+            time_val = str(t.get("txTime", ""))
+            
+            rows_xml.append(
+                f'<Row>'
+                f'<Cell><Data ss:Type="Number">{idx+1}</Data></Cell>'
+                f'<Cell><Data ss:Type="String">{date_val}</Data></Cell>'
+                f'<Cell><Data ss:Type="String">{time_val}</Data></Cell>'
+                f'<Cell><Data ss:Type="String">{type_lbl}</Data></Cell>'
+                f'<Cell><Data ss:Type="String">{amt_usd}</Data></Cell>'
+                f'<Cell><Data ss:Type="String">{amt_khr}</Data></Cell>'
+                f'<Cell><Data ss:Type="String">{cat}</Data></Cell>'
+                f'<Cell><Data ss:Type="String">{w}</Data></Cell>'
+                f'<Cell><Data ss:Type="String">{note}</Data></Cell>'
+                f'</Row>'
+            )
+            
+        xml_content = (
+            '<?xml version="1.0"?>\n'
+            '<?mso-application progid="Excel.Sheet"?>\n'
+            '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n'
+            ' xmlns:o="urn:schemas-microsoft-com:office:office"\n'
+            ' xmlns:x="urn:schemas-microsoft-com:office:excel"\n'
+            ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n'
+            ' <Worksheet ss:Name="FinSync Statement">\n'
+            '  <Table>\n'
+            '   <Row>\n'
+            '    <Cell><Data ss:Type="String">ល.រ</Data></Cell>\n'
+            '    <Cell><Data ss:Type="String">កាលបរិច្ឆេទ</Data></Cell>\n'
+            '    <Cell><Data ss:Type="String">ម៉ោង</Data></Cell>\n'
+            '    <Cell><Data ss:Type="String">ប្រភេទ</Data></Cell>\n'
+            '    <Cell><Data ss:Type="String">ចំនួន ($)</Data></Cell>\n'
+            '    <Cell><Data ss:Type="String">ចំនួន (៛)</Data></Cell>\n'
+            '    <Cell><Data ss:Type="String">ជំពូក</Data></Cell>\n'
+            '    <Cell><Data ss:Type="String">កាបូប</Data></Cell>\n'
+            '    <Cell><Data ss:Type="String">កំណត់សម្គាល់</Data></Cell>\n'
+            '   </Row>\n'
+            + "\n".join(rows_xml) +
+            '\n  </Table>\n'
+            ' </Worksheet>\n'
+            '</Workbook>'
+        ).replace('\\n', '\n')
+        
+        cap = (
+            f"""📊 <b>របាយការណ៍ហិរញ្ញវត្ថុផ្លូវការ FinSync Pro (.xls)</b>\n"""
+            f"""📅 កាលបរិច្ឆេទ: <b>{today_date}</b>\n"""
+            f"""📝 ចំនួនប្រតិបត្តិការ: <b>{len(txs)} កំណត់ត្រា</b>\n"""
+            f"""• 🟢 ចំណូលសរុប: <b>+${total_inc:.2f}</b>\n"""
+            f"""• 🔴 ចំណាយសរុប: <b>-${total_exp:.2f}</b>\n"""
+            f"""💎 <b>សមតុល្យសុទ្ធ: ${net_usd:.2f} ({round(net_usd*rate):,} ៛)</b>"""
+        ).replace('\\n', '\n')
+        tg_send_document(fn, xml_content.encode("utf-8"), caption=cap, chat_id=TELEGRAM_CHAT_ID, thread_id=thread_id)
+        reply = "📁 <b>បានផ្ញើឯកសារ Excel Statement (.xls) ទៅកាន់ Telegram រួចរាល់!</b>"
     else:
-        reply = "🤖 ពាក្យបញ្ជា៖ <code>/balance</code>, <code>/today</code>, <code>/month</code>, <code>/debt</code>"
+        reply = "🤖 ពាក្យបញ្ជា៖ <code>/balance</code>, <code>/today</code>, <code>/month</code>, <code>/debt</code>, <code>/export</code>, <code>/keyboard</code>"
 
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": reply, "parse_mode": "HTML"}
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": reply,
+        "parse_mode": "HTML",
+        "reply_markup": build_quick_reply_keyboard()
+    }
     if thread_id:
         payload["message_thread_id"] = int(thread_id)
     tg_api("sendMessage", payload)
-
-
 def main():
     try:
         sys.stdout.reconfigure(line_buffering=True)
@@ -390,6 +545,59 @@ def main():
                             sched_cfg["lastEveningSent"] = today_key
                             patch_firebase_fields({"scheduledReportsConfig": sched_cfg})
                             print(f"[SCHEDULER] Sent Evening Closeout ({today_key})")
+
+                        # Automated Midnight 00:00 (12:00 AM) Full Backup Snapshot
+                        if cur_hm == "00:00" and sched_cfg.get("lastMidnightBackupSent") != today_key:
+                            bk_payload = {
+                                "version": "2.1",
+                                "exportedAt": now_dt.isoformat(),
+                                "date": today_key,
+                                "user": FIREBASE_USER_DOC,
+                                "exchangeRate": ud_sched.get("exchangeRate", 4100),
+                                "monthlyBudget": ud_sched.get("monthlyBudget", 300),
+                                "transactions": txs_s,
+                                "debts": debts_s,
+                                "savingsGoals": ud_sched.get("savingsGoals", []),
+                                "recurringBills": ud_sched.get("recurringBills", []),
+                                "tasks": ud_sched.get("tasks", [])
+                            }
+                            bk_path = f"d:\\system\\backups\\FinSync_AutoBackup_{today_key}.json"
+                            try:
+                                with open(bk_path, "w", encoding="utf-8") as bf:
+                                    json.dump(bk_payload, bf, ensure_ascii=False, indent=2)
+                                print(f"[BACKUP] Saved local file: {bk_path}")
+                            except Exception as be:
+                                print(f"[BACKUP LOCAL SAVE ERROR] {be}")
+
+                            hist_backups = ud_sched.get("autoMidnightBackups", []) or []
+                            new_entry = {
+                                "id": f"bk_{today_key}",
+                                "date": today_key,
+                                "time": "00:00",
+                                "timestamp": now_dt.isoformat(),
+                                "label": f"🌙 Backup ស្វ័យប្រវត្តិម៉ោង ១២ យប់ ({today_key})",
+                                "txCount": len(txs_s),
+                                "debtCount": len(debts_s),
+                                "taskCount": len(ud_sched.get("tasks", []) or []),
+                                "payload": bk_payload
+                            }
+                            hist_backups = [b for b in hist_backups if b.get("date") != today_key]
+                            hist_backups.insert(0, new_entry)
+                            sched_cfg["lastMidnightBackupSent"] = today_key
+                            patch_firebase_fields({
+                                "scheduledReportsConfig": sched_cfg,
+                                "autoMidnightBackups": hist_backups[:30]
+                            })
+
+                            msg_b = (
+                                f"🌙 💾 <b>ប្រព័ន្ធបាន Backup ទិន្នន័យស្វ័យប្រវត្តិម៉ោង ១២ យប់ (00:00) រួចរាល់!</b>\n"
+                                f"• កាលបរិច្ឆេទ: <b>{today_key}</b>\n"
+                                f"• ប្រតិបត្តិការ: <b>{len(txs_s)}</b> | បំណុល: <b>{len(debts_s)}</b>\n"
+                                f"• រក្សាទុកក្នុង Disk: <code>FinSync_AutoBackup_{today_key}.json</code>\n"
+                                f"💎 <b>សុវត្ថិភាពទិន្នន័យ: បានរក្សាទុកក្នុង Cloud & ចំណុច Restore ស្វ័យប្រវត្តិ ១០០%!</b>"
+                            )
+                            tg_api("sendMessage", {"chat_id": TELEGRAM_CHAT_ID, "text": msg_b, "parse_mode": "HTML"})
+                            print(f"[SCHEDULER] Completed Midnight Backup ({today_key})")
                 except Exception as sched_err:
                     print(f"[SCHEDULER ERROR] {sched_err}")
 
@@ -486,7 +694,7 @@ def main():
 
                 target_chat_id = chat_id or TELEGRAM_CHAT_ID
 
-                if re.match(r"^/(balance|today|month|debt|help)\b", msg_text, re.I):
+                if re.search(r"/(balance|today|month|debt|help|start|keyboard|menu|k|export|statement|excel)\b", msg_text, re.I):
                     handle_slash_command(msg_text, user_data, thread_id)
                     continue
 
