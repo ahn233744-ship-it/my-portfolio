@@ -183,7 +183,11 @@ def format_tx_card(tx):
 
 def parse_text_transaction(raw_text, msg_unix_date=None, exchange_rate=4100):
     text = convert_khmer_digits(str(raw_text or "").strip())
-    text = re.sub(r"^/add\s+", "", text, flags=re.I)
+    # Clean bot mentions and bot tags (e.g. @SV10_Bot, SV10_Bot, /add)
+    text = re.sub(r"@[A-Za-z0-9_]+", " ", text)
+    text = re.sub(r"\b[A-Za-z0-9_]*bot\b", " ", text, flags=re.I)
+    text = re.sub(r"^/add\s+", " ", text, flags=re.I)
+    text = re.sub(r"\s+", " ", text).strip()
     if not text or is_own_bot_alert(text):
         return None
 
@@ -323,8 +327,9 @@ def main():
     print(f"-> Bot Token: {TELEGRAM_BOT_TOKEN[:15]}...")
     print(f"-> Authorized Group: {TELEGRAM_CHAT_ID} (Also accepts private DMs)")
     purge_conflicting_webhook()
-    last_offset = 0
+    last_offset = -25
     last_hb = 0
+    last_sched_check = 0
 
     while True:
         try:
@@ -332,6 +337,61 @@ def main():
             if now_ts - last_hb >= 12:
                 patch_firebase_fields({"botWorkerLastHeartbeat": int(now_ts * 1000)})
                 last_hb = now_ts
+
+            # Automated Scheduled Reports (07:00 Morning Summary & 21:00 Evening Closeout)
+            if now_ts - last_sched_check >= 55:
+                last_sched_check = now_ts
+                try:
+                    ud_sched = get_firebase_userdata()
+                    sched_cfg = ud_sched.get("scheduledReportsConfig") or {}
+                    if sched_cfg.get("enabled", True):
+                        now_dt = datetime.now()
+                        today_key = now_dt.strftime("%Y-%m-%d")
+                        cur_hm = now_dt.strftime("%H:%M")
+                        m_time = str(sched_cfg.get("morningTime") or "07:00")
+                        e_time = str(sched_cfg.get("eveningTime") or "21:00")
+                        txs_s = ud_sched.get("transactions", []) or []
+                        debts_s = ud_sched.get("debts", []) or []
+
+                        if cur_hm == m_time and sched_cfg.get("lastMorningSent") != today_key:
+                            bals = {"cash": 0.0, "aba": 0.0, "wing_acleda": 0.0}
+                            for t in txs_s:
+                                w = t.get("wallet", "cash")
+                                if w not in bals:
+                                    bals[w] = 0.0
+                                amt_u = float(t.get("amountUSD", 0) or 0)
+                                bals[w] += amt_u if t.get("type") == "income" else -amt_u
+                            unpaid_lent = sum(float(d.get("amountUSD", 0) or 0) for d in debts_s if d.get("status") != "paid" and d.get("type") == "lent")
+                            msg_m = (
+                                f"🌅 <b>សួស្ដីពេលព្រឹក! របាយការណ៍សង្ខេបប្រចាំថ្ងៃ ({today_key})</b>\n"
+                                f"• 💵 Cash: <b>${bals['cash']:.2f}</b>\n"
+                                f"• 🏦 ABA: <b>${bals['aba']:.2f}</b>\n"
+                                f"• 📲 Wing/ACLEDA: <b>${bals['wing_acleda']:.2f}</b>\n"
+                                f"• 💎 សមតុល្យសរុប: <b>${sum(bals.values()):.2f}</b>\n"
+                                f"• 🤝 បំណុលត្រូវទារសរុប: <b>${unpaid_lent:.2f}</b>"
+                            )
+                            tg_api("sendMessage", {"chat_id": TELEGRAM_CHAT_ID, "text": msg_m, "parse_mode": "HTML"})
+                            sched_cfg["lastMorningSent"] = today_key
+                            patch_firebase_fields({"scheduledReportsConfig": sched_cfg})
+                            print(f"[SCHEDULER] Sent Morning Summary ({today_key})")
+
+                        if cur_hm == e_time and sched_cfg.get("lastEveningSent") != today_key:
+                            today_txs = [t for t in txs_s if str(t.get("date", "")).startswith(today_key)]
+                            inc_d = sum(float(t.get("amountUSD", 0) or 0) for t in today_txs if t.get("type") == "income")
+                            exp_d = sum(float(t.get("amountUSD", 0) or 0) for t in today_txs if t.get("type") == "expense")
+                            msg_e = (
+                                f"🌙 <b>របាយការណ៍បិទបញ្ជីយប់ស្វ័យប្រវត្តិ ({today_key})</b>\n"
+                                f"• 🟢 ចំណូលថ្ងៃនេះ: <b>+${inc_d:.2f}</b>\n"
+                                f"• 🔴 ចំណាយថ្ងៃនេះ: <b>-${exp_d:.2f}</b>\n"
+                                f"• 💎 សល់សុទ្ធថ្ងៃនេះ: <b>${(inc_d - exp_d):.2f}</b>\n"
+                                f"• 🧾 ចំនួនប្រតិបត្តិការ: <b>{len(today_txs)}</b>"
+                            )
+                            tg_api("sendMessage", {"chat_id": TELEGRAM_CHAT_ID, "text": msg_e, "parse_mode": "HTML"})
+                            sched_cfg["lastEveningSent"] = today_key
+                            patch_firebase_fields({"scheduledReportsConfig": sched_cfg})
+                            print(f"[SCHEDULER] Sent Evening Closeout ({today_key})")
+                except Exception as sched_err:
+                    print(f"[SCHEDULER ERROR] {sched_err}")
 
             allowed = urllib.parse.quote(json.dumps(["message", "channel_post", "callback_query"]))
             url = (
@@ -428,6 +488,48 @@ def main():
 
                 if re.match(r"^/(balance|today|month|debt|help)\b", msg_text, re.I):
                     handle_slash_command(msg_text, user_data, thread_id)
+                    continue
+
+                # Handle Voice Note / Audio messages
+                has_voice = bool(msg.get("voice")) or bool(msg.get("audio"))
+                if has_voice:
+                    if msg_text:
+                        parsed = parse_text_transaction(msg_text, msg.get("date"), rate)
+                        if parsed:
+                            parsed["tgMessageId"] = msg.get("message_id")
+                            txs.insert(0, parsed)
+                            txs_changed = True
+                            send_p = {
+                                "chat_id": target_chat_id,
+                                "text": format_tx_card(parsed),
+                                "parse_mode": "HTML",
+                                "reply_markup": build_tx_inline_keyboard(parsed["id"]),
+                            }
+                            if thread_id and chat_type != "private":
+                                send_p["message_thread_id"] = int(thread_id)
+                            tg_api("sendMessage", send_p)
+                    else:
+                        v_obj = msg.get("voice") or msg.get("audio") or {}
+                        file_id = v_obj.get("file_id", "")
+                        pending_v = user_data.get("pendingTgVoices", []) or []
+                        pending_v.append({
+                            "file_id": file_id,
+                            "message_id": msg.get("message_id"),
+                            "message_thread_id": thread_id,
+                            "date": msg.get("date"),
+                            "duration": v_obj.get("duration", 0),
+                            "sender": from_name,
+                        })
+                        patch_firebase_fields({"pendingTgVoices": pending_v[-20:]})
+                        ack_v = {
+                            "chat_id": target_chat_id,
+                            "text": "🎙️ ✅ <b>Bot 24/7 បានទទួលសារសំឡេងទុកក្នុង Cloud រួចរាល់!</b>\n<i>(សូមបើក FinSync Pro ➔ Mega 10 Suite ➔ សារសំឡេង ដើម្បីស្ដាប់/កត់ត្រា ឬវាយអក្សរខ្លីភ្ជាប់សំឡេង)</i>",
+                            "parse_mode": "HTML",
+                        }
+                        if thread_id and chat_type != "private":
+                            ack_v["message_thread_id"] = int(thread_id)
+                        tg_api("sendMessage", ack_v)
+                        print(f"  -> [FS QUEUED VOICE NOTE] file_id={file_id}")
                     continue
 
                 # If photo arrives while browser is closed: queue photo file_id for OCR or parse caption if provided

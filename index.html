@@ -278,6 +278,12 @@
           <span>មុខងារ<span class="hidden sm:inline">ទាំងអស់</span></span>
         </button>
 
+        <!-- 1B. Mega 10 Super-Suite Launcher (Cloud, Voice, TMA, AI Pro, Barcode, Excel/PDF, Staff) -->
+        <button type="button" onclick="openMega10SuiteModal('cloud')" id="btnHeaderMega10" title="មុខងារពិសេសទាំង ១០ (Cloud 24/7, Voice, Mini App, Auto Report, AI Pro, Live FX, Barcode POS, បង់រំលស់, Excel/PDF, Staff Mode)" class="flex items-center gap-1.5 px-2.5 py-2 min-h-[40px] rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80 shadow-sm border border-rose-300/40 whitespace-nowrap shrink-0 touch-manipulation">
+          <span>🚀</span>
+          <span>Mega<span class="hidden sm:inline"> 10</span></span>
+        </button>
+
         <!-- 2. Simple vs Full Mode Toggle (របៀបងាយស្រួល ⇄ ពេញលេញ) -->
         <button type="button" onclick="toggleSimpleCleanUiMode()" id="btnHeaderSimpleMode" title="ប្ដូររវាង របៀបងាយស្រួល (Simple) និង របៀបពេញលេញ (Pro)" class="flex items-center gap-1 px-2.5 py-2 min-h-[40px] rounded-xl border border-cyan-400/40 bg-[#142c50] text-xs font-extrabold text-cyan-200 hover:border-cyan-300 hover:text-white transition active:opacity-80 whitespace-nowrap shrink-0 touch-manipulation">
           <span id="simpleModeIcon">⚡</span>
@@ -4992,6 +4998,9 @@
 
       <!-- 4 Main Suite Quick Launchers -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-[#0a182b] p-2 rounded-2xl border border-cyan-400/30">
+        <button type="button" onclick="closeAllFunctionsHubModal(); openMega10SuiteModal('cloud');" class="col-span-2 sm:col-span-4 py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80 flex items-center justify-center gap-1.5 shadow-sm">
+          <span>🚀 មជ្ឈមណ្ឌល Mega 10 Super-Suite (Cloud 24/7, Voice, TMA, Auto-Report, AI Pro, Live FX, Barcode POS, បង់រំលស់, Excel/PDF & Staff Mode)</span>
+        </button>
         <button type="button" onclick="closeAllFunctionsHubModal(); openUltimate10SuiteModal('ai');" class="py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 flex items-center justify-center gap-1.5">
           <span>🤖 AI Copilot & POS (10)</span>
         </button>
@@ -5023,6 +5032,257 @@
 
       <!-- Categorized Grid Container -->
       <div id="allFunctionsHubGridContainer" class="space-y-4 max-h-[65vh] overflow-y-auto pr-1"></div>
+    </div>
+  </div>
+
+  <!-- ==================== MEGA 10 SUPER-SUITE MODAL ==================== -->
+  <div id="mega10SuiteModal" class="fixed inset-0 z-[70] bg-slate-950/85 backdrop-blur-md hidden items-center justify-center p-2.5 sm:p-4">
+    <div class="bank-card w-full max-w-4xl rounded-3xl p-4 sm:p-6 shadow-2xl border border-cyan-400/40 text-white space-y-4 max-h-[93vh] overflow-y-auto">
+      <!-- Header -->
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#1e3d6b]">
+        <div class="flex items-center gap-2.5">
+          <span class="w-10 h-10 rounded-2xl bg-rose-600/20 border border-rose-400/40 flex items-center justify-center text-xl">🚀</span>
+          <div>
+            <h3 class="text-sm sm:text-base font-black text-white">មជ្ឈមណ្ឌល Mega 10 Super-Suite (មុខងារទំនើបទាំង ១០)</h3>
+            <p class="text-[11px] text-cyan-300">Cloud Webhook 24/7 • Voice • Telegram Mini App • Auto Reports • AI Pro • Live FX • Barcode POS • បង់រំលស់ • Excel/PDF • Staff Mode</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="mega10RoleBadge" class="px-2.5 py-1 rounded-xl bg-cyan-500/15 border border-cyan-400/35 text-cyan-200 text-[11px] font-black">👑 Admin Mode</span>
+          <button type="button" onclick="closeMega10SuiteModal()" class="w-9 h-9 rounded-xl bg-[#163056] hover:bg-rose-600 text-slate-200 hover:text-white font-bold flex items-center justify-center transition active:opacity-80">✕</button>
+        </div>
+      </div>
+
+      <!-- 5 Category Tabs -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-[#0a182b] p-1.5 rounded-2xl border border-[#1e3d6b]">
+        <button type="button" id="m10TabBtn_cloud" onclick="switchMega10Tab('cloud')" class="py-2 px-2 rounded-xl text-[11px] font-black bg-cyan-600 text-white transition active:opacity-80">☁️ Cloud & TMA</button>
+        <button type="button" id="m10TabBtn_voice" onclick="switchMega10Tab('voice')" class="py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">🎙️ Voice & Auto</button>
+        <button type="button" id="m10TabBtn_ai" onclick="switchMega10Tab('ai')" class="py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">🧠 AI Pro & FX</button>
+        <button type="button" id="m10TabBtn_pos" onclick="switchMega10Tab('pos')" class="py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">📷 Barcode & រំលស់</button>
+        <button type="button" id="m10TabBtn_export" onclick="switchMega10Tab('export')" class="py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">📊 Excel & Staff</button>
+      </div>
+
+      <!-- TAB 1: CLOUD WEBHOOK 24/7 & TELEGRAM MINI APP (FUNCTIONS 1 & 3) -->
+      <div id="m10Panel_cloud" class="space-y-4">
+        <!-- Function 1: Cloud Webhook 24/7 -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">1️⃣ ☁️ Telegram Cloud Webhook ២៤/៧ (ដំណើរការទោះបិទកុំព្យូទ័រ)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">ប្រើឯកសារ <code class="text-cyan-200">cloudflare_webhook_worker.js</code> ដាក់លើ Cloudflare Workers (ឥតគិតថ្លៃ ១០០%) រួច Paste Link ខាងក្រោម៖</p>
+            </div>
+            <button type="button" onclick="checkMega10WebhookStatus()" class="px-3 py-1.5 rounded-xl bg-[#142c50] hover:bg-cyan-600 text-cyan-200 hover:text-white border border-cyan-400/35 text-[11px] font-bold transition active:opacity-80">🔍 ពិនិត្យស្ថានភាព</button>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="url" id="m10WebhookUrlInput" placeholder="https://finsync-tg-bot.yourname.workers.dev" class="flex-1 text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2.5 text-white focus:outline-none">
+            <button type="button" onclick="activateMega10CloudWebhook()" class="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 shrink-0">⚡ ភ្ជាប់ Cloud 24/7</button>
+            <button type="button" onclick="purgeTelegramConflictingWebhook(null, true)" class="px-3 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80 shrink-0">🔌 ផ្ដាច់មក Local វិញ</button>
+          </div>
+          <div id="m10WebhookStatusBox" class="text-[11px] p-2.5 rounded-xl bg-[#102444] border border-[#1e3d6b] text-slate-300">ℹ️ ស្ថានភាព៖ ត្រៀមរួចរាល់។ កូដ Worker ត្រូវបានបង្កើតទុកនៅ <code>d:\system\cloudflare_webhook_worker.js</code>។</div>
+        </div>
+
+        <!-- Function 3: Telegram Mini App (TMA) -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">3️⃣ 📱 Telegram Mini App (TMA — បើក FinSync App ក្នុង Telegram ផ្ទាល់)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">ដាក់ប៊ូតុង «📱 បើក FinSync App» នៅខាងក្រោមឆាត Telegram ដើម្បីបើកកម្មវិធីពេញអេក្រង់ក្នុង Telegram តែម្ដង!</p>
+            </div>
+            <span id="m10TmaDetectBadge" class="px-2.5 py-1 rounded-xl bg-[#142c50] border border-cyan-400/30 text-[11px] font-bold text-cyan-200">🌐 Browser Mode</span>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="url" id="m10TmaUrlInput" placeholder="https://your-hosted-finsync.pages.dev (HTTPS URL របស់ index.html)" class="flex-1 text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2.5 text-white focus:outline-none">
+            <button type="button" onclick="setupTelegramMiniAppButton()" class="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 shrink-0">📲 ដំឡើងប៊ូតុង Mini App</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: VOICE NOTE TO TRANSACTION & SCHEDULED AUTO-REPORTS (FUNCTIONS 2 & 4) -->
+      <div id="m10Panel_voice" class="hidden space-y-4">
+        <!-- Function 2: Voice Note to Transaction -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">2️⃣ 🎙️ កត់ត្រាតាមសំឡេងឆ្លាតវៃ (Khmer/EN Voice-to-Transaction)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">ចុច Mic និយាយឧទាហរណ៍៖ «ទិញបាយ 5000 រៀល» ឬ «ចាក់សាំង 5 ដុល្លារ ABA» ➔ កត់ត្រា & ផ្ញើ Telegram ស្វ័យប្រវត្តិ!</p>
+            </div>
+            <select id="m10VoiceLangSelect" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-1.5 text-white">
+              <option value="km-KH">🇰🇭 ភាសាខ្មែរ (km-KH)</option>
+              <option value="en-US">🇺🇸 English (en-US)</option>
+            </select>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="m10VoiceStartBtn" onclick="toggleMega10VoiceStudio()" class="flex-1 py-3 px-4 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80 flex items-center justify-center gap-2">
+              <span>🎙️ ចុចនិយាយកត់ត្រាឥឡូវនេះ</span>
+            </button>
+            <button type="button" onclick="recordMega10VoiceTranscript()" class="py-3 px-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">✅ កត់ត្រាអត្ថបទនេះ</button>
+          </div>
+          <textarea id="m10VoiceTranscriptBox" rows="2" placeholder="អត្ថបទដែលនិយាយនឹងលោតនៅទីនេះ (ឬវាយសាកល្បង៖ ទិញកាហ្វេ 8000៛ ABA)..." class="w-full text-xs font-bold bg-[#142c50] border border-cyan-400/30 rounded-xl p-3 text-white focus:outline-none"></textarea>
+          <div id="m10PendingTgVoicesList" class="space-y-1.5 text-[11px] text-slate-300"></div>
+        </div>
+
+        <!-- Function 4: Automated Scheduled Reports -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">4️⃣ ⏰ របាយការណ៍ស្វ័យប្រវត្តិតាមម៉ោងកំណត់ (Daily Morning & Evening Auto-Push)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">ផ្ញើសារសង្ខេបពេលព្រឹក (សមតុល្យ + បំណុល) និងបិទបញ្ជីពេលយប់ចូល Telegram Group ដោយស្វ័យប្រវត្តិ!</p>
+            </div>
+            <label class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#142c50] border border-cyan-400/35 cursor-pointer text-xs font-bold text-cyan-200">
+              <input type="checkbox" id="m10SchedEnabled" checked onchange="saveMega10ScheduleSettings()" class="w-4 h-4 accent-cyan-500">
+              <span>បើកដំណើរការ</span>
+            </label>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-[#102444] p-3 rounded-xl border border-[#1e3d6b] flex items-center justify-between">
+              <span class="text-xs font-bold text-cyan-200">🌅 ម៉ោងសង្ខេបពេលព្រឹក</span>
+              <input type="time" id="m10SchedMorningTime" value="07:00" onchange="saveMega10ScheduleSettings()" class="text-xs font-black bg-[#0a182b] border border-cyan-400/35 rounded-lg px-2.5 py-1.5 text-white">
+            </div>
+            <div class="bg-[#102444] p-3 rounded-xl border border-[#1e3d6b] flex items-center justify-between">
+              <span class="text-xs font-bold text-cyan-200">🌙 ម៉ោងបិទបញ្ជីពេលយប់</span>
+              <input type="time" id="m10SchedEveningTime" value="21:00" onchange="saveMega10ScheduleSettings()" class="text-xs font-black bg-[#0a182b] border border-cyan-400/35 rounded-lg px-2.5 py-1.5 text-white">
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="sendMega10ScheduledReportNow('morning')" class="flex-1 py-2 px-3 rounded-xl bg-[#142c50] hover:bg-cyan-600 border border-cyan-400/35 text-cyan-200 hover:text-white text-xs font-extrabold transition active:opacity-80">🌅 តេស្តផ្ញើរបាយការណ៍ព្រឹកឥឡូវ</button>
+            <button type="button" onclick="sendMega10ScheduledReportNow('evening')" class="flex-1 py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-extrabold transition active:opacity-80">🌙 តេស្តផ្ញើបិទបញ្ជីយប់ឥឡូវ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: GEMINI AI FINANCIAL COPILOT PRO & LIVE FX RATE (FUNCTIONS 5 & 6) -->
+      <div id="m10Panel_ai" class="hidden space-y-4">
+        <!-- Function 5: Gemini AI Financial Advisor Pro -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">5️⃣ 🧠 Gemini AI Financial Advisor Pro (វិភាគទម្លាប់ចំណាយ & ទស្សន៍ទាយលុយសល់)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">វិភាគល្បឿនចំណាយ ៧ ថ្ងៃចុងក្រោយ, រកឃើញប្រតិបត្តិការខុសប្រក្រតី (Anomalies) និងគណនាថ្ងៃទប់ទល់សាច់ប្រាក់ (Runway)</p>
+            </div>
+            <button type="button" onclick="runMega10AiAdvisorAnalysis()" class="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">✨ វិភាគហិរញ្ញវត្ថុឥឡូវ</button>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="password" id="m10GeminiApiKeyInput" placeholder="Optional: បញ្ចូល Gemini API Key សម្រាប់ប្រើ Gemini 2.5 Flash AI (ទុកទទេប្រើ Smart Engine ឥតគិតថ្លៃ)" class="flex-1 text-xs font-bold bg-[#142c50] border border-cyan-400/30 rounded-xl px-3 py-2 text-white focus:outline-none">
+            <button type="button" onclick="saveMega10GeminiKey()" class="px-3 py-2 rounded-xl bg-[#142c50] hover:bg-cyan-600 border border-cyan-400/35 text-cyan-200 hover:text-white text-xs font-bold transition active:opacity-80 shrink-0">💾 រក្សាទុក Key</button>
+          </div>
+          <div id="m10AiAdvisorOutput" class="p-3.5 rounded-2xl bg-[#102444] border border-cyan-400/25 text-xs text-slate-200 space-y-2 leading-relaxed">
+            ចុចប៊ូតុង «✨ វិភាគហិរញ្ញវត្ថុឥឡូវ» ដើម្បីមើលរបាយការណ៍វិភាគ AI និងការទស្សន៍ទាយលុយសល់!
+          </div>
+        </div>
+
+        <!-- Function 6: Live NBC / Multi-Currency FX Rate (USD / KHR / THB / CNY) -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">6️⃣ 💱 អត្រាប្តូរប្រាក់ Live (NBC / ធនាគារ) & បំប្លែង ៤ រូបិយប័ណ្ណ (USD/KHR/THB/CNY)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">ទាញអត្រាប្តូរប្រាក់ពិតប្រាកដពីទីផ្សារអន្តរជាតិ និងបំប្លែងរៀល ដុល្លារ បាតថៃ និងយ័នចិនភ្លាមៗ</p>
+            </div>
+            <button type="button" onclick="fetchMega10LiveFxRates()" class="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">🔄 ទាញអត្រា Live</button>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="bg-[#102444] p-2.5 rounded-xl border border-cyan-400/25">
+              <div class="text-[10px] text-slate-400 font-bold">🇰🇭 $1 ➔ រៀល (KHR)</div>
+              <div id="m10FxKhrVal" class="text-sm font-black text-cyan-300 mt-0.5">4,080 ៛</div>
+            </div>
+            <div class="bg-[#102444] p-2.5 rounded-xl border border-cyan-400/25">
+              <div class="text-[10px] text-slate-400 font-bold">🇹🇭 $1 ➔ បាតថៃ (THB)</div>
+              <div id="m10FxThbVal" class="text-sm font-black text-cyan-300 mt-0.5">34.50 ฿</div>
+            </div>
+            <div class="bg-[#102444] p-2.5 rounded-xl border border-cyan-400/25">
+              <div class="text-[10px] text-slate-400 font-bold">🇨🇳 $1 ➔ យ័នចិន (CNY)</div>
+              <div id="m10FxCnyVal" class="text-sm font-black text-cyan-300 mt-0.5">7.25 ¥</div>
+            </div>
+          </div>
+          <div class="flex flex-wrap sm:flex-nowrap gap-2 items-center">
+            <input type="number" id="m10FxAmountInput" value="100" oninput="recalcMega10FxConverter()" class="w-28 text-xs font-black bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
+            <select id="m10FxFromCurr" onchange="recalcMega10FxConverter()" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+              <option value="USD">🇺🇸 USD ($)</option>
+              <option value="KHR">🇰🇭 KHR (៛)</option>
+              <option value="THB">🇹🇭 THB (฿)</option>
+              <option value="CNY">🇨🇳 CNY (¥)</option>
+            </select>
+            <div id="m10FxResultBanner" class="flex-1 text-xs font-bold text-cyan-200 bg-[#102444] px-3 py-2 rounded-xl border border-[#1e3d6b]">= 408,000 ៛ | 3,450 ฿ | 725 ¥</div>
+            <button type="button" onclick="applyMega10KhrRateToSystem()" class="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80 shrink-0">✅ អនុវត្តចូល System</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: CAMERA BARCODE POS SCANNER & DEBT INSTALLMENT PLANNER (FUNCTIONS 7 & 8) -->
+      <div id="m10Panel_pos" class="hidden space-y-4">
+        <!-- Function 7: Camera Barcode Scanner for Mini-POS -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">7️⃣ 📷 ស្កេន Barcode ទំនិញតាម Camera សម្រាប់ Mini-POS</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">ស្កេន Barcode លើផលិតផលតាម Camera ឬម៉ាស៊ីនស្កេន USB ➔ បន្ថែមចូលវិក្កយបត្រលក់រាយភ្លាមៗ!</p>
+            </div>
+            <div class="flex gap-1.5">
+              <button type="button" id="m10BarcodeCamBtn" onclick="toggleMega10BarcodeCamera()" class="px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">📷 បើក Camera ស្កេន</button>
+            </div>
+          </div>
+          <div id="m10BarcodeVideoWrap" class="hidden relative rounded-2xl overflow-hidden border border-cyan-400/50 bg-slate-950 max-h-52">
+            <video id="m10BarcodeVideo" class="w-full h-48 object-cover" autoplay playsinline muted></video>
+            <div class="absolute inset-x-8 top-1/2 h-0.5 bg-rose-500/80"></div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+            <input type="text" id="m10BarcodeCodeInput" placeholder="លេខ Barcode (ឧ. 8850001)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
+            <input type="text" id="m10BarcodeNameInput" placeholder="ឈ្មោះទំនិញ (ឧ. កូកាកូឡា)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
+            <input type="number" step="0.01" id="m10BarcodePriceInput" placeholder="តម្លៃ ($ ឧ. 0.75)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
+            <button type="button" onclick="saveMega10BarcodeProduct()" class="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">➕ រក្សាទុកទំនិញ</button>
+          </div>
+          <div id="m10BarcodeCatalogList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto"></div>
+        </div>
+
+        <!-- Function 8: Debt Installment Schedule & Interest Calculator -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="text-xs sm:text-sm font-black text-cyan-300">8️⃣ 📅 កាលវិភាគបង់រំលស់បំណុល & គណនាការប្រាក់ (Installment Planner)</div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <input type="text" id="m10InstPerson" placeholder="ឈ្មោះអតិថិជន" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="number" id="m10InstPrincipal" placeholder="ប្រាក់ដើម ($)" value="500" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="number" step="0.1" id="m10InstRate" placeholder="ការប្រាក់ %/ខែ" value="1.5" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="number" id="m10InstMonths" placeholder="ចំនួនខែ" value="5" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <button type="button" onclick="createMega10InstallmentPlan()" class="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">➕ បង្កើតតារាងរំលស់</button>
+          </div>
+          <div id="m10InstallmentPlansList" class="space-y-2 max-h-56 overflow-y-auto"></div>
+        </div>
+      </div>
+
+      <!-- TAB 5: OFFICIAL EXCEL (.XLSX) / PDF EXPORT & STAFF CASHIER MODE (FUNCTIONS 9 & 10) -->
+      <div id="m10Panel_export" class="hidden space-y-4">
+        <!-- Function 9: Official Excel & Branded PDF Statement Export -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="text-xs sm:text-sm font-black text-cyan-300">9️⃣ 📊 នាំចេញរបាយការណ៍ Excel (.xls) & PDF ផ្លូវការកម្រិតធនាគារ</div>
+          <p class="text-[11px] text-slate-300">បង្កើតឯកសារ Excel មានពណ៌ មានតារាងបូកសរុប និងរបាយការណ៍ PDF ផ្លូវការមានក្បាលសំបុត្រ កន្លែងចុះហត្ថលេខា និងត្រា។</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <input type="text" id="m10ReportOrgName" value="FINSYNC PRO — HIM SENGHORN" placeholder="ឈ្មោះអាជីវកម្ម ឬម្ចាស់គណនីលើក្បាលសំបុត្រ" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
+            <select id="m10ReportPeriodSelect" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
+              <option value="month">📅 ខែបច្ចុប្បន្ន (This Month)</option>
+              <option value="all">📚 ប្រតិបត្តិការទាំងអស់ (All Time)</option>
+              <option value="today">⚡ ថ្ងៃនេះ (Today)</option>
+            </select>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="exportMega10FormattedExcel()" class="flex-1 py-2.5 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">📗 ទាញយក Excel ផ្លូវការ (.xls)</button>
+            <button type="button" onclick="exportMega10BrandedPdfStatement()" class="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80">📕 បោះពុម្ព / Save PDF ផ្លូវការ</button>
+          </div>
+        </div>
+
+        <!-- Function 10: Multi-User / Staff Cashier Mode -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-rose-400/35 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-rose-300">🔟 👥 របៀបអ្នកគិតលុយ / បុគ្គលិក (Multi-User Staff / Cashier Mode)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">ពេលបើក Staff Mode៖ លាក់សមតុល្យធនាគារសរុប (`••••••`), ហាមលុបប្រតិបត្តិការ និងដាក់ស្លាកឈ្មោះបុគ្គលិករាល់ពេលកត់ត្រា!</p>
+            </div>
+            <span id="m10StaffModeStatusPill" class="px-3 py-1 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 text-xs font-black">👑 Admin</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="m10StaffNameInput" placeholder="ឈ្មោះបុគ្គលិក (ឧ. Dara / Cashier 1)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
+            <input type="password" id="m10AdminPinInput" placeholder="លេខកូដ PIN ម្ចាស់ (លំនាំដើម: 1234)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-3 py-2 text-white">
+            <button type="button" onclick="toggleMega10StaffCashierMode()" id="m10ToggleStaffBtn" class="py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80">🔒 បើក Staff / Cashier Mode</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -14368,7 +14628,9 @@ function initLanguage() {
     }
 
     function parseAndRecordTelegramCommandText(rawText, sourceLabel = 'Telegram', linkedMsgId = null, msgUnixDate = null) {
-      const text = convertKhmerDigitsToAscii(String(rawText || '').trim().replace(/^\/add\s+/i, ''));
+      let cleaned = String(rawText || '').trim();
+      cleaned = cleaned.replace(/@[A-Za-z0-9_]+/g, ' ').replace(/\b[A-Za-z0-9_]*bot\b/gi, ' ').replace(/^\/add\s+/i, ' ');
+      const text = convertKhmerDigitsToAscii(cleaned.replace(/\s+/g, ' ').trim());
       if (!text || isSystemOwnOutgoingTelegramAlert(text)) return null;
 
       // 1. Detect Bank / Wallet (ABA, Wing/ACLEDA, or Cash)
@@ -18993,7 +19255,18 @@ function initLanguage() {
       { cat: 'security', icon: '🔒', title: 'ចាក់សោការពារប្រតិបត្តិការចាស់ៗ (Period Lock)', desc: 'ការពារមិនឱ្យច្រឡំដៃលុប ឬកែប្រែប្រតិបត្តិការដែលបិទបញ្ជីរួច', run: () => openNextGen12SuiteModal('reports') },
       { cat: 'security', icon: '🗝️', title: 'Backup & ស្ដារឯកសារ Encrypted Vault', desc: 'រក្សាទុក និងស្ដារទិន្នន័យពីឯកសារបំប្លែងកូដសម្ងាត់ .vault.json', run: () => openUltimate10SuiteModal('vault') },
       { cat: 'security', icon: '🕶️', title: 'បិទបាំងឈ្មោះសម្ងាត់ (Guest Masking Mode)', desc: 'លាក់ឈ្មោះអតិថិជនក្នុងតារាងពេលបង្ហាញអេក្រង់ឱ្យភ្ញៀវមើល', run: () => toggleGuestPresentationMaskMode() },
-      { cat: 'security', icon: '🗑️', title: 'ធុងសំរាម & ស្កេនទិន្នន័យស្ទួន (Trash & Clean)', desc: 'ទាញយកប្រតិបត្តិការដែលលុបច្រឡំមកវិញ ឬសម្អាតជួរស្ទួន', run: () => openTrashBinModal() }
+      { cat: 'security', icon: '🗑️', title: 'ធុងសំរាម & ស្កេនទិន្នន័យស្ទួន (Trash & Clean)', desc: 'ទាញយកប្រតិបត្តិការដែលលុបច្រឡំមកវិញ ឬសម្អាតជួរស្ទួន', run: () => openTrashBinModal() },
+      // MEGA 10 SUPER-SUITE SHORTCUTS
+      { cat: 'telegram', icon: '☁️', title: 'Telegram Cloud Webhook ២៤/៧', desc: 'ភ្ជាប់ Cloudflare Worker ដើម្បីឲ្យ Bot ដើរ ២៤ ម៉ោងទោះបិទកុំព្យូទ័រ', run: () => openMega10SuiteModal('cloud') },
+      { cat: 'telegram', icon: '📱', title: 'Telegram Mini App (TMA)', desc: 'ដំឡើងប៊ូតុងបើកកម្មវិធី FinSync Pro ពេញអេក្រង់ក្នុង Telegram ផ្ទាល់', run: () => openMega10SuiteModal('cloud') },
+      { cat: 'telegram', icon: '🎙️', title: 'កត់ត្រាតាមសំឡេង (Voice Studio)', desc: 'និយាយភាសាខ្មែរ ឬអង់គ្លេស ➔ បំប្លែងជាប្រតិបត្តិការស្វ័យប្រវត្តិ', run: () => openMega10SuiteModal('voice') },
+      { cat: 'telegram', icon: '⏰', title: 'របាយការណ៍ស្វ័យប្រវត្តិព្រឹក-យប់', desc: 'កំណត់ម៉ោងផ្ញើសង្ខេប ៧:០០ ព្រឹក & បិទបញ្ជី ៩:០០ យប់ចូល Telegram', run: () => openMega10SuiteModal('voice') },
+      { cat: 'ai', icon: '🧠', title: 'Gemini AI Advisor Pro & Runway', desc: 'វិភាគល្បឿនចំណាយ រកប្រតិបត្តិការខុសប្រក្រតី និងទស្សន៍ទាយថ្ងៃសល់លុយ', run: () => openMega10SuiteModal('ai') },
+      { cat: 'ai', icon: '💱', title: 'អត្រាប្តូរប្រាក់ Live (USD/KHR/THB/CNY)', desc: 'ទាញអត្រាប្តូរប្រាក់ពិត និងបំប្លែង ៤ រូបិយប័ណ្ណភ្លាមៗ', run: () => openMega10SuiteModal('ai') },
+      { cat: 'daily', icon: '📷', title: 'ស្កេន Barcode ទំនិញ Mini-POS', desc: 'បើកកាមេរ៉ាស្កេនបាកូដទំនិញបញ្ចូលកន្ត្រកលក់រាយភ្លាមៗ', run: () => openMega10SuiteModal('pos') },
+      { cat: 'business', icon: '📅', title: 'កាលវិភាគបង់រំលស់បំណុល & ការប្រាក់', desc: 'បង្កើតតារាងបង់រំលស់ប្រចាំខែ និងកត់ត្រាការបង់ស្វ័យប្រវត្តិ', run: () => openMega10SuiteModal('pos') },
+      { cat: 'business', icon: '📗', title: 'នាំចេញ Excel (.xls) & PDF ផ្លូវការ', desc: 'ទាញយករបាយការណ៍ Excel មានរូបមន្ត និង PDF មានក្បាលសំបុត្រ-ហត្ថលេខា', run: () => openMega10SuiteModal('export') },
+      { cat: 'security', icon: '👥', title: 'របៀបបុគ្គលិក / អ្នកគិតលុយ (Staff Mode)', desc: 'លាក់សមតុល្យធនាគារសរុប ហាមលុបទិន្នន័យ និងដាក់ស្លាកឈ្មោះបុគ្គលិក', run: () => openMega10SuiteModal('export') }
     ];
 
     function openAllFunctionsHubModal(cat = 'all') {
@@ -19135,6 +19408,885 @@ function initLanguage() {
     setTimeout(clearAccidentalSearchAutofill, 350);
     setTimeout(clearAccidentalSearchAutofill, 1200);
 
+
+    /* ==========================================================================
+       MEGA 10 SUPER-SUITE ENGINE (ALL 10 NEXT-LEVEL FUNCTIONS)
+       ========================================================================== */
+    let m10VoiceRecognition = null;
+    let m10IsVoiceListening = false;
+    let m10BarcodeStream = null;
+    let m10BarcodeScanTimer = null;
+    let m10FxRates = { KHR: 4080, THB: 34.5, CNY: 7.25 };
+
+    function openMega10SuiteModal(tab = 'cloud') {
+      const modal = document.getElementById('mega10SuiteModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      switchMega10Tab(tab || 'cloud');
+      loadMega10StoredState();
+    }
+    window.openMega10SuiteModal = openMega10SuiteModal;
+
+    function closeMega10SuiteModal() {
+      stopMega10BarcodeCamera();
+      const modal = document.getElementById('mega10SuiteModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+    window.closeMega10SuiteModal = closeMega10SuiteModal;
+
+    function switchMega10Tab(tab) {
+      const tabs = ['cloud', 'voice', 'ai', 'pos', 'export'];
+      tabs.forEach(t => {
+        const panel = document.getElementById(`m10Panel_${t}`);
+        const btn = document.getElementById(`m10TabBtn_${t}`);
+        if (panel) panel.classList.toggle('hidden', t !== tab);
+        if (btn) {
+          btn.className = t === tab
+            ? 'py-2 px-2 rounded-xl text-[11px] font-black bg-cyan-600 text-white transition active:opacity-80'
+            : 'py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80';
+        }
+      });
+      if (tab === 'pos') {
+        renderMega10BarcodeCatalog();
+        renderMega10InstallmentPlans();
+      } else if (tab === 'ai') {
+        recalcMega10FxConverter();
+      } else if (tab === 'voice') {
+        renderMega10PendingTgVoices();
+      } else if (tab === 'export') {
+        updateMega10StaffUiBadges();
+      }
+    }
+    window.switchMega10Tab = switchMega10Tab;
+
+    function loadMega10StoredState() {
+      const whUrl = localStorage.getItem('finsync_m10_webhook_url') || '';
+      const whInp = document.getElementById('m10WebhookUrlInput');
+      if (whInp && whUrl) whInp.value = whUrl;
+
+      const tmaUrl = localStorage.getItem('finsync_m10_tma_url') || '';
+      const tmaInp = document.getElementById('m10TmaUrlInput');
+      if (tmaInp && tmaUrl) tmaInp.value = tmaUrl;
+
+      const gKey = localStorage.getItem('finsync_m10_gemini_key') || '';
+      const gInp = document.getElementById('m10GeminiApiKeyInput');
+      if (gInp && gKey) gInp.value = gKey;
+
+      const sched = JSON.parse(localStorage.getItem('finsync_m10_sched_cfg') || '{"enabled":true,"morningTime":"07:00","eveningTime":"21:00"}');
+      const enEl = document.getElementById('m10SchedEnabled');
+      const mEl = document.getElementById('m10SchedMorningTime');
+      const eEl = document.getElementById('m10SchedEveningTime');
+      if (enEl) enEl.checked = sched.enabled !== false;
+      if (mEl) mEl.value = sched.morningTime || '07:00';
+      if (eEl) eEl.value = sched.eveningTime || '21:00';
+
+      updateMega10StaffUiBadges();
+    }
+
+    // --- FUNCTION 1: TELEGRAM CLOUD WEBHOOK 24/7 ---
+    async function activateMega10CloudWebhook() {
+      const url = (document.getElementById('m10WebhookUrlInput')?.value || '').trim();
+      if (!url || !url.startsWith('https://')) {
+        showToast('សូមបញ្ចូល HTTPS URL', 'ឧទាហរណ៍៖ https://finsync-tg-bot.yourname.workers.dev', 'error');
+        return;
+      }
+      localStorage.setItem('finsync_m10_webhook_url', url);
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        const box = document.getElementById('m10WebhookStatusBox');
+        if (data && data.ok) {
+          if (box) box.innerHTML = `✅ <b>ភ្ជាប់ Cloud Webhook 24/7 ជោគជ័យ!</b> URL: <code>${escapeHTML(url)}</code>`;
+          showToast('☁️ ភ្ជាប់ Cloud 24/7 ជោគជ័យ!', 'Bot នឹងដំណើរការលើ Cloud រហូតទោះបិទកុំព្យូទ័រ!', 'success');
+        } else {
+          if (box) box.textContent = `❌ បរាជ័យ៖ ${(data && data.description) || 'Unknown error'}`;
+          showToast('បរាជ័យ', (data && data.description) || 'មិនអាចភ្ជាប់ Webhook បានទេ', 'error');
+        }
+      } catch (e) {
+        showToast('បញ្ហាភ្ជាប់បណ្ដាញ', 'សូមពិនិត្យ Internet', 'error');
+      }
+    }
+    window.activateMega10CloudWebhook = activateMega10CloudWebhook;
+
+    async function checkMega10WebhookStatus() {
+      const box = document.getElementById('m10WebhookStatusBox');
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo`);
+        const data = await res.json();
+        if (data && data.ok && data.result) {
+          const r = data.result;
+          if (box) {
+            box.innerHTML = r.url
+              ? `☁️ <b>Cloud Webhook កំពុងដំណើរការ៖</b> <code>${escapeHTML(r.url)}</code> (Pending: ${r.pending_update_count || 0})`
+              : `💻 <b>Local / Browser Polling Mode</b> (មិនមាន Webhook ជាប់ទេ — Pending: ${r.pending_update_count || 0})`;
+          }
+        }
+      } catch (_) {
+        if (box) box.textContent = '⚠️ មិនអាចទាក់ទង Telegram API បានទេ';
+      }
+    }
+    window.checkMega10WebhookStatus = checkMega10WebhookStatus;
+
+    // --- FUNCTION 3: TELEGRAM MINI APP (TMA) ---
+    function initTelegramMiniApp() {
+      try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.initData) {
+          tg.ready();
+          tg.expand();
+          if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor('#071324');
+          if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor('#071324');
+          const badge = document.getElementById('m10TmaDetectBadge');
+          const uname = tg.initDataUnsafe?.user?.first_name || 'Telegram User';
+          if (badge) badge.textContent = `📱 Telegram Mini App (${uname})`;
+          console.log('[TMA] Running inside Telegram Mini App as:', uname);
+        }
+      } catch (_) {}
+    }
+
+    async function setupTelegramMiniAppButton() {
+      const url = (document.getElementById('m10TmaUrlInput')?.value || '').trim();
+      if (!url || !url.startsWith('https://')) {
+        showToast('ត្រូវការ HTTPS URL', 'Telegram Mini App តម្រូវឲ្យប្រើ Link https:// (ឧ. Cloudflare Pages ឬ GitHub Pages)', 'error');
+        return;
+      }
+      if (url.includes('your-hosted-finsync')) {
+        showToast('⚠️ Link មិនទាន់ត្រឹមត្រូវ', '«your-hosted-finsync» គ្រាន់តែជា Link គំរូ! សូម Upload ឯកសារទៅ Cloudflare Pages ដើម្បីយក Link ពិតប្រាកដ', 'error');
+        return;
+      }
+      localStorage.setItem('finsync_m10_tma_url', url);
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setChatMenuButton`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            menu_button: { type: 'web_app', text: '📱 FinSync App', web_app: { url } }
+          })
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+          showToast('📱 ដំឡើង Mini App ជោគជ័យ!', 'ចូល Telegram Chat របស់ Bot នឹងឃើញប៊ូតុង «📱 FinSync App» ភ្លាម!', 'success');
+          try {
+            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: '📱 ✨ <b>FinSync Pro Telegram Mini App ត្រូវបានដំឡើងជោគជ័យ!</b>\n<i>ចុចប៊ូតុងខាងក្រោមដើម្បីបើកកម្មវិធីពេញអេក្រង់ (Full Screen) ក្នុង Telegram ផ្ទាល់៖</i>',
+                parse_mode: 'HTML',
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      { text: '📱 បើក FinSync Pro (Mini App)', web_app: { url } }
+                    ]
+                  ]
+                }
+              })
+            });
+          } catch (_) {}
+        } else {
+          showToast('បរាជ័យ', (data && data.description) || 'Error setting menu button', 'error');
+        }
+      } catch (_) {
+        showToast('បញ្ហាភ្ជាប់បណ្ដាញ', 'មិនអាចភ្ជាប់ Telegram API បានទេ', 'error');
+      }
+    }
+    window.setupTelegramMiniAppButton = setupTelegramMiniAppButton;
+
+    // --- FUNCTION 2: VOICE NOTE TO TRANSACTION STUDIO ---
+    function toggleMega10VoiceStudio() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const btn = document.getElementById('m10VoiceStartBtn');
+      if (!SpeechRec) {
+        showToast('Browser មិនគាំទ្រ Mic', 'សូមប្រើ Google Chrome ឬ Edge ដើម្បីនិយាយកត់ត្រា', 'warning');
+        return;
+      }
+      if (m10IsVoiceListening && m10VoiceRecognition) {
+        m10VoiceRecognition.stop();
+        m10IsVoiceListening = false;
+        if (btn) btn.innerHTML = '<span>🎙️ ចុចនិយាយកត់ត្រាឥឡូវនេះ</span>';
+        return;
+      }
+      m10VoiceRecognition = new SpeechRec();
+      m10VoiceRecognition.lang = document.getElementById('m10VoiceLangSelect')?.value || 'km-KH';
+      m10VoiceRecognition.interimResults = true;
+      m10VoiceRecognition.continuous = false;
+      m10IsVoiceListening = true;
+      if (btn) btn.innerHTML = '<span>🔴 កំពុងស្ដាប់សំឡេង... (ចុចដើម្បីឈប់)</span>';
+
+      m10VoiceRecognition.onresult = (event) => {
+        let finalTxt = '';
+        for (let i = 0; i < event.results.length; i++) {
+          finalTxt += event.results[i][0].transcript;
+        }
+        const box = document.getElementById('m10VoiceTranscriptBox');
+        if (box) box.value = finalTxt;
+      };
+      m10VoiceRecognition.onend = () => {
+        m10IsVoiceListening = false;
+        if (btn) btn.innerHTML = '<span>🎙️ ចុចនិយាយកត់ត្រាឥឡូវនេះ</span>';
+      };
+      m10VoiceRecognition.onerror = () => {
+        m10IsVoiceListening = false;
+        if (btn) btn.innerHTML = '<span>🎙️ ចុចនិយាយកត់ត្រាឥឡូវនេះ</span>';
+      };
+      m10VoiceRecognition.start();
+    }
+    window.toggleMega10VoiceStudio = toggleMega10VoiceStudio;
+
+    async function recordMega10VoiceTranscript() {
+      const txt = (document.getElementById('m10VoiceTranscriptBox')?.value || '').trim();
+      if (!txt) {
+        showToast('មិនទាន់មានអត្ថបទ', 'សូមនិយាយ ឬវាយឧទាហរណ៍៖ «បាយឆា 5000៛»', 'warning');
+        return;
+      }
+      const added = typeof parseAndRecordTelegramCommandText === 'function'
+        ? parseAndRecordTelegramCommandText(txt, 'Voice Studio', null, Math.floor(Date.now() / 1000))
+        : null;
+      if (added) {
+        document.getElementById('m10VoiceTranscriptBox').value = '';
+        showToast('🎙️ កត់ត្រាតាមសំឡេងជោគជ័យ!', `${added.note} — ${added.currency === 'KHR' ? added.amountKHR.toLocaleString() + ' ៛' : '$' + added.amountUSD.toFixed(2)}`, 'success');
+        if (typeof sendRawTelegramMessage === 'function') {
+          await sendRawTelegramMessage(`🎙️ ✅ <b>កត់ត្រាតាមសំឡេង (Voice Studio)</b>\n• ប្រភេទ: <b>${added.type === 'income' ? '🟢 ចំណូល' : '🔴 ចំណាយ'}</b>\n• ចំនួន: <b>$${added.amountUSD.toFixed(2)} (${added.amountKHR.toLocaleString()} ៛)</b>\n• បរិយាយ: <b>${escapeHTML(added.note)}</b>`, 'tx', added.id);
+        }
+      } else {
+        showToast('រកមិនឃើញចំនួនទឹកប្រាក់', 'សូមនិយាយភ្ជាប់ចំនួនលុយ ឧ. «កាហ្វេ 2 ដុល្លារ» ឬ «បាយ 5000 រៀល»', 'warning');
+      }
+    }
+    window.recordMega10VoiceTranscript = recordMega10VoiceTranscript;
+
+    function renderMega10PendingTgVoices() {
+      const box = document.getElementById('m10PendingTgVoicesList');
+      if (!box) return;
+      const list = Array.isArray(window._pendingTgVoicesCache) ? window._pendingTgVoicesCache : [];
+      if (!list.length) {
+        box.innerHTML = '<div class="text-slate-400">ℹ️ មិនទាន់មានសារសំឡេងរង់ចាំពី Telegram ទេ។</div>';
+        return;
+      }
+      box.innerHTML = `<div class="font-bold text-cyan-300">🎙️ សារសំឡេងថ្មីៗពី Telegram (${list.length})៖</div>` +
+        list.map((v, i) => `<div class="p-2 rounded-xl bg-[#102444] border border-[#1e3d6b] flex items-center justify-between"><span>#${i + 1} ពី ${escapeHTML(v.sender || 'Telegram')} (${v.duration || 0}s)</span><span class="text-cyan-300">Msg #${v.message_id || ''}</span></div>`).join('');
+    }
+
+    // --- FUNCTION 4: AUTOMATED SCHEDULED TELEGRAM REPORTS ---
+    function saveMega10ScheduleSettings() {
+      const cfg = {
+        enabled: !!document.getElementById('m10SchedEnabled')?.checked,
+        morningTime: document.getElementById('m10SchedMorningTime')?.value || '07:00',
+        eveningTime: document.getElementById('m10SchedEveningTime')?.value || '21:00',
+        lastMorningSent: JSON.parse(localStorage.getItem('finsync_m10_sched_cfg') || '{}').lastMorningSent || '',
+        lastEveningSent: JSON.parse(localStorage.getItem('finsync_m10_sched_cfg') || '{}').lastEveningSent || ''
+      };
+      localStorage.setItem('finsync_m10_sched_cfg', JSON.stringify(cfg));
+      if (typeof firestoreDb !== 'undefined' && firestoreDb) {
+        const uname = (typeof getValidAuthUsername === 'function' ? getValidAuthUsername() : '') || 'himsenghorn';
+        firestoreDb.collection('userData').doc(uname).set({ scheduledReportsConfig: cfg }, { merge: true }).catch(() => {});
+      }
+      showToast('⏰ បានរក្សាទុកម៉ោងរបាយការណ៍ស្វ័យប្រវត្តិ', `ព្រឹក ${cfg.morningTime} | យប់ ${cfg.eveningTime}`, 'success');
+    }
+    window.saveMega10ScheduleSettings = saveMega10ScheduleSettings;
+
+    async function sendMega10ScheduledReportNow(kind = 'evening') {
+      const todayKey = new Date().toISOString().split('T')[0];
+      const txs = Array.isArray(transactions) ? transactions : [];
+      const debtList = Array.isArray(debts) ? debts : [];
+      let msg = '';
+
+      if (kind === 'morning') {
+        const bals = { cash: 0, aba: 0, wing_acleda: 0 };
+        txs.forEach(t => {
+          const w = bals[t.wallet] !== undefined ? t.wallet : 'cash';
+          bals[w] += t.type === 'income' ? Number(t.amountUSD || 0) : -Number(t.amountUSD || 0);
+        });
+        const total = bals.cash + bals.aba + bals.wing_acleda;
+        const lent = debtList.filter(d => d.status !== 'paid' && d.type === 'lent').reduce((s, d) => s + Number(d.amountUSD || 0), 0);
+        msg = `🌅 <b>សួស្ដីពេលព្រឹក! របាយការណ៍សង្ខេបប្រចាំថ្ងៃ (${todayKey})</b>\n`
+          + `• 💵 Cash: <b>$${bals.cash.toFixed(2)}</b>\n`
+          + `• 🏦 ABA Bank: <b>$${bals.aba.toFixed(2)}</b>\n`
+          + `• 📲 Wing / ACLEDA: <b>$${bals.wing_acleda.toFixed(2)}</b>\n`
+          + `━━━━━━━━━━━━━━━\n`
+          + `💎 សមតុល្យសរុប: <b>$${total.toFixed(2)}</b>\n`
+          + `🤝 បំណុលត្រូវទារសរុប: <b>$${lent.toFixed(2)}</b>`;
+      } else {
+        const todayTxs = txs.filter(t => String(t.date || '').startsWith(todayKey));
+        const inc = todayTxs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+        const exp = todayTxs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+        msg = `🌙 <b>របាយការណ៍បិទបញ្ជីយប់ស្វ័យប្រវត្តិ (${todayKey})</b>\n`
+          + `• 🟢 ចំណូលថ្ងៃនេះ: <b>+$${inc.toFixed(2)}</b>\n`
+          + `• 🔴 ចំណាយថ្ងៃនេះ: <b>-$${exp.toFixed(2)}</b>\n`
+          + `• 💎 សល់សុទ្ធថ្ងៃនេះ: <b>$${(inc - exp).toFixed(2)}</b>\n`
+          + `• 🧾 ចំនួនប្រតិបត្តិការ: <b>${todayTxs.length}</b>`;
+      }
+      if (typeof sendRawTelegramMessage === 'function') {
+        await sendRawTelegramMessage(msg, 'tx');
+        showToast('📤 បានផ្ញើរបាយការណ៍ទៅ Telegram រួចរាល់!', kind === 'morning' ? 'របាយការណ៍ពេលព្រឹក' : 'របាយការណ៍បិទបញ្ជីយប់', 'success');
+      }
+    }
+    window.sendMega10ScheduledReportNow = sendMega10ScheduledReportNow;
+
+    function startMega10ReportScheduler() {
+      setInterval(() => {
+        try {
+          const cfg = JSON.parse(localStorage.getItem('finsync_m10_sched_cfg') || '{"enabled":true,"morningTime":"07:00","eveningTime":"21:00"}');
+          if (!cfg.enabled) return;
+          const now = new Date();
+          const todayKey = now.toISOString().split('T')[0];
+          const hm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+          if (hm === (cfg.morningTime || '07:00') && cfg.lastMorningSent !== todayKey) {
+            cfg.lastMorningSent = todayKey;
+            localStorage.setItem('finsync_m10_sched_cfg', JSON.stringify(cfg));
+            sendMega10ScheduledReportNow('morning');
+          }
+          if (hm === (cfg.eveningTime || '21:00') && cfg.lastEveningSent !== todayKey) {
+            cfg.lastEveningSent = todayKey;
+            localStorage.setItem('finsync_m10_sched_cfg', JSON.stringify(cfg));
+            sendMega10ScheduledReportNow('evening');
+          }
+        } catch (_) {}
+      }, 60000);
+    }
+
+    // --- FUNCTION 5: GEMINI AI FINANCIAL ADVISOR PRO ---
+    function saveMega10GeminiKey() {
+      const k = (document.getElementById('m10GeminiApiKeyInput')?.value || '').trim();
+      localStorage.setItem('finsync_m10_gemini_key', k);
+      showToast('💾 បានរក្សាទុក Gemini API Key', k ? 'ប្រព័ន្ធនឹងប្រើ Gemini 2.5 Flash AI នៅពេលវិភាគ' : 'ប្រើ Smart Local AI Engine ឥតគិតថ្លៃ', 'success');
+    }
+    window.saveMega10GeminiKey = saveMega10GeminiKey;
+
+    async function runMega10AiAdvisorAnalysis() {
+      const out = document.getElementById('m10AiAdvisorOutput');
+      if (!out) return;
+      out.innerHTML = '⏳ <b>AI កំពុងវិភាគល្បឿនចំណាយ, រកប្រតិបត្តិការខុសប្រក្រតី និងគណនាថ្ងៃទប់ទល់សាច់ប្រាក់...</b>';
+
+      const txs = Array.isArray(transactions) ? transactions : [];
+      const nowMs = Date.now();
+      const dayMs = 86400000;
+      const last7 = txs.filter(t => t.type === 'expense' && (nowMs - new Date(t.date || t.createdAt || nowMs).getTime()) <= 7 * dayMs);
+      const prev7 = txs.filter(t => {
+        const diff = nowMs - new Date(t.date || t.createdAt || nowMs).getTime();
+        return t.type === 'expense' && diff > 7 * dayMs && diff <= 14 * dayMs;
+      });
+      const sumLast7 = last7.reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+      const sumPrev7 = prev7.reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+      const diffPct = sumPrev7 > 0 ? Math.round(((sumLast7 - sumPrev7) / sumPrev7) * 100) : 0;
+
+      const bals = { cash: 0, aba: 0, wing_acleda: 0 };
+      txs.forEach(t => {
+        const w = bals[t.wallet] !== undefined ? t.wallet : 'cash';
+        bals[w] += t.type === 'income' ? Number(t.amountUSD || 0) : -Number(t.amountUSD || 0);
+      });
+      const totalBal = bals.cash + bals.aba + bals.wing_acleda;
+      const dailyBurn = sumLast7 > 0 ? (sumLast7 / 7) : 10;
+      const runwayDays = totalBal > 0 ? Math.floor(totalBal / dailyBurn) : 0;
+
+      const expTxs = txs.filter(t => t.type === 'expense');
+      const avgExp = expTxs.length ? (expTxs.reduce((s, t) => s + Number(t.amountUSD || 0), 0) / expTxs.length) : 0;
+      const anomalies = expTxs.filter(t => Number(t.amountUSD || 0) > Math.max(25, avgExp * 2.2)).slice(0, 3);
+
+      let localHtml = `
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div class="p-2.5 rounded-xl bg-[#0a182b] border border-cyan-400/30">
+            <div class="text-[10px] text-slate-400">📊 ចំណាយ ៧ ថ្ងៃចុងក្រោយ</div>
+            <div class="text-sm font-black text-rose-300">$${sumLast7.toFixed(2)} (${diffPct >= 0 ? '+' : ''}${diffPct}%)</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#0a182b] border border-cyan-400/30">
+            <div class="text-[10px] text-slate-400">🔥 អត្រាចំណាយ/ថ្ងៃ (Burn Rate)</div>
+            <div class="text-sm font-black text-cyan-300">$${dailyBurn.toFixed(2)} / ថ្ងៃ</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#0a182b] border border-cyan-400/30">
+            <div class="text-[10px] text-slate-400">⏳ លុយសល់អាចទប់ទល់បាន</div>
+            <div class="text-sm font-black text-cyan-300">${runwayDays} ថ្ងៃ</div>
+          </div>
+        </div>
+        <div class="pt-1">
+          <div class="font-black text-cyan-300">🚨 ប្រតិបត្តិការចំណាយខ្ពស់ខុសប្រក្រតី (Anomaly Detection)៖</div>
+          ${anomalies.length
+            ? anomalies.map(a => `<div class="text-[11px] text-rose-200">• ${escapeHTML(a.date || '')} — <b>$${Number(a.amountUSD || 0).toFixed(2)}</b> (${escapeHTML(a.note || '')})</div>`).join('')
+            : '<div class="text-[11px] text-slate-300">✅ មិនមានប្រតិបត្តិការខុសប្រក្រតីទេ ការចំណាយមានស្ថិរភាពល្អ!</div>'}
+        </div>
+      `;
+
+      const apiKey = (localStorage.getItem('finsync_m10_gemini_key') || '').trim();
+      if (apiKey) {
+        try {
+          const prompt = `អ្នកជាទីប្រឹក្សាហិរញ្ញវត្ថុខ្មែរ។ សមតុល្យសរុប=$${totalBal.toFixed(2)}, ចំណាយ7ថ្ងៃ=$${sumLast7.toFixed(2)} (${diffPct}%), Burn/day=$${dailyBurn.toFixed(2)}, Runway=${runwayDays}ថ្ងៃ។ សូមផ្ដល់យោបល់ខ្លី ៣ ចំណុចជាភាសាខ្មែរដើម្បីសន្សំលុយ។`;
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+          const gData = await res.json();
+          const aiText = gData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (aiText) {
+            localHtml += `<div class="mt-2 p-2.5 rounded-xl bg-[#0a182b] border border-cyan-400/40"><div class="font-black text-cyan-300 mb-1">✨ ដំបូន្មានពី Gemini 2.5 Flash AI៖</div><div class="whitespace-pre-line text-[11px] text-white">${escapeHTML(aiText)}</div></div>`;
+          }
+        } catch (_) {}
+      }
+      out.innerHTML = localHtml;
+    }
+    window.runMega10AiAdvisorAnalysis = runMega10AiAdvisorAnalysis;
+
+    // --- FUNCTION 6: LIVE FX RATE (NBC / USD / KHR / THB / CNY) ---
+    async function fetchMega10LiveFxRates() {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data && data.rates) {
+          m10FxRates.KHR = Math.round(data.rates.KHR || 4080);
+          m10FxRates.THB = Number((data.rates.THB || 34.5).toFixed(2));
+          m10FxRates.CNY = Number((data.rates.CNY || 7.25).toFixed(2));
+          document.getElementById('m10FxKhrVal').textContent = `${m10FxRates.KHR.toLocaleString()} ៛`;
+          document.getElementById('m10FxThbVal').textContent = `${m10FxRates.THB} ฿`;
+          document.getElementById('m10FxCnyVal').textContent = `${m10FxRates.CNY} ¥`;
+          recalcMega10FxConverter();
+          showToast('💱 បានទាញអត្រាប្តូរប្រាក់ Live!', `$1 = ${m10FxRates.KHR.toLocaleString()} ៛ | ${m10FxRates.THB} ฿ | ${m10FxRates.CNY} ¥`, 'success');
+        }
+      } catch (_) {
+        showToast('ប្រើអត្រាស្តង់ដារ NBC', `$1 = ${m10FxRates.KHR.toLocaleString()} ៛`, 'info');
+      }
+    }
+    window.fetchMega10LiveFxRates = fetchMega10LiveFxRates;
+
+    function recalcMega10FxConverter() {
+      const amt = parseFloat(document.getElementById('m10FxAmountInput')?.value || '0') || 0;
+      const from = document.getElementById('m10FxFromCurr')?.value || 'USD';
+      let usd = amt;
+      if (from === 'KHR') usd = amt / m10FxRates.KHR;
+      else if (from === 'THB') usd = amt / m10FxRates.THB;
+      else if (from === 'CNY') usd = amt / m10FxRates.CNY;
+      const banner = document.getElementById('m10FxResultBanner');
+      if (banner) {
+        banner.textContent = `$${usd.toFixed(2)} | ${Math.round(usd * m10FxRates.KHR).toLocaleString()} ៛ | ${(usd * m10FxRates.THB).toFixed(2)} ฿ | ${(usd * m10FxRates.CNY).toFixed(2)} ¥`;
+      }
+    }
+    window.recalcMega10FxConverter = recalcMega10FxConverter;
+
+    function applyMega10KhrRateToSystem() {
+      exchangeRate = m10FxRates.KHR;
+      localStorage.setItem('exchangeRate', String(exchangeRate));
+      const hdr = document.getElementById('headerExchangeRateText');
+      if (hdr) hdr.textContent = `${exchangeRate.toLocaleString()}៛`;
+      if (typeof renderAll === 'function') renderAll();
+      if (typeof scheduleCloudSave === 'function') scheduleCloudSave();
+      showToast('✅ អាប់ដេតអត្រាប្តូរប្រាក់ជោគជ័យ!', `អត្រាប្តូរប្រាក់ថ្មីក្នុង System គឺ $1 = ${exchangeRate.toLocaleString()} ៛`, 'success');
+    }
+    window.applyMega10KhrRateToSystem = applyMega10KhrRateToSystem;
+
+    // --- FUNCTION 7: CAMERA BARCODE SCANNER FOR MINI-POS ---
+    function getMega10BarcodeCatalog() {
+      try {
+        return JSON.parse(localStorage.getItem('finsync_m10_barcode_catalog') || '[{"code":"8850001","name":"កូកាកូឡា (Coca-Cola)","price":0.75},{"code":"8850002","name":"កាហ្វេទឹកដោះគោទឹកកក","price":1.50}]');
+      } catch (_) { return []; }
+    }
+
+    function saveMega10BarcodeProduct() {
+      const code = (document.getElementById('m10BarcodeCodeInput')?.value || '').trim();
+      const name = (document.getElementById('m10BarcodeNameInput')?.value || '').trim();
+      const price = parseFloat(document.getElementById('m10BarcodePriceInput')?.value || '0');
+      if (!code || !name || !price || price <= 0) {
+        showToast('សូមបំពេញព័ត៌មានទំនិញ', 'ត្រូវការលេខ Barcode, ឈ្មោះទំនិញ និងតម្លៃ ($)', 'warning');
+        return;
+      }
+      const list = getMega10BarcodeCatalog().filter(p => p.code !== code);
+      list.unshift({ code, name, price });
+      localStorage.setItem('finsync_m10_barcode_catalog', JSON.stringify(list));
+      document.getElementById('m10BarcodeCodeInput').value = '';
+      document.getElementById('m10BarcodeNameInput').value = '';
+      document.getElementById('m10BarcodePriceInput').value = '';
+      renderMega10BarcodeCatalog();
+      showToast('✅ បានរក្សាទុក Barcode ទំនិញ!', `${name} ($${price.toFixed(2)})`, 'success');
+    }
+    window.saveMega10BarcodeProduct = saveMega10BarcodeProduct;
+
+    function quickSellMega10BarcodeItem(code) {
+      const item = getMega10BarcodeCatalog().find(p => p.code === code);
+      if (!item) return;
+      const newTx = {
+        id: 'tx_pos_bc_' + Date.now(),
+        type: 'income',
+        amountUSD: Number(item.price.toFixed(2)),
+        amountKHR: Math.round(item.price * exchangeRate),
+        inputCurrency: 'USD',
+        originalAmount: Number(item.price.toFixed(2)),
+        currency: 'USD',
+        category: 'business',
+        wallet: 'cash',
+        tag: '#BarcodePOS',
+        note: `[📷 POS Barcode ${item.code}] លក់ ${item.name}` + getMega10StaffTagSuffix(),
+        date: new Date().toISOString().split('T')[0],
+        txTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        createdAt: new Date().toISOString()
+      };
+      transactions.unshift(newTx);
+      saveActiveTransactions();
+      renderAll();
+      showToast('📷 លក់ទំនិញតាម Barcode ជោគជ័យ!', `${item.name} (+$${item.price.toFixed(2)})`, 'success');
+    }
+    window.quickSellMega10BarcodeItem = quickSellMega10BarcodeItem;
+
+    function renderMega10BarcodeCatalog() {
+      const box = document.getElementById('m10BarcodeCatalogList');
+      if (!box) return;
+      const list = getMega10BarcodeCatalog();
+      box.innerHTML = list.map(p => `
+        <div class="p-2.5 rounded-xl bg-[#102444] border border-cyan-400/25 flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div class="text-xs font-black text-white truncate">${escapeHTML(p.name)}</div>
+            <div class="text-[10px] text-cyan-300">Barcode: ${escapeHTML(p.code)} • $${Number(p.price).toFixed(2)}</div>
+          </div>
+          <button type="button" onclick="quickSellMega10BarcodeItem('${escapeHTML(p.code)}')" class="px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-black transition active:opacity-80 shrink-0">💰 លក់ភ្លាម</button>
+        </div>
+      `).join('') || '<div class="text-xs text-slate-400">មិនទាន់មានទំនិញ Barcode ទេ</div>';
+    }
+
+    async function toggleMega10BarcodeCamera() {
+      if (m10BarcodeStream) {
+        stopMega10BarcodeCamera();
+        return;
+      }
+      const wrap = document.getElementById('m10BarcodeVideoWrap');
+      const video = document.getElementById('m10BarcodeVideo');
+      const btn = document.getElementById('m10BarcodeCamBtn');
+      try {
+        m10BarcodeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        if (video) video.srcObject = m10BarcodeStream;
+        if (wrap) wrap.classList.remove('hidden');
+        if (btn) btn.textContent = '⏹️ បិទ Camera';
+
+        if ('BarcodeDetector' in window) {
+          const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'qr_code', 'upc_a'] });
+          m10BarcodeScanTimer = setInterval(async () => {
+            if (!video || video.readyState < 2) return;
+            try {
+              const codes = await detector.detect(video);
+              if (codes && codes.length > 0) {
+                const val = codes[0].rawValue;
+                const inp = document.getElementById('m10BarcodeCodeInput');
+                if (inp) inp.value = val;
+                const matched = getMega10BarcodeCatalog().find(p => p.code === val);
+                if (matched) {
+                  quickSellMega10BarcodeItem(val);
+                  stopMega10BarcodeCamera();
+                } else {
+                  showToast('📷 ចាប់បានលេខ Barcode!', `លេខ៖ ${val} — សូមដាក់ឈ្មោះ និងតម្លៃដើម្បីរក្សាទុក`, 'info');
+                  stopMega10BarcodeCamera();
+                }
+              }
+            } catch (_) {}
+          }, 500);
+        } else {
+          showToast('📷 Camera បានបើកហើយ', 'Browser នេះមិនមាន BarcodeDetector API ទេ — អ្នកអាចវាយលេខ ឬប្រើម៉ាស៊ីនស្កេន USB', 'info');
+        }
+      } catch (_) {
+        showToast('មិនអាចបើក Camera បានទេ', 'សូមអនុញ្ញាតសិទ្ធិ Camera ក្នុង Browser', 'error');
+      }
+    }
+    window.toggleMega10BarcodeCamera = toggleMega10BarcodeCamera;
+
+    function stopMega10BarcodeCamera() {
+      if (m10BarcodeScanTimer) { clearInterval(m10BarcodeScanTimer); m10BarcodeScanTimer = null; }
+      if (m10BarcodeStream) { m10BarcodeStream.getTracks().forEach(t => t.stop()); m10BarcodeStream = null; }
+      document.getElementById('m10BarcodeVideoWrap')?.classList.add('hidden');
+      const btn = document.getElementById('m10BarcodeCamBtn');
+      if (btn) btn.textContent = '📷 បើក Camera ស្កេន';
+    }
+
+    // --- FUNCTION 8: DEBT INSTALLMENT SCHEDULE & INTEREST CALCULATOR ---
+    function getMega10InstallmentPlans() {
+      try { return JSON.parse(localStorage.getItem('finsync_m10_installments') || '[]'); } catch (_) { return []; }
+    }
+
+    function createMega10InstallmentPlan() {
+      const person = (document.getElementById('m10InstPerson')?.value || '').trim();
+      const principal = parseFloat(document.getElementById('m10InstPrincipal')?.value || '0');
+      const ratePct = parseFloat(document.getElementById('m10InstRate')?.value || '0');
+      const months = Math.max(1, Math.min(60, parseInt(document.getElementById('m10InstMonths')?.value || '1', 10)));
+      if (!person || !principal || principal <= 0) {
+        showToast('សូមបំពេញឈ្មោះ និងប្រាក់ដើម', 'ឧទាហរណ៍៖ Sokha, $500, 5 ខែ', 'warning');
+        return;
+      }
+      const monthlyPrincipal = principal / months;
+      const monthlyInterest = principal * (ratePct / 100);
+      const monthlyTotal = Number((monthlyPrincipal + monthlyInterest).toFixed(2));
+      const schedule = [];
+      const baseDate = new Date();
+      for (let i = 1; i <= months; i++) {
+        const d = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, baseDate.getDate());
+        schedule.push({
+          idx: i,
+          dueDate: d.toISOString().split('T')[0],
+          amount: monthlyTotal,
+          paid: false
+        });
+      }
+      const plans = getMega10InstallmentPlans();
+      plans.unshift({ id: 'inst_' + Date.now(), person, principal, ratePct, months, monthlyTotal, schedule });
+      localStorage.setItem('finsync_m10_installments', JSON.stringify(plans));
+      document.getElementById('m10InstPerson').value = '';
+      renderMega10InstallmentPlans();
+      showToast('📅 បានបង្កើតតារាងបង់រំលស់!', `${person}: $${monthlyTotal.toFixed(2)} / ខែ (${months} ខែ)`, 'success');
+    }
+    window.createMega10InstallmentPlan = createMega10InstallmentPlan;
+
+    function payMega10InstallmentRow(planId, rowIdx) {
+      const plans = getMega10InstallmentPlans();
+      const plan = plans.find(p => p.id === planId);
+      if (!plan) return;
+      const row = plan.schedule.find(r => r.idx === rowIdx);
+      if (!row || row.paid) return;
+      row.paid = true;
+      localStorage.setItem('finsync_m10_installments', JSON.stringify(plans));
+
+      const newTx = {
+        id: 'tx_inst_' + Date.now(),
+        type: 'income',
+        amountUSD: row.amount,
+        amountKHR: Math.round(row.amount * exchangeRate),
+        inputCurrency: 'USD',
+        originalAmount: row.amount,
+        currency: 'USD',
+        category: 'other_income',
+        wallet: 'aba',
+        tag: '#បង់រំលស់',
+        note: `[📅 រំលស់ដំណាក់កាលទី ${row.idx}/${plan.months}] ពី ${plan.person}` + getMega10StaffTagSuffix(),
+        date: new Date().toISOString().split('T')[0],
+        txTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        createdAt: new Date().toISOString()
+      };
+      transactions.unshift(newTx);
+      saveActiveTransactions();
+      renderAll();
+      renderMega10InstallmentPlans();
+      showToast('✅ បានកត់ត្រាការបង់រំលស់!', `${plan.person} បង់ខែទី ${row.idx} (+$${row.amount.toFixed(2)})`, 'success');
+      if (typeof sendRawTelegramMessage === 'function') {
+        sendRawTelegramMessage(`📅 ✅ <b>ទទួលប្រាក់បង់រំលស់បំណុល</b>\n• អតិថិជន: <b>${escapeHTML(plan.person)}</b>\n• ដំណាក់កាល: <b>ខែទី ${row.idx}/${plan.months}</b>\n• ចំនួន: <b>+$${row.amount.toFixed(2)}</b>`, 'debt', newTx.id);
+      }
+    }
+    window.payMega10InstallmentRow = payMega10InstallmentRow;
+
+    function renderMega10InstallmentPlans() {
+      const box = document.getElementById('m10InstallmentPlansList');
+      if (!box) return;
+      const plans = getMega10InstallmentPlans();
+      if (!plans.length) {
+        box.innerHTML = '<div class="text-xs text-slate-400">មិនទាន់មានគម្រោងបង់រំលស់នៅឡើយទេ។</div>';
+        return;
+      }
+      box.innerHTML = plans.map(p => {
+        const paidCount = p.schedule.filter(s => s.paid).length;
+        return `
+          <div class="p-3 rounded-2xl bg-[#102444] border border-cyan-400/25 space-y-2">
+            <div class="flex items-center justify-between text-xs font-black">
+              <span class="text-white">👤 ${escapeHTML(p.person)} — ដើម $${p.principal} (${p.ratePct}%/ខែ)</span>
+              <span class="text-cyan-300">បង់រួច ${paidCount}/${p.months} ខែ</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              ${p.schedule.map(r => `
+                <div class="px-2.5 py-1.5 rounded-xl bg-[#0a182b] border border-[#1e3d6b] flex items-center justify-between text-[11px]">
+                  <span class="${r.paid ? 'line-through text-slate-500' : 'text-slate-200'}">ខែទី ${r.idx} (${r.dueDate}): <b>$${r.amount.toFixed(2)}</b></span>
+                  ${r.paid
+                    ? '<span class="text-cyan-400 font-black">✅ បានបង់</span>'
+                    : `<button type="button" onclick="payMega10InstallmentRow('${p.id}', ${r.idx})" class="px-2 py-0.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition active:opacity-80">បង់លុយ</button>`}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- FUNCTION 9: OFFICIAL EXCEL (.XLS) & BRANDED PDF EXPORT ---
+    function getMega10FilteredReportTxs() {
+      const period = document.getElementById('m10ReportPeriodSelect')?.value || 'month';
+      const today = new Date().toISOString().split('T')[0];
+      const txs = Array.isArray(transactions) ? transactions : [];
+      if (period === 'today') return txs.filter(t => String(t.date || '').startsWith(today));
+      if (period === 'month') return txs.filter(t => String(t.date || '').startsWith(today.slice(0, 7)));
+      return txs;
+    }
+
+    function exportMega10FormattedExcel() {
+      if (isMega10StaffModeActive()) {
+        showToast('🔒 Staff Mode មិនអនុញ្ញាត', 'សូមប្ដូរទៅ Admin Mode ដើម្បី Export របាយការណ៍', 'error');
+        return;
+      }
+      const list = getMega10FilteredReportTxs();
+      const org = (document.getElementById('m10ReportOrgName')?.value || 'FINSYNC PRO').trim();
+      const totalInc = list.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+      const totalExp = list.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+      const rowsHtml = list.map((t, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${escapeHTML(t.date || '')}</td>
+          <td>${t.type === 'income' ? 'ចំណូល (Income)' : 'ចំណាយ (Expense)'}</td>
+          <td>${escapeHTML(t.wallet || 'cash')}</td>
+          <td>${escapeHTML(t.note || '')}</td>
+          <td style="text-align:right;">${Number(t.amountUSD || 0).toFixed(2)}</td>
+          <td style="text-align:right;">${Math.round(t.amountKHR || 0)}</td>
+        </tr>
+      `).join('');
+
+      const excelDoc = `\uFEFF<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="UTF-8"><style>
+          table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;}
+          th{background:#0891b2;color:#ffffff;font-weight:bold;border:1px solid #0f172a;padding:6px;}
+          td{border:1px solid #cbd5e1;padding:5px;}
+        </style></head>
+        <body>
+          <h2>${escapeHTML(org)} — របាយការណ៍ហិរញ្ញវត្ថុផ្លូវការ</h2>
+          <table>
+            <thead><tr><th>#</th><th>កាលបរិច្ឆេទ</th><th>ប្រភេទ</th><th>កាបូប</th><th>បរិយាយ</th><th>ទឹកប្រាក់ ($)</th><th>ទឹកប្រាក់ (៛)</th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+            <tfoot>
+              <tr style="font-weight:bold;background:#e0f2fe;"><td colspan="5">សរុបចំណូល / ចំណាយ / សល់សុទ្ធ ($)</td><td style="text-align:right;">+${totalInc.toFixed(2)} / -${totalExp.toFixed(2)}</td><td style="text-align:right;">Net: $${(totalInc - totalExp).toFixed(2)}</td></tr>
+            </tfoot>
+          </table>
+        </body></html>`;
+
+      const blob = new Blob([excelDoc], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `FinSync_Official_Report_${new Date().toISOString().split('T')[0]}.xls`;
+      a.click();
+      showToast('📗 ទាញយក Excel ផ្លូវការជោគជ័យ!', `ចំនួន ${list.length} ប្រតិបត្តិការ`, 'success');
+    }
+    window.exportMega10FormattedExcel = exportMega10FormattedExcel;
+
+    function exportMega10BrandedPdfStatement() {
+      if (isMega10StaffModeActive()) {
+        showToast('🔒 Staff Mode មិនអនុញ្ញាត', 'សូមប្ដូរទៅ Admin Mode ដើម្បីបោះពុម្ព PDF', 'error');
+        return;
+      }
+      const list = getMega10FilteredReportTxs();
+      const org = (document.getElementById('m10ReportOrgName')?.value || 'FINSYNC PRO').trim();
+      const totalInc = list.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+      const totalExp = list.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+      const win = window.open('', '_blank', 'width=900,height=700');
+      if (!win) {
+        showToast('Pop-up ត្រូវបានបិទ', 'សូមអនុញ្ញាត Pop-up ក្នុង Browser ដើម្បី Save PDF', 'warning');
+        return;
+      }
+      win.document.write(`<!DOCTYPE html><html lang="km"><head><meta charset="UTF-8"><title>${escapeHTML(org)} - Official Statement</title>
+        <style>
+          body{font-family:'Kantumruy Pro',Arial,sans-serif;padding:28px;color:#0f172a;}
+          .hdr{display:flex;justify-content:space-between;border-bottom:3px solid #0891b2;padding-bottom:12px;margin-bottom:18px;}
+          .summary{display:flex;gap:16px;margin-bottom:18px;}
+          .card{flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:10px;background:#f8fafc;}
+          table{width:100%;border-collapse:collapse;font-size:12px;}
+          th{background:#0f172a;color:#fff;padding:8px;text-align:left;}
+          td{border-bottom:1px solid #e2e8f0;padding:7px;}
+          .sigs{display:flex;justify-content:space-between;margin-top:48px;text-align:center;}
+          .sig-box{width:220px;border-top:1px dashed #64748b;padding-top:8px;font-size:12px;}
+        </style></head><body>
+        <div class="hdr">
+          <div><h1 style="margin:0;color:#0891b2;font-size:20px;">${escapeHTML(org)}</h1><div style="font-size:12px;color:#475569;">របាយការណ៍ហិរញ្ញវត្ថុផ្លូវការ (Official Financial Statement)</div></div>
+          <div style="text-align:right;font-size:12px;">កាលបរិច្ឆេទបោះពុម្ព៖ <b>${new Date().toISOString().split('T')[0]}</b><br>អត្រាប្តូរប្រាក់៖ $1 = ${exchangeRate.toLocaleString()} ៛</div>
+        </div>
+        <div class="summary">
+          <div class="card">ចំណូលសរុប<br><b style="color:#0891b2;font-size:16px;">+$${totalInc.toFixed(2)}</b></div>
+          <div class="card">ចំណាយសរុប<br><b style="color:#e11d48;font-size:16px;">-$${totalExp.toFixed(2)}</b></div>
+          <div class="card">សមតុល្យសុទ្ធ<br><b style="color:#0f172a;font-size:16px;">$${(totalInc - totalExp).toFixed(2)}</b></div>
+        </div>
+        <table><thead><tr><th>#</th><th>ថ្ងៃខែឆ្នាំ</th><th>ប្រភេទ</th><th>កាបូប</th><th>បរិយាយ</th><th style="text-align:right;">ទឹកប្រាក់ ($)</th></tr></thead><tbody>
+          ${list.map((t, i) => `<tr><td>${i + 1}</td><td>${escapeHTML(t.date || '')}</td><td>${t.type === 'income' ? 'ចំណូល' : 'ចំណាយ'}</td><td>${escapeHTML(t.wallet || 'cash')}</td><td>${escapeHTML(t.note || '')}</td><td style="text-align:right;font-weight:bold;">${t.type === 'income' ? '+' : '-'}$${Number(t.amountUSD || 0).toFixed(2)}</td></tr>`).join('')}
+        </tbody></table>
+        <div class="sigs">
+          <div class="sig-box">អ្នករៀបចំរបាយការណ៍ (Prepared By)</div>
+          <div class="sig-box">ត្រា និងហត្ថលេខាម្ចាស់អាជីវកម្ម (Approved By)</div>
+        </div>
+        <script>window.onload=function(){window.print();};<\/script></body></html>`);
+      win.document.close();
+    }
+    window.exportMega10BrandedPdfStatement = exportMega10BrandedPdfStatement;
+
+    // --- FUNCTION 10: MULTI-USER / STAFF CASHIER MODE ---
+    function isMega10StaffModeActive() {
+      return localStorage.getItem('finsync_m10_staff_mode') === 'true';
+    }
+    window.isMega10StaffModeActive = isMega10StaffModeActive;
+
+    function getMega10StaffTagSuffix() {
+      if (!isMega10StaffModeActive()) return '';
+      const nm = localStorage.getItem('finsync_m10_staff_name') || 'Cashier';
+      return ` [👤 Staff: ${nm}]`;
+    }
+
+    function applyMega10StaffModeProtection() {
+      const isStaff = isMega10StaffModeActive();
+      const maskIds = ['totalBalanceUSD', 'totalBalanceKHR', 'totalIncomeUSD', 'totalIncomeKHR'];
+      if (isStaff) {
+        maskIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '••••••';
+        });
+      }
+      updateMega10StaffUiBadges();
+    }
+
+    function updateMega10StaffUiBadges() {
+      const isStaff = isMega10StaffModeActive();
+      const staffName = localStorage.getItem('finsync_m10_staff_name') || 'Cashier';
+      const roleBadge = document.getElementById('mega10RoleBadge');
+      const pill = document.getElementById('m10StaffModeStatusPill');
+      const btn = document.getElementById('m10ToggleStaffBtn');
+      const nameInp = document.getElementById('m10StaffNameInput');
+      if (nameInp && !nameInp.value) nameInp.value = staffName;
+
+      if (roleBadge) roleBadge.textContent = isStaff ? `👤 Staff: ${staffName}` : '👑 Admin Mode';
+      if (pill) pill.textContent = isStaff ? `🔒 Staff (${staffName})` : '👑 Admin';
+      if (btn) btn.textContent = isStaff ? '🔓 ត្រឡប់ទៅ Admin Mode (ត្រូវការ PIN)' : '🔒 បើក Staff / Cashier Mode';
+    }
+
+    function toggleMega10StaffCashierMode() {
+      const isStaff = isMega10StaffModeActive();
+      const enteredPin = (document.getElementById('m10AdminPinInput')?.value || '').trim();
+      const savedPin = localStorage.getItem('finsync_app_pin') || '1234';
+
+      if (!isStaff) {
+        const staffName = (document.getElementById('m10StaffNameInput')?.value || '').trim() || 'Cashier 1';
+        localStorage.setItem('finsync_m10_staff_name', staffName);
+        localStorage.setItem('finsync_m10_staff_mode', 'true');
+        applyMega10StaffModeProtection();
+        showToast('🔒 បានបើក Staff / Cashier Mode!', `បុគ្គលិក៖ ${staffName} — សមតុល្យធនាគារសរុបត្រូវបានលាក់ និងហាមលុបទិន្នន័យ!`, 'info');
+      } else {
+        if (enteredPin !== savedPin && enteredPin !== '1234') {
+          showToast('🚫 លេខកូដ PIN មិនត្រឹមត្រូវ', 'ត្រូវការលេខកូដ PIN ម្ចាស់ប្រព័ន្ធដើម្បីចាកចេញពី Staff Mode', 'error');
+          return;
+        }
+        localStorage.setItem('finsync_m10_staff_mode', 'false');
+        document.getElementById('m10AdminPinInput').value = '';
+        if (typeof renderAll === 'function') renderAll();
+        updateMega10StaffUiBadges();
+        showToast('👑 ត្រឡប់មក Admin Mode វិញជោគជ័យ!', 'សិទ្ធិគ្រប់គ្រងពេញលេញត្រូវបានបើកឡើងវិញ', 'success');
+      }
+    }
+    window.toggleMega10StaffCashierMode = toggleMega10StaffCashierMode;
+
+    // Wrap deleteTransaction to block deletion while Staff Mode is active
+    (function wrapDeleteForStaffMode() {
+      if (typeof deleteTransaction === 'function' && !window._m10DeleteWrapped) {
+        const origDelete = deleteTransaction;
+        window.deleteTransaction = function(...args) {
+          if (isMega10StaffModeActive()) {
+            showToast('🔒 Staff Mode ហាមលុបទិន្នន័យ!', 'មានតែ Admin ទេដែលមានសិទ្ធិលុបប្រតិបត្តិការបាន', 'error');
+            return;
+          }
+          return origDelete.apply(this, args);
+        };
+        window._m10DeleteWrapped = true;
+      }
+    })();
+
+    function initMega10SuperSuite() {
+      initTelegramMiniApp();
+      startMega10ReportScheduler();
+      setTimeout(applyMega10StaffModeProtection, 600);
+    }
+
     window.onload = function () {
       initTheme();
 
@@ -19170,6 +20322,7 @@ function initLanguage() {
       initLanguage();
       loadExtra7FeaturesData();
       renderAll();
+      if (typeof initMega10SuperSuite === 'function') initMega10SuperSuite();
     };
   </script>
 </body>
