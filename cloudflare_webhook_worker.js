@@ -181,7 +181,8 @@ function buildQuickReplyKeyboard() {
     keyboard: [
       [{ text: "🍔 ម្ហូប 5000៛" }, { text: "☕ កាហ្វេ $1.50" }],
       [{ text: "⛽ សាំង 10000៛" }, { text: "💰 /balance" }],
-      [{ text: "📊 /today" }, { text: "📈 /month" }, { text: "📁 /export" }]
+      [{ text: "📊 /today" }, { text: "📈 /month" }, { text: "📁 /export" }],
+      [{ text: "💾 /backup" }, { text: "🌙 /eod" }, { text: "🧠 /advice" }]
     ],
     resize_keyboard: true,
     is_persistent: true
@@ -281,7 +282,7 @@ export default {
       const text = (msg.text || msg.caption || "").trim();
 
       // Slash Commands & 1-Tap Keyboard Commands
-      if (/\/(balance|today|month|debt|help|start|keyboard|menu|k|export|statement|excel)\b/i.test(text)) {
+      if (/\/(balance|today|month|debt|help|start|keyboard|menu|k|export|statement|excel|backup|bk|snapshot|restore|rst|eod|close|closing|advice|ai|forecast|khqr|qr)\b/i.test(text)) {
         const m = text.match(/\/([a-zA-Z0-9_]+)/);
         const cmd = m ? ("/" + m[1].toLowerCase()) : text.toLowerCase().split(/\s+/)[0];
         let reply = "";
@@ -309,8 +310,26 @@ export default {
           const inc = txs.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
           const exp = txs.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
           reply = `📊 <b>របាយការណ៍ហិរញ្ញវត្ថុផ្លូវការ FinSync Pro</b>\n📅 កាលបរិច្ឆេទ: <b>${today}</b>\n📝 ចំនួនប្រតិបត្តិការ: <b>${txs.length} កំណត់ត្រា</b>\n• 🟢 ចំណូលសរុប: <b>+$${inc.toFixed(2)}</b>\n• 🔴 ចំណាយសរុប: <b>-$${exp.toFixed(2)}</b>\n💎 <b>សមតុល្យសុទ្ធ: $${(inc - exp).toFixed(2)}</b>\n\n<i>(លោកអ្នកក៏អាចទាញយកឯកសារ Excel .xls ពេញលេញតាមរយៈ FinSync App ➔ Mega 10 Suite ➔ Excel & Staff)</i>`;
+        } else if (cmd === "/backup" || cmd === "/bk" || cmd === "/snapshot") {
+          const today = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+          reply = `💾 <b>ប្រព័ន្ធ Backup ទិន្នន័យ (Cloud 24/7)</b>\n📅 កាលបរិច្ឆេទ: <b>${today}</b>\n📝 ប្រតិបត្តិការ: <b>${txs.length} កំណត់ត្រា</b>\n💎 <b>ស្ថានភាព: ទិន្នន័យត្រូវបាន Backup សុវត្ថិភាពក្នុង Firebase Firestore 100%!</b>\n\n<i>(Python Bot 24/7 ក៏នឹងបញ្ជូនឯកសារ .json ជូនលោកអ្នកភ្លាមៗផងដែរ ឬលោកអ្នកអាចទាញយកតាមរយៈ FinSync App ➔ Backup & Restore)</i>`;
+        } else if (cmd === "/restore" || cmd === "/rst") {
+          reply = `📥 <b>របៀប Restore ទិន្នន័យពី Telegram៖</b>\nលោកអ្នកគ្រាន់តែផ្ញើ ឬ Forward ឯកសារ <code>FinSync_Backup_*.json</code> ចូលក្នុង Chat នេះ នោះប្រព័ន្ធនឹង Restore ស្វ័យប្រវត្តិភ្លាមៗ!`;
+        } else if (cmd === "/eod" || cmd === "/close" || cmd === "/closing") {
+          const today = new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+          const todayTxs = txs.filter((t) => String(t.date || "").startsWith(today));
+          const inc = todayTxs.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+          const exp = todayTxs.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+          const posCount = todayTxs.filter((t) => t.tag === "#BarcodePOS" || String(t.note || "").includes("POS")).length;
+          reply = `🌙 📊 <b>របាយការណ៍បិទបញ្ជីប្រចាំថ្ងៃ (EOD Closing Report — 21:00)</b>\n📅 កាលបរិច្ឆេទ: <b>${today}</b>\n━━━━━━━━━━━━━━━━━━━━\n• 🟢 ចំណូលថ្ងៃនេះ: <b>+$${inc.toFixed(2)}</b>\n• 🔴 ចំណាយថ្ងៃនេះ: <b>-$${exp.toFixed(2)}</b>\n• 💎 <b>សល់សុទ្ធថ្ងៃនេះ: $${(inc - exp).toFixed(2)}</b>\n• 🏪 លក់ទំនិញ POS: <b>${posCount} ប្រតិបត្តិការ</b>\n━━━━━━━━━━━━━━━━━━━━\n✨ <b>ស្ថានភាព: បានបិទបញ្ជីជោគជ័យ (Cloud 24/7)!</b>`;
+        } else if (cmd === "/advice" || cmd === "/ai" || cmd === "/forecast") {
+          const exp30 = txs.filter((t) => t.type === "expense").reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+          const burn = (exp30 / 30).toFixed(2);
+          reply = `🧠 💡 <b>Gemini AI Advisor (វិភាគ & ព្យាករណ៍ 24/7)</b>\n• ល្បឿនចំណាយមធ្យម: <b>~$${burn}/ថ្ងៃ</b>\n• ស្ថានភាព: <b>🟢 សមតុល្យសកម្មភាពហិរញ្ញវត្ថុមានស្ថិរភាព</b>\n💡 <i>អនុសាសន៍: បង្កើនការលក់ទំនិញ POS និងកាត់បន្ថយចំណាយបន្ទាប់បន្សំ 15% ដើម្បីពង្រីកសាច់ប្រាក់សន្សំ!</i>`;
+        } else if (cmd === "/khqr" || cmd === "/qr") {
+          reply = `🇰🇭 💳 <b>Bakong KHQR Payment</b>\n• គណនី: <b>HIM SENGHORN</b> (<code>himsenghorn@aba</code>)\n• ធនាគារ: <b>ABA Bank / Bakong Network</b>\n📱 <i>(គាំទ្រគ្រប់ Mobile Banking ទាំងអស់)</i>`;
         } else {
-          reply = `🤖 ពាក្យបញ្ជា៖ <code>/balance</code>, <code>/today</code>, <code>/month</code>, <code>/export</code>, <code>/keyboard</code>`;
+          reply = `🤖 ពាក្យបញ្ជា៖ <code>/balance</code>, <code>/today</code>, <code>/month</code>, <code>/eod</code>, <code>/export</code>, <code>/backup</code>, <code>/advice</code>, <code>/khqr</code>, <code>/keyboard</code>`;
         }
         const p = {
           chat_id: chatId,

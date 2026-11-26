@@ -3029,9 +3029,14 @@
             <div class="text-[10px] text-slate-300">ដំណើរការរាល់ថ្ងៃទាំងលើ Cloud & Local Storage</div>
           </div>
         </div>
-        <button type="button" onclick="createMidnightSnapshot(true)" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 flex items-center gap-1.5">
-          <span>⚡</span><span>Backup ឥឡូវនេះ (Snapshot Now)</span>
-        </button>
+        <div class="flex items-center gap-1.5">
+          <button type="button" onclick="createMidnightSnapshot(true)" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 flex items-center gap-1.5">
+            <span>⚡</span><span>Backup ឥឡូវនេះ</span>
+          </button>
+          <button type="button" onclick="sendFullBackupJSONToTelegram(true)" class="px-3 py-1.5 rounded-xl bg-[#142c50] hover:bg-cyan-600 border border-cyan-400/40 text-cyan-200 hover:text-white text-xs font-black transition active:opacity-80 flex items-center gap-1.5">
+            <span>✈️</span><span>ផ្ញើ Backup ទៅ Telegram</span>
+          </button>
+        </div>
       </div>
 
       <!-- SECTION 1: AUTO MIDNIGHT RESTORE POINTS LIST -->
@@ -3068,6 +3073,99 @@
           <p class="text-[10px] text-slate-300">ជ្រើសរើសឯកសារ .json ដែលធ្លាប់ Save ពីមុន ដើម្បីយកទិន្នន័យមកវិញ។</p>
           <input type="file" id="restoreBackupFileInput" accept=".json" onchange="handleRestoreBackupJSON(event)" class="w-full text-[11px] text-slate-300 file:mr-2 file:py-1.5 file:px-2.5 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-[#18365f] file:text-cyan-200 hover:file:bg-[#204477] cursor-pointer">
         </div>
+      </div>
+
+      <!-- SECTION 3: TELEGRAM CLOUD BACKUP & 1-CLICK RESTORE -->
+      <div class="p-3.5 rounded-2xl bg-[#0c1f38] border border-cyan-400/35 space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-extrabold text-cyan-300 flex items-center gap-1.5">
+            <span>✈️</span><span>Telegram Cloud Backup & 1-Click Restore</span>
+          </h4>
+          <span class="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-[10px] font-bold">24/7 Telegram Cloud</span>
+        </div>
+        <p class="text-[10.5px] text-slate-300">
+          ប្រព័ន្ធផ្ញើឯកសារ <b>.json</b> ពេញលេញចូល Telegram Group ស្វ័យប្រវត្តិរៀងរាល់ម៉ោង ១២ យប់ ឬពេលចុច Backup ដោយដៃ។ លោកអ្នកក៏អាចផ្ញើឯកសារ .json នោះចូល Telegram វិញដើម្បី Restore ស្វ័យប្រវត្តបានភ្លាមៗ!
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button type="button" onclick="sendFullBackupJSONToTelegram(true)" class="w-full py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition flex items-center justify-center gap-1.5 shadow-sm">
+            <span>✈️</span><span>ផ្ញើ Backup (.json) ទៅ Telegram</span>
+          </button>
+          <button type="button" onclick="syncAndRestoreFromFirebaseCloud()" class="w-full py-2 px-3 rounded-xl bg-[#142c50] hover:bg-[#1a3a69] border border-cyan-400/35 text-cyan-200 hover:text-white text-xs font-bold transition flex items-center justify-center gap-1.5">
+            <span>🔄</span><span>Sync & Restore ពី Cloud ចុងក្រោយ</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== BAKONG KHQR PAYMENT MODAL ==================== -->
+  <div id="khqrModal" class="fixed inset-0 z-[80] bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-[#071324] text-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-cyan-400/40 space-y-4 text-center">
+      <div class="flex items-center justify-between pb-2 border-b border-cyan-400/20">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-rose-600/20 text-rose-400 flex items-center justify-center font-bold text-base border border-rose-400/30">🇰🇭</div>
+          <div class="text-left">
+            <h3 class="text-sm font-black text-white">Bakong KHQR Payment</h3>
+            <p class="text-[10px] text-cyan-200">គាំទ្រគ្រប់ធនាគារ (ABA, Wing, ACLEDA...)</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeKhqrModal()" class="w-7 h-7 rounded-full bg-[#142c50] text-slate-300 hover:text-white flex items-center justify-center text-xs">✕</button>
+      </div>
+
+      <!-- KHQR Red Tag Header -->
+      <div class="bg-rose-600 text-white py-1.5 px-3 rounded-xl flex items-center justify-between font-black text-xs shadow-sm">
+        <span>KHQR</span>
+        <span id="khqrReceiverName" class="truncate max-w-[170px]">HIM SENGHORN</span>
+      </div>
+
+      <!-- QR Code Canvas Container -->
+      <div class="bg-white p-3.5 rounded-2xl mx-auto flex items-center justify-center shadow-inner inline-block border-2 border-cyan-400/30">
+        <div id="khqrQrContainer" class="w-[200px] h-[200px] flex items-center justify-center"></div>
+      </div>
+
+      <!-- Amount Info -->
+      <div class="p-2.5 rounded-xl bg-[#0c1f38] border border-cyan-400/25 space-y-0.5">
+        <div class="text-[11px] text-slate-300">ចំនួនទឹកប្រាក់ត្រូវបង់ (Amount Due)</div>
+        <div id="khqrAmountDisplay" class="text-xl font-black text-cyan-300 font-display">$0.00 (0 ៛)</div>
+        <div id="khqrBakongIdDisplay" class="text-[10px] text-slate-400">Account: himsenghorn@aba</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button type="button" onclick="shareKhqrToTelegram()" class="w-full py-2 px-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition flex items-center justify-center gap-1.5 shadow-sm">
+          <span>✈️</span><span>ផ្ញើទៅ Telegram</span>
+        </button>
+        <button type="button" onclick="copyKhqrPayloadString()" class="w-full py-2 px-2.5 rounded-xl bg-[#142c50] hover:bg-[#1b3d6f] border border-cyan-400/35 text-cyan-200 hover:text-white text-xs font-bold transition flex items-center justify-center gap-1.5">
+          <span>📋</span><span>ចម្លង Link QR</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== POS THERMAL RECEIPT SLIP MODAL (58mm / 80mm) ==================== -->
+  <div id="thermalReceiptModal" class="fixed inset-0 z-[80] bg-slate-950/85 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    <div class="bg-[#071324] text-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-cyan-400/40 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-cyan-400/20">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🧾</span>
+          <h3 class="text-sm font-black text-white">វិក្កយបត្រ POS (Thermal Receipt Slip)</h3>
+        </div>
+        <button type="button" onclick="closeThermalReceiptModal()" class="w-7 h-7 rounded-full bg-[#142c50] text-slate-300 hover:text-white flex items-center justify-center text-xs">✕</button>
+      </div>
+
+      <!-- Printable Thermal Paper Slip (White background with crisp receipt typography) -->
+      <div id="printableThermalReceipt" class="bg-white text-black p-4 rounded-xl font-mono text-xs shadow-inner space-y-2 max-h-[60vh] overflow-y-auto">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="printThermalReceipt()" class="w-full py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition flex items-center justify-center gap-1.5 shadow-sm">
+          <span>🖨️</span><span>បោះពុម្ព (Print 58/80mm)</span>
+        </button>
+        <button type="button" onclick="sendThermalReceiptToTelegram()" class="w-full py-2.5 px-3 rounded-xl bg-[#142c50] hover:bg-[#1a3a69] border border-cyan-400/35 text-cyan-200 hover:text-white text-xs font-bold transition flex items-center justify-center gap-1.5">
+          <span>✈️</span><span>ផ្ញើ e-Receipt ទៅ TG</span>
+        </button>
       </div>
     </div>
   </div>
@@ -5115,13 +5213,14 @@
         </div>
       </div>
 
-      <!-- 5 Category Tabs -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-[#0a182b] p-1.5 rounded-2xl border border-[#1e3d6b]">
-        <button type="button" id="m10TabBtn_cloud" onclick="switchMega10Tab('cloud')" class="py-2 px-2 rounded-xl text-[11px] font-black bg-cyan-600 text-white transition active:opacity-80">☁️ Cloud & TMA</button>
-        <button type="button" id="m10TabBtn_voice" onclick="switchMega10Tab('voice')" class="py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">🎙️ Voice & Auto</button>
-        <button type="button" id="m10TabBtn_ai" onclick="switchMega10Tab('ai')" class="py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">🧠 AI Pro & FX</button>
-        <button type="button" id="m10TabBtn_pos" onclick="switchMega10Tab('pos')" class="py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">📷 Barcode & រំលស់</button>
-        <button type="button" id="m10TabBtn_export" onclick="switchMega10Tab('export')" class="py-2 px-2 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">📊 Excel & Staff</button>
+      <!-- 6 Category Tabs -->
+      <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 bg-[#0a182b] p-1.5 rounded-2xl border border-[#1e3d6b]">
+        <button type="button" id="m10TabBtn_cloud" onclick="switchMega10Tab('cloud')" class="py-2 px-1.5 rounded-xl text-[11px] font-black bg-cyan-600 text-white transition active:opacity-80">☁️ Cloud & TMA</button>
+        <button type="button" id="m10TabBtn_voice" onclick="switchMega10Tab('voice')" class="py-2 px-1.5 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">🎙️ Voice & EOD</button>
+        <button type="button" id="m10TabBtn_ai" onclick="switchMega10Tab('ai')" class="py-2 px-1.5 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">🧠 AI Advisor</button>
+        <button type="button" id="m10TabBtn_pos" onclick="switchMega10Tab('pos')" class="py-2 px-1.5 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">📷 POS & KHQR</button>
+        <button type="button" id="m10TabBtn_export" onclick="switchMega10Tab('export')" class="py-2 px-1.5 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">📊 Excel & Staff</button>
+        <button type="button" id="m10TabBtn_crm" onclick="switchMega10Tab('crm')" class="py-2 px-1.5 rounded-xl text-[11px] font-bold text-slate-300 hover:text-white transition active:opacity-80">👥 អតិថិជន CRM</button>
       </div>
 
       <!-- TAB 1: CLOUD WEBHOOK 24/7 & TELEGRAM MINI APP (FUNCTIONS 1 & 3) -->
@@ -5192,6 +5291,22 @@
           </div>
           <textarea id="m10VoiceTranscriptBox" rows="2" placeholder="អត្ថបទដែលនិយាយនឹងលោតនៅទីនេះ (ឬវាយសាកល្បង៖ ទិញកាហ្វេ 8000៛ ABA)..." class="w-full text-xs font-bold bg-[#142c50] border border-cyan-400/30 rounded-xl p-3 text-white focus:outline-none"></textarea>
           <div id="m10PendingTgVoicesList" class="space-y-1.5 text-[11px] text-slate-300"></div>
+        </div>
+
+        <!-- Function 4B: End-of-Day (EOD) 9:00 PM Telegram Auto-Closing Report -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">🌙 📊 របាយការណ៍បិទបញ្ជីម៉ោង ៩ យប់ (EOD 21:00 Auto-Closing Report)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">រៀងរាល់ម៉ោង ៩:០០ យប់ (21:00) ប្រព័ន្ធនឹងបូកសរុបចំណូល ចំណាយ ចំណេញពី POS និងសមតុល្យ Cash/Bank ផ្ញើចូល Telegram ស្វ័យប្រវត្តិ!</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/35 text-[11px] font-bold">⏰ 21:00 រាល់ថ្ងៃ</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="sendEodClosingReportToTelegram()" class="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80 flex items-center gap-1.5">
+              <span>🌙</span><span>ផ្ញើរបាយការណ៍បិទបញ្ជី (EOD) ទៅ Telegram ឥឡូវនេះ</span>
+            </button>
+          </div>
         </div>
 
         <!-- Function 4: Automated Scheduled Reports -->
@@ -5361,6 +5476,49 @@
             <button type="button" onclick="toggleMega10StaffCashierMode()" id="m10ToggleStaffBtn" class="py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black transition active:opacity-80">🔒 បើក Staff / Cashier Mode</button>
           </div>
         </div>
+
+      <!-- TAB 6: CUSTOMER & SUPPLIER CRM DIRECTORY (NEW ENTERPRISE FEATURE) -->
+      <div id="m10Panel_crm" class="hidden space-y-4">
+        <!-- Section 1: Customer CRM Management -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">👥 គ្រប់គ្រងអតិថិជន & VIP Clients (Customer CRM)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">តាមដានប្រវត្តិទិញទំនិញ, ចំនួនដងមកទិញ, កម្រិត VIP, និងសមតុល្យជំពាក់របស់អតិថិជនម្នាក់ៗ។</p>
+            </div>
+            <span id="crmCustomerCountBadge" class="px-2.5 py-1 rounded-xl bg-cyan-500/15 text-cyan-200 border border-cyan-400/30 text-[11px] font-bold">0 នាក់</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <input type="text" id="crmCustNameInput" placeholder="ឈ្មោះអតិថិជន" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="tel" id="crmCustPhoneInput" placeholder="លេខទូរស័ព្ទ / Telegram" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <select id="crmCustTierInput" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+              <option value="Regular">👤 Regular Client</option>
+              <option value="Gold">⭐ Gold VIP</option>
+              <option value="Platinum">💎 Platinum VIP</option>
+            </select>
+            <button type="button" onclick="saveCrmCustomer()" class="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black transition active:opacity-80">➕ បន្ថែមអតិថិជន</button>
+          </div>
+          <div id="crmCustomerListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto"></div>
+        </div>
+
+        <!-- Section 2: Supplier Directory Management -->
+        <div class="bg-[#0a182b] p-4 rounded-2xl border border-cyan-400/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-xs sm:text-sm font-black text-cyan-300">🏢 អ្នកផ្គត់ផ្គង់ទំនិញ & បោះដុំ (Supplier Directory)</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">កត់ត្រាប្រភពទិញទំនិញចូល, ទំនាក់ទំនងអ្នកបោះដុំ, និងទំហំបញ្ជាទិញសរុប។</p>
+            </div>
+            <span id="crmSupplierCountBadge" class="px-2.5 py-1 rounded-xl bg-cyan-500/15 text-cyan-200 border border-cyan-400/30 text-[11px] font-bold">0 កន្លែង</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <input type="text" id="crmSuppCompanyInput" placeholder="ឈ្មោះក្រុមហ៊ុន / ដេប៉ូ" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="text" id="crmSuppContactInput" placeholder="ឈ្មោះអ្នកលក់ / ទូរស័ព្ទ" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <input type="text" id="crmSuppProductsInput" placeholder="មុខទំនិញផ្គត់ផ្គង់ (ឧ. ភេសជ្ជៈ)" class="text-xs font-bold bg-[#142c50] border border-cyan-400/35 rounded-xl px-2.5 py-2 text-white">
+            <button type="button" onclick="saveCrmSupplier()" class="py-2 px-3 rounded-xl bg-[#142c50] hover:bg-cyan-600 border border-cyan-400/40 text-cyan-200 hover:text-white text-xs font-black transition active:opacity-80">➕ បន្ថែម Supplier</button>
+          </div>
+          <div id="crmSupplierListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto"></div>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -11285,6 +11443,10 @@
         console.log(`[AutoBackup] Completed midnight backup snapshot for ${todayStr}`);
       }
 
+      if (typeof sendFullBackupJSONToTelegram === 'function') {
+        sendFullBackupJSONToTelegram(isManual).catch(() => {});
+      }
+
       if (typeof sendRawTelegramMessage === 'function') {
         const msgText = `🌙 💾 <b>ប្រព័ន្ធបាន Backup ទិន្នន័យស្វ័យប្រវត្តិ${isManual ? ' (Snapshot)' : 'ម៉ោង ១២ យប់'} រួចរាល់!</b>\n`
           + `• កាលបរិច្ឆេទ: <b>${todayStr} (${timeStr})</b>\n`
@@ -11295,6 +11457,105 @@
       }
     }
     window.createMidnightSnapshot = createMidnightSnapshot;
+
+    
+    // --- TELEGRAM FULL BACKUP (.JSON) & CLOUD RESTORE ---
+    async function sendFullBackupJSONToTelegram(isManual = true) {
+      const token = localStorage.getItem('finsync_tg_bot_token') || '8801188196:AAEaoqqmzMeRuIAWr5bpICHBVNaQ9YLjmwE';
+      const chatId = localStorage.getItem('finsync_tg_chat_id') || '-1003527836779';
+      if (!token || !chatId) {
+        if (isManual) showToast('⚠️ ខ្វះព័ត៌មាន Telegram', 'សូមភ្ជាប់ Bot Token និង Chat ID ជាមុនសិន!', 'warning');
+        return;
+      }
+
+      if (isManual) showToast('⏳ កំពុងរៀបចំ Backup...', 'កំពុងបង្កើតឯកសារ .json និងផ្ញើទៅ Telegram...', 'info');
+
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const uName = (typeof getValidAuthUsername === 'function' ? getValidAuthUsername() : '') || (currentAuthUser ? currentAuthUser.username : 'himsenghorn');
+
+      const payload = {
+        version: '2.1',
+        exportedAt: now.toISOString(),
+        date: todayStr,
+        time: timeStr,
+        user: uName,
+        exchangeRate: typeof exchangeRate !== 'undefined' ? exchangeRate : 4100,
+        monthlyBudget: typeof monthlyBudget !== 'undefined' ? monthlyBudget : 300,
+        transactions: Array.isArray(transactions) ? JSON.parse(JSON.stringify(transactions)) : [],
+        debts: Array.isArray(debts) ? JSON.parse(JSON.stringify(debts)) : [],
+        savingsGoals: Array.isArray(savingsGoals) ? JSON.parse(JSON.stringify(savingsGoals)) : [],
+        recurringBills: Array.isArray(recurringBills) ? JSON.parse(JSON.stringify(recurringBills)) : [],
+        tasks: Array.isArray(tasks) ? JSON.parse(JSON.stringify(tasks)) : []
+      };
+
+      const payloadStr = JSON.stringify(payload, null, 2);
+      const sizeKB = Number((payloadStr.length / 1024).toFixed(1));
+      const filename = `FinSync_Backup_${todayStr}_${Date.now()}.json`;
+
+      try {
+        const blob = new Blob([payloadStr], { type: 'application/json' });
+        const formData = new FormData();
+        formData.append('chat_id', chatId);
+        formData.append('document', blob, filename);
+        const caption = `💾 <b>ឯកសារ Backup ទិន្នន័យផ្លូវការ FinSync Pro (.json)</b>\n`
+          + `📅 កាលបរិច្ឆេទ: <b>${todayStr} (${timeStr})</b>\n`
+          + `📝 ប្រតិបត្តិការ: <b>${payload.transactions.length} កំណត់ត្រា</b>\n`
+          + `🤝 បំណុល: <b>${payload.debts.length}</b> | 📋 កិច្ចការ: <b>${payload.tasks.length}</b>\n`
+          + `📦 ទំហំ: <b>${sizeKB} KB</b> | គណនី: <b>${uName}</b>\n`
+          + `💎 <b>ប្រព័ន្ធ: ${isManual ? 'Backup ដោយដៃ' : 'Backup ស្វ័យប្រវត្តិកណ្តាលអធ្រាត្រ'}</b>\n`
+          + `💡 <i>លោកអ្នកអាចទាញយកឯកសារនេះទុក ឬ Forward ចូល Telegram វិញដើម្បី Restore ស្វ័យប្រវត្ត!</i>`;
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'HTML');
+
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.ok) {
+          if (isManual) showToast('✅ ជោគជ័យ!', `ឯកសារ Backup (${filename}) ត្រូវបានផ្ញើទៅ Telegram Group រួចរាល់!`, 'success');
+          console.log(`[Backup to TG] Successfully sent document ${filename}`);
+        } else {
+          if (isManual) showToast('❌ បរាជ័យក្នុងការផ្ញើ', data.description || 'មិនអាចផ្ញើឯកសារទៅ Telegram បានទេ', 'error');
+        }
+      } catch (err) {
+        console.error('Error sending backup file to Telegram:', err);
+        if (isManual) showToast('❌ បរាជ័យក្នុងការតភ្ជាប់', 'សូមពិនិត្យអ៊ីនធឺណិត ឬ Bot Token', 'error');
+      }
+    }
+    window.sendFullBackupJSONToTelegram = sendFullBackupJSONToTelegram;
+
+    async function syncAndRestoreFromFirebaseCloud() {
+      showToast('⏳ កំពុងទាញយកទិន្នន័យ...', 'កំពុងភ្ជាប់ទៅកាន់ Firebase Cloud...', 'info');
+      if (typeof fetchFirebaseUserData === 'function') {
+        try {
+          const data = await fetchFirebaseUserData();
+          if (data && Array.isArray(data.transactions)) {
+            transactions = data.transactions;
+            if (Array.isArray(data.debts)) debts = data.debts;
+            if (Array.isArray(data.savingsGoals)) savingsGoals = data.savingsGoals;
+            if (Array.isArray(data.recurringBills)) recurringBills = data.recurringBills;
+            if (Array.isArray(data.tasks)) tasks = data.tasks;
+            saveActiveTransactions();
+            if (typeof saveDebtsList === 'function') saveDebtsList();
+            if (typeof saveSavingsGoals === 'function') saveSavingsGoals();
+            if (typeof saveRecurringBills === 'function') saveRecurringBills();
+            if (typeof saveTasksList === 'function') saveTasksList();
+            renderAll();
+            showToast('✅ Restore ជោគជ័យ!', `បានស្តារទិន្នន័យ ${transactions.length} ប្រតិបត្តិការពី Cloud ជោគជ័យ!`, 'success');
+            return;
+          }
+        } catch (e) {
+          console.warn('Direct fetch failed, trying pullFromFirebase', e);
+        }
+      }
+      if (typeof pullFromFirebase === 'function') {
+        await pullFromFirebase();
+      }
+    }
+    window.syncAndRestoreFromFirebaseCloud = syncAndRestoreFromFirebaseCloud;
 
     function restoreFromMidnightPoint(pointId) {
       const list = getMidnightBackupsList();
@@ -19792,7 +20053,7 @@ function initLanguage() {
     window.closeMega10SuiteModal = closeMega10SuiteModal;
 
     function switchMega10Tab(tab) {
-      const tabs = ['cloud', 'voice', 'ai', 'pos', 'export'];
+      const tabs = ['cloud', 'voice', 'ai', 'pos', 'export', 'crm'];
       tabs.forEach(t => {
         const panel = document.getElementById(`m10Panel_${t}`);
         const btn = document.getElementById(`m10TabBtn_${t}`);
@@ -19812,6 +20073,9 @@ function initLanguage() {
         renderMega10PendingTgVoices();
       } else if (tab === 'export') {
         updateMega10StaffUiBadges();
+      } else if (tab === 'crm') {
+        if (typeof renderCrmCustomers === 'function') renderCrmCustomers();
+        if (typeof renderCrmSuppliers === 'function') renderCrmSuppliers();
       }
     }
     window.switchMega10Tab = switchMega10Tab;
@@ -20294,6 +20558,15 @@ function initLanguage() {
       renderMega10BarcodeCatalog();
 
       showToast('📷 លក់ទំនិញជោគជ័យ!', `${item.name} (+$${item.price.toFixed(2)}) — នៅសល់ស្ដុក: ${item.stockQty}`, 'success');
+      if (typeof openThermalReceiptModal === 'function') {
+        openThermalReceiptModal({
+          itemName: item.name,
+          qty: 1,
+          price: item.price,
+          amountUSD: item.price,
+          items: [{ name: item.name, qty: 1, price: item.price }]
+        });
+      }
 
       if (item.stockQty <= (item.lowStockThreshold || 5)) {
         showToast('⚠️ ជិតអស់ពីស្ដុក!', `ទំនិញ «${item.name}» នៅសល់ត្រឹមតែ ${item.stockQty} ប៉ុណ្ណោះ! សូមទិញចូលថែម!`, 'warning');
@@ -21038,6 +21311,603 @@ function initLanguage() {
     }
     window.updateBiometricUiState = updateBiometricUiState;
 
+
+    
+    /* ==========================================================================
+       NEXT-LEVEL ENTERPRISE SUITE EXTENSIONS:
+       1. Dynamic Bakong KHQR Generator (EMVCo CRC16)
+       2. POS Thermal Receipt Slip (58mm / 80mm & e-Receipt)
+       3. End-of-Day (EOD 21:00) Telegram Auto-Closing Report
+       4. Customer & Supplier CRM Profile Management
+       5. Gemini Smart Financial Advisor & Budget Forecasting
+       ========================================================================== */
+
+    // --- 1. DYNAMIC BAKONG KHQR GENERATOR ---
+    let currentKhqrPayloadString = '';
+    let currentKhqrInfo = null;
+
+    function crc16Ccitt(str) {
+      let crc = 0xFFFF;
+      for (let i = 0; i < str.length; i++) {
+        crc ^= (str.charCodeAt(i) << 8);
+        for (let j = 0; j < 8; j++) {
+          if ((crc & 0x8000) !== 0) {
+            crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+          } else {
+            crc = (crc << 1) & 0xFFFF;
+          }
+        }
+      }
+      return crc.toString(16).toUpperCase().padStart(4, '0');
+    }
+
+    function emvTag(tag, val) {
+      const strVal = String(val);
+      return tag + String(strVal.length).padStart(2, '0') + strVal;
+    }
+
+    function generateBakongKHQRString({ bakongId = 'himsenghorn@aba', merchantName = 'HIM SENGHORN', merchantCity = 'Phnom Penh', amount = 0, currency = 'USD' }) {
+      const isUsd = currency.toUpperCase() === 'USD';
+      const currCode = isUsd ? '840' : '116';
+      const amtStr = isUsd ? Number(amount).toFixed(2) : String(Math.round(amount));
+
+      // Tag 29: Merchant Account Information
+      const sub00 = emvTag('00', bakongId);
+      const tag29 = emvTag('29', sub00);
+
+      let raw = emvTag('00', '01') // Payload Format Indicator
+        + emvTag('01', '12')       // Point of Initiation (12 = Dynamic)
+        + tag29
+        + emvTag('52', '5999')     // Merchant Category Code
+        + emvTag('53', currCode)   // Currency
+        + (amount > 0 ? emvTag('54', amtStr) : '') // Amount
+        + emvTag('58', 'KH')       // Country
+        + emvTag('59', merchantName.slice(0, 25)) // Merchant Name
+        + emvTag('60', merchantCity.slice(0, 15)) // Merchant City
+        + '6304';                  // CRC Tag prefix
+
+      const checksum = crc16Ccitt(raw);
+      return raw + checksum;
+    }
+    window.generateBakongKHQRString = generateBakongKHQRString;
+
+    function openKhqrModal({ amount = 0, currency = 'USD', note = 'ទូទាត់ទំនិញ', receiverName = 'HIM SENGHORN', bakongId = 'himsenghorn@aba' } = {}) {
+      const modal = document.getElementById('khqrModal');
+      const qrContainer = document.getElementById('khqrQrContainer');
+      const amtDisplay = document.getElementById('khqrAmountDisplay');
+      const nameDisplay = document.getElementById('khqrReceiverName');
+      const bakongDisplay = document.getElementById('khqrBakongIdDisplay');
+      if (!modal || !qrContainer) return;
+
+      currentKhqrInfo = { amount, currency, note, receiverName, bakongId };
+      const isUsd = currency.toUpperCase() === 'USD';
+      const amtUSD = isUsd ? Number(amount) : Number(amount) / exchangeRate;
+      const amtKHR = isUsd ? Math.round(Number(amount) * exchangeRate) : Math.round(Number(amount));
+
+      if (amtDisplay) amtDisplay.textContent = `$${amtUSD.toFixed(2)} (${amtKHR.toLocaleString()} ៛)`;
+      if (nameDisplay) nameDisplay.textContent = receiverName;
+      if (bakongDisplay) bakongDisplay.textContent = `Account: ${bakongId}`;
+
+      currentKhqrPayloadString = generateBakongKHQRString({ bakongId, merchantName: receiverName, amount, currency });
+
+      qrContainer.innerHTML = '';
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(qrContainer, {
+          text: currentKhqrPayloadString,
+          width: 200,
+          height: 200,
+          colorDark: '#071324',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else {
+        qrContainer.innerHTML = '<div class="text-xs text-rose-500 font-bold p-4">QRCode library loading...</div>';
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    window.openKhqrModal = openKhqrModal;
+
+    function closeKhqrModal() {
+      const modal = document.getElementById('khqrModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+    window.closeKhqrModal = closeKhqrModal;
+
+    async function shareKhqrToTelegram() {
+      if (!currentKhqrInfo) return;
+      const token = localStorage.getItem('finsync_tg_bot_token') || '8801188196:AAEaoqqmzMeRuIAWr5bpICHBVNaQ9YLjmwE';
+      const chatId = localStorage.getItem('finsync_tg_chat_id') || '-1003527836779';
+      if (!token || !chatId) {
+        showToast('⚠️ ខ្វះព័ត៌មាន Telegram', 'សូមភ្ជាប់ Bot Token និង Chat ID ជាមុនសិន!', 'warning');
+        return;
+      }
+
+      const isUsd = currentKhqrInfo.currency.toUpperCase() === 'USD';
+      const amtUSD = isUsd ? Number(currentKhqrInfo.amount) : Number(currentKhqrInfo.amount) / exchangeRate;
+      const amtKHR = isUsd ? Math.round(Number(currentKhqrInfo.amount) * exchangeRate) : Math.round(Number(currentKhqrInfo.amount));
+
+      const msg = `🇰🇭 💳 <b>Bakong KHQR Payment (ស្កេនទូទាត់ប្រាក់)</b>\n`
+        + `• គណនីទទួល: <b>${escapeHTML(currentKhqrInfo.receiverName)}</b> (<code>${escapeHTML(currentKhqrInfo.bakongId)}</code>)\n`
+        + `• ចំនួនទឹកប្រាក់ត្រូវបង់: <b>$${amtUSD.toFixed(2)} (${amtKHR.toLocaleString()} ៛)</b>\n`
+        + `• បរិយាយ: <b>${escapeHTML(currentKhqrInfo.note || 'ទូទាត់ទំនិញ FinSync Pro')}</b>\n\n`
+        + `📱 <i>គាំទ្រគ្រប់ Mobile Banking ទាំងអស់៖ ABA Mobile, ACLEDA, Wing, Canadia, TrueMoney, Bakong App!</i>`;
+
+      try {
+        showToast('⏳ កំពុងផ្ញើ KHQR...', 'កំពុងបញ្ជូនព័ត៌មាន KHQR ទៅ Telegram...', 'info');
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('✅ ជោគជ័យ!', 'ព័ត៌មាន KHQR ត្រូវបានផ្ញើទៅ Telegram Group រួចរាល់!', 'success');
+        } else {
+          showToast('❌ បរាជ័យ', data.description || 'មិនអាចផ្ញើទៅ Telegram បានទេ', 'error');
+        }
+      } catch (err) {
+        console.error('Error sharing KHQR to Telegram:', err);
+        showToast('❌ បរាជ័យក្នុងការតភ្ជាប់', 'សូមពិនិត្យអ៊ីនធឺណិត ឬ Bot Token', 'error');
+      }
+    }
+    window.shareKhqrToTelegram = shareKhqrToTelegram;
+
+    function copyKhqrPayloadString() {
+      if (!currentKhqrPayloadString) return;
+      navigator.clipboard.writeText(currentKhqrPayloadString).then(() => {
+        showToast('📋 ចម្លងជោគជ័យ!', 'បានចម្លងកូដ KHQR ទៅកាន់ Clipboard រួចរាល់!', 'success');
+      }).catch(() => {
+        showToast('Info', currentKhqrPayloadString, 'info');
+      });
+    }
+    window.copyKhqrPayloadString = copyKhqrPayloadString;
+
+    // --- 2. POS THERMAL RECEIPT SLIP (58MM / 80MM) ---
+    let currentReceiptData = null;
+
+    function openThermalReceiptModal(receiptData = {}) {
+      const modal = document.getElementById('thermalReceiptModal');
+      const container = document.getElementById('printableThermalReceipt');
+      if (!modal || !container) return;
+
+      currentReceiptData = receiptData;
+      const now = new Date();
+      const dateStr = receiptData.date || now.toISOString().split('T')[0];
+      const timeStr = receiptData.time || now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const invoiceNo = receiptData.invoiceNo || ('INV-' + Date.now().toString().slice(-6));
+      const cashierName = receiptData.cashier || (currentAuthUser ? currentAuthUser.fullName || currentAuthUser.username : 'HIM SENGHORN');
+      const items = Array.isArray(receiptData.items) ? receiptData.items : [
+        { name: receiptData.itemName || 'ទំនិញលក់រាយ', qty: receiptData.qty || 1, price: receiptData.amountUSD || 0 }
+      ];
+
+      let subtotal = 0;
+      const rowsHtml = items.map((it, idx) => {
+        const itemTot = Number(it.price) * Number(it.qty);
+        subtotal += itemTot;
+        return `
+          <div class="flex justify-between items-center text-[11px] py-0.5">
+            <span class="truncate max-w-[140px]">${idx + 1}. ${escapeHTML(it.name)}</span>
+            <span>${it.qty} × $${Number(it.price).toFixed(2)} = $${itemTot.toFixed(2)}</span>
+          </div>
+        `;
+      }).join('');
+
+      const totalUSD = subtotal;
+      const totalKHR = Math.round(totalUSD * exchangeRate);
+
+      container.innerHTML = `
+        <div class="text-center pb-2 border-b border-dashed border-gray-400">
+          <div class="text-sm font-black tracking-wider">🏪 FINSYNC PRO STORE</div>
+          <div class="text-[10px] text-gray-600">Phnom Penh, Cambodia • Tel: 012 345 678</div>
+          <div class="text-[10px] font-bold text-gray-700 mt-1">វិក្កយបត្រលក់រាយ / OFFICIAL RECEIPT</div>
+        </div>
+
+        <div class="text-[10px] space-y-0.5 py-1.5 border-b border-dashed border-gray-400">
+          <div class="flex justify-between"><span>លេខវិក្កយបត្រ:</span><span class="font-bold">#${invoiceNo}</span></div>
+          <div class="flex justify-between"><span>កាលបរិច្ឆេទ:</span><span>${dateStr} ${timeStr}</span></div>
+          <div class="flex justify-between"><span>អ្នកគិតលុយ:</span><span>${escapeHTML(cashierName)}</span></div>
+        </div>
+
+        <div class="py-1.5 border-b border-dashed border-gray-400">
+          <div class="flex justify-between font-bold text-[10px] pb-1 border-b border-gray-200">
+            <span>ទំនិញ (Item)</span>
+            <span>សរុប (Total)</span>
+          </div>
+          ${rowsHtml}
+        </div>
+
+        <div class="pt-1.5 space-y-1 font-bold text-xs border-b border-dashed border-gray-400 pb-2">
+          <div class="flex justify-between"><span>សរុប (USD):</span><span class="text-sm font-black">$${totalUSD.toFixed(2)}</span></div>
+          <div class="flex justify-between"><span>សរុប (KHR):</span><span>${totalKHR.toLocaleString()} ៛</span></div>
+          <div class="flex justify-between text-[10px] font-normal text-gray-600"><span>វិធីទូទាត់:</span><span>${receiptData.paymentMethod || 'សាច់ប្រាក់ / ABA KHQR'}</span></div>
+        </div>
+
+        <div class="text-center pt-2 space-y-1">
+          <div class="text-[10px] font-bold">🙏 សូមអរគុណ! សូមអញ្ជើញមកម្តងទៀត!</div>
+          <div class="text-[9px] text-gray-500">FinSync Pro 24/7 Cloud POS Ecosystem</div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    window.openThermalReceiptModal = openThermalReceiptModal;
+
+    function closeThermalReceiptModal() {
+      const modal = document.getElementById('thermalReceiptModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+    window.closeThermalReceiptModal = closeThermalReceiptModal;
+
+    function printThermalReceipt() {
+      const printable = document.getElementById('printableThermalReceipt');
+      if (!printable) return;
+      const printWin = window.open('', '_blank', 'width=350,height=600');
+      if (!printWin) {
+        window.print();
+        return;
+      }
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>POS Receipt</title>
+          <meta charset="utf-8">
+          <style>
+            @page { size: 58mm auto; margin: 2mm; }
+            body { font-family: monospace; font-size: 11px; margin: 0; padding: 5px; color: #000; width: 54mm; }
+            .border-b { border-bottom: 1px dashed #666; padding-bottom: 5px; margin-bottom: 5px; }
+            .flex { display: flex; justify-content: space-between; }
+            .text-center { text-align: center; }
+            .font-bold { font-weight: bold; }
+            .text-sm { font-size: 13px; }
+            .text-xs { font-size: 10px; }
+          </style>
+        </head>
+        <body onload="window.print(); window.close();">
+          ${printable.innerHTML}
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+    }
+    window.printThermalReceipt = printThermalReceipt;
+
+    async function sendThermalReceiptToTelegram() {
+      if (!currentReceiptData) return;
+      const token = localStorage.getItem('finsync_tg_bot_token') || '8801188196:AAEaoqqmzMeRuIAWr5bpICHBVNaQ9YLjmwE';
+      const chatId = localStorage.getItem('finsync_tg_chat_id') || '-1003527836779';
+      if (!token || !chatId) {
+        showToast('⚠️ ខ្វះព័ត៌មាន Telegram', 'សូមភ្ជាប់ Bot Token និង Chat ID ជាមុនសិន!', 'warning');
+        return;
+      }
+
+      const printable = document.getElementById('printableThermalReceipt');
+      const now = new Date();
+      const dateStr = currentReceiptData.date || now.toISOString().split('T')[0];
+      const items = Array.isArray(currentReceiptData.items) ? currentReceiptData.items : [];
+      const itemsText = items.map(it => `  • ${escapeHTML(it.name)} × ${it.qty} = $${(Number(it.price) * Number(it.qty)).toFixed(2)}`).join('\n');
+
+      const msg = `🧾 <b>វិក្កយបត្រលក់រាយអេឡិចត្រូនិច (e-Receipt)</b>\n`
+        + `🏪 <b>FinSync Pro Store</b>\n`
+        + `📅 កាលបរិច្ឆេទ: <b>${dateStr}</b>\n`
+        + `👤 អ្នកគិតលុយ: <b>${escapeHTML(currentReceiptData.cashier || 'Cashier')}</b>\n`
+        + `━━━━━━━━━━━━━━━━━━━━\n`
+        + (itemsText || `  • ${escapeHTML(currentReceiptData.itemName || 'ទំនិញ')} = $${Number(currentReceiptData.amountUSD || 0).toFixed(2)}`) + `\n`
+        + `━━━━━━━━━━━━━━━━━━━━\n`
+        + `💎 <b>សរុបត្រូវបង់: $${Number(currentReceiptData.amountUSD || 0).toFixed(2)} (${Math.round(Number(currentReceiptData.amountUSD || 0) * exchangeRate).toLocaleString()} ៛)</b>\n`
+        + `🙏 <i>សូមអរគុណ! សូមអញ្ជើញមកម្តងទៀត!</i>`;
+
+      try {
+        showToast('⏳ កំពុងផ្ញើ...', 'កំពុងបញ្ជូនវិក្កយបត្រទៅ Telegram...', 'info');
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('✅ ជោគជ័យ!', 'វិក្កយបត្រ e-Receipt ត្រូវបានផ្ញើទៅ Telegram រួចរាល់!', 'success');
+        } else {
+          showToast('❌ បរាជ័យ', data.description || 'មិនអាចផ្ញើវិក្កយបត្របានទេ', 'error');
+        }
+      } catch (err) {
+        console.error('Error sending receipt to Telegram:', err);
+        showToast('❌ បរាជ័យក្នុងការតភ្ជាប់', 'សូមពិនិត្យអ៊ីនធឺណិត ឬ Bot Token', 'error');
+      }
+    }
+    window.sendThermalReceiptToTelegram = sendThermalReceiptToTelegram;
+
+    // --- 3. END-OF-DAY (EOD 21:00) AUTO-CLOSING REPORT ---
+    async function sendEodClosingReportToTelegram() {
+      const token = localStorage.getItem('finsync_tg_bot_token') || '8801188196:AAEaoqqmzMeRuIAWr5bpICHBVNaQ9YLjmwE';
+      const chatId = localStorage.getItem('finsync_tg_chat_id') || '-1003527836779';
+      if (!token || !chatId) {
+        showToast('⚠️ ខ្វះព័ត៌មាន Telegram', 'សូមភ្ជាប់ Bot Token និង Chat ID ជាមុនសិន!', 'warning');
+        return;
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayTxs = (transactions || []).filter(t => t.date === todayStr);
+      let incUSD = 0, expUSD = 0;
+      let posCount = 0;
+
+      todayTxs.forEach(t => {
+        if (t.type === 'income') {
+          incUSD += (t.amountUSD || 0);
+          if (t.tag === '#BarcodePOS' || (t.note && t.note.includes('POS'))) posCount++;
+        } else {
+          expUSD += (t.amountUSD || 0);
+        }
+      });
+
+      const netUSD = incUSD - expUSD;
+      const netKHR = Math.round(netUSD * exchangeRate);
+
+      const bals = { cash: 0, aba: 0, wing_acleda: 0 };
+      (transactions || []).forEach(t => {
+        const w = t.wallet in bals ? t.wallet : 'cash';
+        bals[w] += (t.type === 'income' ? 1 : -1) * (t.amountUSD || 0);
+      });
+
+      const msg = `🌙 📊 <b>របាយការណ៍បិទបញ្ជីប្រចាំថ្ងៃ (EOD Closing Report — 21:00)</b>\n`
+        + `📅 កាលបរិច្ឆេទ: <b>${todayStr}</b>\n`
+        + `━━━━━━━━━━━━━━━━━━━━\n`
+        + `🟢 ចំណូលសរុបថ្ងៃនេះ: <b>+$${incUSD.toFixed(2)}</b>\n`
+        + `🔴 ចំណាយសរុបថ្ងៃនេះ: <b>-$${expUSD.toFixed(2)}</b>\n`
+        + `💎 <b>សល់សុទ្ធថ្ងៃនេះ: ${netUSD >= 0 ? '+' : ''}$${netUSD.toFixed(2)} (${netKHR.toLocaleString()} ៛)</b>\n`
+        + `━━━━━━━━━━━━━━━━━━━━\n`
+        + `🏪 លក់ទំនិញ POS: <b>${posCount} ប្រតិបត្តិការ</b>\n`
+        + `💵 សាច់ប្រាក់ថតតុ (Cash): <b>$${bals.cash.toFixed(2)}</b>\n`
+        + `🏦 ធនាគារ ABA: <b>$${bals.aba.toFixed(2)}</b>\n`
+        + `📲 ធនាគារ Wing / ACLEDA: <b>$${bals.wing_acleda.toFixed(2)}</b>\n`
+        + `━━━━━━━━━━━━━━━━━━━━\n`
+        + `✨ <b>ស្ថានភាព: បានបិទបញ្ជីជោគជ័យ! ប្រព័ន្ធដំណើរការ Cloud 24/7</b>`;
+
+      try {
+        showToast('⏳ កំពុងផ្ញើ...', 'កំពុងបញ្ជូនរបាយការណ៍បិទបញ្ជីទៅ Telegram...', 'info');
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showToast('✅ ជោគជ័យ!', 'របាយការណ៍បិទបញ្ជី (EOD) ត្រូវបានផ្ញើទៅ Telegram រួចរាល់!', 'success');
+        } else {
+          showToast('❌ បរាជ័យ', data.description || 'មិនអាចផ្ញើរបាយការណ៍បានទេ', 'error');
+        }
+      } catch (err) {
+        console.error('Error sending EOD report:', err);
+        showToast('❌ បរាជ័យក្នុងការតភ្ជាប់', 'សូមពិនិត្យអ៊ីនធឺណិត ឬ Bot Token', 'error');
+      }
+    }
+    window.sendEodClosingReportToTelegram = sendEodClosingReportToTelegram;
+
+    // --- 4. CUSTOMER & SUPPLIER CRM DIRECTORY ---
+    function getCrmCustomers() {
+      try {
+        return JSON.parse(localStorage.getItem('finsync_crm_customers') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCrmCustomersList(list) {
+      localStorage.setItem('finsync_crm_customers', JSON.stringify(list));
+      if (typeof patchFirebaseFields === 'function') {
+        patchFirebaseFields({ crmCustomers: list }).catch(() => {});
+      }
+    }
+
+    function getCrmSuppliers() {
+      try {
+        return JSON.parse(localStorage.getItem('finsync_crm_suppliers') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCrmSuppliersList(list) {
+      localStorage.setItem('finsync_crm_suppliers', JSON.stringify(list));
+      if (typeof patchFirebaseFields === 'function') {
+        patchFirebaseFields({ crmSuppliers: list }).catch(() => {});
+      }
+    }
+
+    function renderCrmCustomers() {
+      const container = document.getElementById('crmCustomerListContainer');
+      const badge = document.getElementById('crmCustomerCountBadge');
+      if (!container) return;
+      const list = getCrmCustomers();
+      if (badge) badge.textContent = `${list.length} នាក់`;
+
+      container.innerHTML = list.map(c => `
+        <div class="p-2.5 rounded-xl bg-[#102444] border border-cyan-400/25 flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-black text-white truncate">${escapeHTML(c.name)}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${c.tier === 'Platinum' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30' : c.tier === 'Gold' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30' : 'bg-slate-700 text-slate-300'}">${c.tier || 'Regular'}</span>
+            </div>
+            <div class="text-[10px] text-slate-300 mt-0.5">📞 ${escapeHTML(c.phone || 'គ្មានលេខ')} • ចំណាយសរុប: <b class="text-cyan-300">$${Number(c.totalSpent || 0).toFixed(2)}</b></div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" onclick="openKhqrModal({ amount: 10, note: 'ទូទាត់ពី ${escapeHTML(c.name)}', receiverName: '${escapeHTML(c.name)}' })" class="px-2 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-black transition">🇰🇭 QR</button>
+            <button type="button" onclick="deleteCrmCustomer('${escapeHTML(c.id)}')" class="p-1 text-slate-400 hover:text-rose-400 transition text-xs">✕</button>
+          </div>
+        </div>
+      `).join('') || '<div class="text-xs text-slate-400 col-span-2">មិនទាន់មានអតិថិជនទេ។ សូមបន្ថែមខាងលើ!</div>';
+    }
+    window.renderCrmCustomers = renderCrmCustomers;
+
+    function saveCrmCustomer() {
+      const name = (document.getElementById('crmCustNameInput')?.value || '').trim();
+      const phone = (document.getElementById('crmCustPhoneInput')?.value || '').trim();
+      const tier = document.getElementById('crmCustTierInput')?.value || 'Regular';
+      if (!name) {
+        showToast('ឈ្មោះទទេ', 'សូមវាយបញ្ចូលឈ្មោះអតិថិជន', 'warning');
+        return;
+      }
+      const list = getCrmCustomers();
+      list.unshift({
+        id: 'cust_' + Date.now(),
+        name,
+        phone,
+        tier,
+        totalSpent: 0,
+        createdAt: new Date().toISOString()
+      });
+      saveCrmCustomersList(list);
+      document.getElementById('crmCustNameInput').value = '';
+      document.getElementById('crmCustPhoneInput').value = '';
+      renderCrmCustomers();
+      showToast('✅ បានរក្សាទុកអតិថិជន!', `${name} (${tier}) ត្រូវបានបន្ថែមទៅកាន់ CRM`, 'success');
+    }
+    window.saveCrmCustomer = saveCrmCustomer;
+
+    function deleteCrmCustomer(id) {
+      const list = getCrmCustomers().filter(c => c.id !== id);
+      saveCrmCustomersList(list);
+      renderCrmCustomers();
+      showToast('🗑️ បានលុប', 'បានលុបអតិថិជនចេញពីបញ្ជី CRM', 'info');
+    }
+    window.deleteCrmCustomer = deleteCrmCustomer;
+
+    function renderCrmSuppliers() {
+      const container = document.getElementById('crmSupplierListContainer');
+      const badge = document.getElementById('crmSupplierCountBadge');
+      if (!container) return;
+      const list = getCrmSuppliers();
+      if (badge) badge.textContent = `${list.length} កន្លែង`;
+
+      container.innerHTML = list.map(s => `
+        <div class="p-2.5 rounded-xl bg-[#102444] border border-cyan-400/25 flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div class="text-xs font-black text-white truncate">🏢 ${escapeHTML(s.company)}</div>
+            <div class="text-[10px] text-cyan-200 mt-0.5">👤 ${escapeHTML(s.contact || '')} • មុខទំនិញ: <b>${escapeHTML(s.products || 'ទូទៅ')}</b></div>
+          </div>
+          <button type="button" onclick="deleteCrmSupplier('${escapeHTML(s.id)}')" class="p-1 text-slate-400 hover:text-rose-400 transition text-xs shrink-0">✕</button>
+        </div>
+      `).join('') || '<div class="text-xs text-slate-400 col-span-2">មិនទាន់មាន Supplier ទេ។ សូមបន្ថែមខាងលើ!</div>';
+    }
+    window.renderCrmSuppliers = renderCrmSuppliers;
+
+    function saveCrmSupplier() {
+      const company = (document.getElementById('crmSuppCompanyInput')?.value || '').trim();
+      const contact = (document.getElementById('crmSuppContactInput')?.value || '').trim();
+      const products = (document.getElementById('crmSuppProductsInput')?.value || '').trim();
+      if (!company) {
+        showToast('ឈ្មោះដេប៉ូទទេ', 'សូមវាយបញ្ចូលឈ្មោះក្រុមហ៊ុន ឬដេប៉ូអ្នកផ្គត់ផ្គង់', 'warning');
+        return;
+      }
+      const list = getCrmSuppliers();
+      list.unshift({
+        id: 'supp_' + Date.now(),
+        company,
+        contact,
+        products,
+        createdAt: new Date().toISOString()
+      });
+      saveCrmSuppliersList(list);
+      document.getElementById('crmSuppCompanyInput').value = '';
+      document.getElementById('crmSuppContactInput').value = '';
+      document.getElementById('crmSuppProductsInput').value = '';
+      renderCrmSuppliers();
+      showToast('✅ បានរក្សាទុក Supplier!', `${company} ត្រូវបានបន្ថែមទៅកាន់ Directory`, 'success');
+    }
+    window.saveCrmSupplier = saveCrmSupplier;
+
+    function deleteCrmSupplier(id) {
+      const list = getCrmSuppliers().filter(s => s.id !== id);
+      saveCrmSuppliersList(list);
+      renderCrmSuppliers();
+      showToast('🗑️ បានលុប', 'បានលុប Supplier ចេញពីបញ្ជី', 'info');
+    }
+    window.deleteCrmSupplier = deleteCrmSupplier;
+
+    // --- 5. GEMINI SMART FINANCIAL ADVISOR & BUDGET FORECASTING ---
+    function runMega10AiAdvisorAnalysis() {
+      const out = document.getElementById('m10AiAdvisorOutput');
+      if (!out) return;
+      out.innerHTML = '⏳ <b>AI កំពុងវិភាគល្បឿនចំណាយ, រកប្រតិបត្តិការខុសប្រក្រតី និងគណនាថ្ងៃទប់ទល់សាច់ប្រាក់...</b>';
+
+      const txs = Array.isArray(transactions) ? transactions : [];
+      const nowMs = Date.now();
+      const dayMs = 86400000;
+      const last7Txs = txs.filter(t => t.type === 'expense' && (nowMs - new Date(t.date || t.createdAt || nowMs).getTime()) <= 7 * dayMs);
+      const last30Txs = txs.filter(t => t.type === 'expense' && (nowMs - new Date(t.date || t.createdAt || nowMs).getTime()) <= 30 * dayMs);
+
+      const exp7 = last7Txs.reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+      const exp30 = last30Txs.reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+      const dailyBurn7 = exp7 / 7;
+      const dailyBurn30 = exp30 / 30;
+
+      let totalLiquidUSD = 0;
+      txs.forEach(t => {
+        totalLiquidUSD += (t.type === 'income' ? 1 : -1) * Number(t.amountUSD || 0);
+      });
+
+      const burnRate = dailyBurn7 > 0 ? dailyBurn7 : (dailyBurn30 > 0 ? dailyBurn30 : 10);
+      const runwayDays = totalLiquidUSD > 0 ? Math.floor(totalLiquidUSD / burnRate) : 0;
+
+      // Category breakdown for leaks
+      const catMap = {};
+      last30Txs.forEach(t => {
+        const c = t.category || 'other';
+        catMap[c] = (catMap[c] || 0) + Number(t.amountUSD || 0);
+      });
+      const topCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      const topLeakText = topCats.map(([cat, amt]) => `• <b>${escapeHTML(cat)}</b>: $${amt.toFixed(2)} (${exp30 > 0 ? Math.round(amt / exp30 * 100) : 0}%)`).join('<br>');
+
+      const healthScore = runwayDays > 60 ? '🟢 ល្អប្រសើរ (Healthy)' : runwayDays > 20 ? '🟡 មធ្យម (Moderate)' : '🔴 ប្រុងប្រយ័ត្ន (Warning)';
+
+      out.innerHTML = `
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-[#1e3d6b]">
+            <span class="text-xs font-bold text-slate-300">ពិន្ទុសុខភាពហិរញ្ញវត្ថុ (Health Score):</span>
+            <span class="text-xs font-black px-2.5 py-0.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">${healthScore}</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
+            <div class="p-2.5 rounded-xl bg-[#0a182b] border border-cyan-400/25">
+              <div class="text-[10px] text-slate-400">ល្បឿនចំណាយ (Burn Rate)</div>
+              <div class="text-sm font-black text-rose-400 font-display">~$${burnRate.toFixed(2)}/ថ្ងៃ</div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-[#0a182b] border border-cyan-400/25">
+              <div class="text-[10px] text-slate-400">ថ្ងៃទប់ទល់ (Cash Runway)</div>
+              <div class="text-sm font-black text-cyan-300 font-display">${runwayDays} ថ្ងៃ</div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-[#0a182b] border border-cyan-400/25 col-span-2 sm:col-span-1">
+              <div class="text-[10px] text-slate-400">ព្យាករណ៍ ៣០ ថ្ងៃបន្ទាប់</div>
+              <div class="text-sm font-black text-cyan-300 font-display">$${Math.max(0, totalLiquidUSD - (burnRate * 30)).toFixed(2)}</div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-[#0a182b] border border-cyan-400/20 text-xs space-y-1">
+            <div class="font-black text-cyan-300">🔍 ចំណុចលេចធ្លាយចំណាយខ្ពស់បំផុត (Top Expenses 30 ថ្ងៃ):</div>
+            <div class="text-slate-300 text-[11px]">${topLeakText || 'មិនទាន់មានទិន្នន័យគ្រប់គ្រាន់ទេ'}</div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-[#0a182b] border border-cyan-400/20 text-xs space-y-1">
+            <div class="font-black text-cyan-300">💡 អនុសាសន៍យុទ្ធសាស្ត្រ AI (Strategic Advice):</div>
+            <div class="text-[11px] text-slate-300 space-y-1">
+              <div>1. បង្កើនការលក់ទំនិញ POS ដែលមាន Margin ចំណេញលើសពី 30% ដើម្បីពង្រីក Cash Runway។</div>
+              <div>2. កាត់បន្ថយការចំណាយបន្ទាប់បន្សំក្នុងប្រភេទកំពូលទាំង ៣ ខាងលើចំនួន 15% អាចសន្សំបាន ~$${(exp30 * 0.15).toFixed(2)} ក្នុងមួយខែ។</div>
+              <div>3. តាមដានការទូទាត់បំណុលដែលត្រូវដល់ថ្ងៃកំណត់ ដើម្បីជៀសវាងការខាតបង់ការប្រាក់។</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    window.runMega10AiAdvisorAnalysis = runMega10AiAdvisorAnalysis;
 
     function initMega10SuperSuite() {
       initTelegramMiniApp();

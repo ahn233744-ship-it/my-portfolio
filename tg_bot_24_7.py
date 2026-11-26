@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import sys
 import time
@@ -268,7 +269,8 @@ def build_quick_reply_keyboard():
         "keyboard": [
             [{"text": "🍔 ម្ហូប 5000៛"}, {"text": "☕ កាហ្វេ $1.50"}],
             [{"text": "⛽ សាំង 10000៛"}, {"text": "💰 /balance"}],
-            [{"text": "📊 /today"}, {"text": "📈 /month"}, {"text": "📁 /export"}]
+            [{"text": "📊 /today"}, {"text": "📈 /month"}, {"text": "📁 /export"}],
+            [{"text": "💾 /backup"}, {"text": "🌙 /eod"}, {"text": "🧠 /advice"}]
         ],
         "resize_keyboard": True,
         "is_persistent": True
@@ -461,8 +463,100 @@ def handle_slash_command(cmd_text, user_data, thread_id=None):
         ).replace('\\n', '\n')
         tg_send_document(fn, xml_content.encode("utf-8"), caption=cap, chat_id=TELEGRAM_CHAT_ID, thread_id=thread_id)
         reply = "📁 <b>បានផ្ញើឯកសារ Excel Statement (.xls) ទៅកាន់ Telegram រួចរាល់!</b>"
+    elif cmd in ("/backup", "/bk", "/snapshot"):
+        today_date = datetime.now().strftime("%Y-%m-%d")
+        time_str = datetime.now().strftime("%I:%M %p")
+        fn = f"FinSync_Backup_Manual_{today_date}_{int(time.time())}.json"
+        bk_payload = {
+            "version": "2.1",
+            "exportedAt": datetime.now().isoformat(),
+            "date": today_date,
+            "time": time_str,
+            "user": FIREBASE_USER_DOC,
+            "exchangeRate": rate,
+            "monthlyBudget": float(user_data.get("monthlyBudget", 300) or 300),
+            "transactions": txs,
+            "debts": debts,
+            "savingsGoals": user_data.get("savingsGoals", []),
+            "recurringBills": user_data.get("recurringBills", []),
+            "tasks": user_data.get("tasks", [])
+        }
+        cap_bk = (
+            f"""💾 <b>ឯកសារ Backup ទិន្នន័យផ្លូវការ FinSync Pro (.json)</b>\n"""
+            f"""📅 កាលបរិច្ឆេទ: <b>{today_date} ({time_str})</b>\n"""
+            f"""📝 ចំនួនប្រតិបត្តិការ: <b>{len(txs)} កំណត់ត្រា</b>\n"""
+            f"""🤝 បំណុល: <b>{len(debts)}</b> | 📋 កិច្ចការ: <b>{len(user_data.get('tasks', []))}</b>\n"""
+            f"""💎 <b>ប្រព័ន្ធ: Backup ដោយដៃតាម Telegram (24/7 Cloud)</b>\n"""
+            f"""💡 <i>(ដើម្បី Restore ទិន្នន័យ គ្រាន់តែ Forward ឬផ្ញើ File .json នេះចូល Group វិញ!)</i>"""
+        ).replace('\\n', '\n')
+        tg_send_document(fn, json.dumps(bk_payload, ensure_ascii=False, indent=2).encode("utf-8"), caption=cap_bk, chat_id=TELEGRAM_CHAT_ID, thread_id=thread_id)
+        reply = "💾 <b>បានបង្កើត និងផ្ញើឯកសារ Backup (.json) ទៅកាន់ Telegram រួចរាល់!</b>"
+    elif cmd in ("/restore", "/rst"):
+        reply = (
+            """📥 <b>របៀប Restore ទិន្នន័យពី Telegram៖</b>\n\n"""
+            """លោកអ្នកគ្រាន់តែផ្ញើ ឬ Forward ឯកសារ <code>FinSync_Backup_*.json</code> ចូលក្នុង Group នេះ ឬ Reply លើ File Backup ដោយវាយ <code>/restore</code> នោះប្រព័ន្ធនឹងស្តារទិន្នន័យទាំងអស់ចូល Firebase Cloud & FinSync Pro ស្វ័យប្រវត្តភ្លាមៗ!"""
+        ).replace('\\n', '\n')
+    elif cmd in ("/eod", "/close", "/closing"):
+        today_txs = [t for t in txs if str(t.get("date", "")) == today_str]
+        inc_today = sum(float(t.get("amountUSD", 0) or 0) for t in today_txs if t.get("type") == "income")
+        exp_today = sum(float(t.get("amountUSD", 0) or 0) for t in today_txs if t.get("type") != "income")
+        net_today = inc_today - exp_today
+        pos_txs = [t for t in today_txs if t.get("tag") == "#BarcodePOS" or "POS" in str(t.get("note", ""))]
+        
+        bals = {"cash": 0.0, "aba": 0.0, "wing_acleda": 0.0}
+        for t in txs:
+            w = t.get("wallet", "cash")
+            if w in bals:
+                amt = float(t.get("amountUSD", 0) or 0)
+                bals[w] += amt if t.get("type") == "income" else -amt
+                
+        reply = (
+            f"""🌙 📊 <b>របាយការណ៍បិទបញ្ជីប្រចាំថ្ងៃ (EOD Closing Report — 21:00)</b>\n"""
+            f"""📅 កាលបរិច្ឆេទ: <b>{today_str}</b>\n"""
+            f"""━━━━━━━━━━━━━━━━━━━━\n"""
+            f"""• 🟢 ចំណូលសរុបថ្ងៃនេះ: <b>+${inc_today:.2f}</b>\n"""
+            f"""• 🔴 ចំណាយសរុបថ្ងៃនេះ: <b>-${exp_today:.2f}</b>\n"""
+            f"""• 💎 <b>សល់សុទ្ធថ្ងៃនេះ: {'+' if net_today >= 0 else ''}${net_today:.2f} ({round(net_today*rate):,} ៛)</b>\n"""
+            f"""━━━━━━━━━━━━━━━━━━━━\n"""
+            f"""• 🏪 លក់ទំនិញ POS: <b>{len(pos_txs)} ប្រតិបត្តិការ</b>\n"""
+            f"""• 💵 សាច់ប្រាក់ក្នុងថតតុ (Cash): <b>${bals['cash']:.2f}</b>\n"""
+            f"""• 🏦 ធនាគារ ABA: <b>${bals['aba']:.2f}</b>\n"""
+            f"""• 📲 ធនាគារ Wing / ACLEDA: <b>${bals['wing_acleda']:.2f}</b>\n"""
+            f"""━━━━━━━━━━━━━━━━━━━━\n"""
+            f"""✨ <b>ស្ថានភាព: បានបិទបញ្ជីជោគជ័យ! ប្រព័ន្ធដំណើរការ Cloud 24/7</b>"""
+        ).replace('\\n', '\n')
+    elif cmd in ("/advice", "/ai", "/forecast"):
+        now_dt = datetime.now()
+        last_30_txs = [t for t in txs if t.get("type") != "income"]
+        exp_30 = sum(float(t.get("amountUSD", 0) or 0) for t in last_30_txs)
+        daily_burn = (exp_30 / 30.0) if exp_30 > 0 else 10.0
+        
+        tot_liquid = sum((float(t.get("amountUSD", 0) or 0) if t.get("type") == "income" else -float(t.get("amountUSD", 0) or 0)) for t in txs)
+        runway_days = int(tot_liquid / daily_burn) if (daily_burn > 0 and tot_liquid > 0) else 0
+        health = "🟢 ល្អប្រសើរ (Healthy)" if runway_days > 60 else ("🟡 មធ្យម (Moderate)" if runway_days > 20 else "🔴 ប្រុងប្រយ័ត្ន (Warning)")
+        
+        reply = (
+            f"""🧠 💡 <b>Gemini AI Financial Advisor Pro (ការវិភាគ & ព្យាករណ៍)</b>\n"""
+            f"""• ពិន្ទុសុខភាពហិរញ្ញវត្ថុ: <b>{health}</b>\n"""
+            f"""• ល្បឿនចំណាយមធ្យម: <b>~${daily_burn:.2f}/ថ្ងៃ</b>\n"""
+            f"""• ថ្ងៃទប់ទល់សាច់ប្រាក់ (Runway): <b>{runway_days} ថ្ងៃ</b>\n"""
+            f"""• ព្យាករណ៍ ៣០ ថ្ងៃបន្ទាប់: <b>~${max(0, tot_liquid - (daily_burn * 30)):.2f}</b>\n"""
+            f"""━━━━━━━━━━━━━━━━━━━━\n"""
+            f"""🎯 <b>អនុសាសន៍ឆ្លាតវៃ:</b>\n"""
+            f"""1. បង្កើនការលក់ទំនិញ POS ណាដែលមាន Margin លើសពី 30%\n"""
+            f"""2. កាត់បន្ថយចំណាយបន្ទាប់បន្សំ 15% អាចសន្សំបាន ~${(exp_30*0.15):.2f}/ខែ\n"""
+            f"""3. តាមដានការសងបំណុលទាន់កាលកំណត់ដើម្បីរក្សាលំហូរសាច់ប្រាក់!"""
+        ).replace('\\n', '\n')
+    elif cmd in ("/khqr", "/qr"):
+        reply = (
+            f"""🇰🇭 💳 <b>Bakong KHQR Payment (ស្កេនទូទាត់ប្រាក់)</b>\n"""
+            f"""• គណនីទទួល: <b>HIM SENGHORN</b> (<code>himsenghorn@aba</code>)\n"""
+            f"""• ធនាគារ: <b>ABA Bank / Bakong Network</b>\n"""
+            f"""• ទីក្រុង: <b>Phnom Penh, Cambodia</b>\n\n"""
+            f"""📱 <i>លោកអ្នកអាចបង្កើត dynamic KHQR តាមចំនួនលុយជាក់លាក់បានក្នុង FinSync App ➔ POS Barcode!</i>"""
+        ).replace('\\n', '\n')
     else:
-        reply = "🤖 ពាក្យបញ្ជា៖ <code>/balance</code>, <code>/today</code>, <code>/month</code>, <code>/debt</code>, <code>/export</code>, <code>/keyboard</code>"
+        reply = "🤖 ពាក្យបញ្ជា៖ <code>/balance</code>, <code>/today</code>, <code>/month</code>, <code>/eod</code>, <code>/debt</code>, <code>/export</code>, <code>/backup</code>, <code>/advice</code>, <code>/khqr</code>, <code>/keyboard</code>"
 
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -482,6 +576,7 @@ def main():
     print(f"-> Bot Token: {TELEGRAM_BOT_TOKEN[:15]}...")
     print(f"-> Authorized Group: {TELEGRAM_CHAT_ID} (Also accepts private DMs)")
     purge_conflicting_webhook()
+    os.makedirs(r"d:\system\backups", exist_ok=True)
     last_offset = -25
     last_hb = 0
     last_sched_check = 0
@@ -547,57 +642,101 @@ def main():
                             print(f"[SCHEDULER] Sent Evening Closeout ({today_key})")
 
                         # Automated Midnight 00:00 (12:00 AM) Full Backup Snapshot
-                        if cur_hm == "00:00" and sched_cfg.get("lastMidnightBackupSent") != today_key:
-                            bk_payload = {
-                                "version": "2.1",
-                                "exportedAt": now_dt.isoformat(),
-                                "date": today_key,
-                                "user": FIREBASE_USER_DOC,
-                                "exchangeRate": ud_sched.get("exchangeRate", 4100),
-                                "monthlyBudget": ud_sched.get("monthlyBudget", 300),
-                                "transactions": txs_s,
-                                "debts": debts_s,
-                                "savingsGoals": ud_sched.get("savingsGoals", []),
-                                "recurringBills": ud_sched.get("recurringBills", []),
-                                "tasks": ud_sched.get("tasks", [])
-                            }
-                            bk_path = f"d:\\system\\backups\\FinSync_AutoBackup_{today_key}.json"
-                            try:
-                                with open(bk_path, "w", encoding="utf-8") as bf:
-                                    json.dump(bk_payload, bf, ensure_ascii=False, indent=2)
-                                print(f"[BACKUP] Saved local file: {bk_path}")
-                            except Exception as be:
-                                print(f"[BACKUP LOCAL SAVE ERROR] {be}")
+                        # Auto EOD 21:00 Closing Report
+                            if cur_hm == "21:00" and sched_cfg.get("lastEodSent") != today_key:
+                                try:
+                                    today_txs_e = [t for t in txs_s if str(t.get("date", "")) == today_key]
+                                    inc_e = sum(float(t.get("amountUSD", 0) or 0) for t in today_txs_e if t.get("type") == "income")
+                                    exp_e = sum(float(t.get("amountUSD", 0) or 0) for t in today_txs_e if t.get("type") != "income")
+                                    net_e = inc_e - exp_e
+                                    pos_e = [t for t in today_txs_e if t.get("tag") == "#BarcodePOS" or "POS" in str(t.get("note", ""))]
+                                    bals_e = {"cash": 0.0, "aba": 0.0, "wing_acleda": 0.0}
+                                    for t in txs_s:
+                                        w = t.get("wallet", "cash")
+                                        if w in bals_e:
+                                            bals_e[w] += float(t.get("amountUSD", 0) or 0) if t.get("type") == "income" else -float(t.get("amountUSD", 0) or 0)
+                                    
+                                    eod_card = (
+                                        f"🌙 📊 <b>របាយការណ៍បិទបញ្ជីប្រចាំថ្ងៃស្វ័យប្រវត្តិ (EOD Auto-Closing — 21:00)</b>\n"
+                                        f"📅 កាលបរិច្ឆេទ: <b>{today_key}</b>\n"
+                                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                                        f"• 🟢 ចំណូលសរុបថ្ងៃនេះ: <b>+${inc_e:.2f}</b>\n"
+                                        f"• 🔴 ចំណាយសរុបថ្ងៃនេះ: <b>-${exp_e:.2f}</b>\n"
+                                        f"• 💎 <b>សល់សុទ្ធថ្ងៃនេះ: {'+' if net_e >= 0 else ''}${net_e:.2f} ({round(net_e*rate):,} ៛)</b>\n"
+                                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                                        f"• 🏪 លក់ទំនិញ POS: <b>{len(pos_e)} ប្រតិបត្តិការ</b>\n"
+                                        f"• 💵 សាច់ប្រាក់ថតតុ: <b>${bals_e['cash']:.2f}</b>\n"
+                                        f"• 🏦 ABA Bank: <b>${bals_e['aba']:.2f}</b>\n"
+                                        f"• 📲 Wing / ACLEDA: <b>${bals_e['wing_acleda']:.2f}</b>\n"
+                                        f"━━━━━━━━━━━━━━━━━━━━\n"
+                                        f"✨ <b>ស្ថានភាព: បានបិទបញ្ជីជោគជ័យ! ប្រព័ន្ធដំណើរការ Cloud 24/7</b>"
+                                    )
+                                    tg_api("sendMessage", {"chat_id": TELEGRAM_CHAT_ID, "text": eod_card, "parse_mode": "HTML"})
+                                    sched_cfg["lastEodSent"] = today_key
+                                    patch_firebase_fields({"scheduledReportsConfig": sched_cfg})
+                                    print(f"[SCHEDULER] Sent 21:00 EOD Auto-Closing Report for {today_key}")
+                                except Exception as eode:
+                                    print(f"[EOD REPORT ERROR] {eode}")
 
-                            hist_backups = ud_sched.get("autoMidnightBackups", []) or []
-                            new_entry = {
-                                "id": f"bk_{today_key}",
-                                "date": today_key,
-                                "time": "00:00",
-                                "timestamp": now_dt.isoformat(),
-                                "label": f"🌙 Backup ស្វ័យប្រវត្តិម៉ោង ១២ យប់ ({today_key})",
-                                "txCount": len(txs_s),
-                                "debtCount": len(debts_s),
-                                "taskCount": len(ud_sched.get("tasks", []) or []),
-                                "payload": bk_payload
-                            }
-                            hist_backups = [b for b in hist_backups if b.get("date") != today_key]
-                            hist_backups.insert(0, new_entry)
-                            sched_cfg["lastMidnightBackupSent"] = today_key
-                            patch_firebase_fields({
-                                "scheduledReportsConfig": sched_cfg,
-                                "autoMidnightBackups": hist_backups[:30]
-                            })
+                            if cur_hm == "00:00" and sched_cfg.get("lastMidnightBackupSent") != today_key:
+                                try:
+                                    bk_payload = {
+                                        "version": "2.1",
+                                        "exportedAt": now_dt.isoformat(),
+                                        "date": today_key,
+                                        "user": FIREBASE_USER_DOC,
+                                        "exchangeRate": ud_sched.get("exchangeRate", 4100),
+                                        "monthlyBudget": ud_sched.get("monthlyBudget", 300),
+                                        "transactions": txs_s,
+                                        "debts": debts_s,
+                                        "savingsGoals": ud_sched.get("savingsGoals", []),
+                                        "recurringBills": ud_sched.get("recurringBills", []),
+                                        "tasks": ud_sched.get("tasks", [])
+                                    }
+                                    bk_path = f"d:\\system\\backups\\FinSync_AutoBackup_{today_key}.json"
+                                    try:
+                                        with open(bk_path, "w", encoding="utf-8") as bf:
+                                            json.dump(bk_payload, bf, ensure_ascii=False, indent=2)
+                                        print(f"[BACKUP] Saved local file: {bk_path}")
+                                    except Exception as be:
+                                        print(f"[BACKUP LOCAL SAVE ERROR] {be}")
 
-                            msg_b = (
-                                f"🌙 💾 <b>ប្រព័ន្ធបាន Backup ទិន្នន័យស្វ័យប្រវត្តិម៉ោង ១២ យប់ (00:00) រួចរាល់!</b>\n"
-                                f"• កាលបរិច្ឆេទ: <b>{today_key}</b>\n"
-                                f"• ប្រតិបត្តិការ: <b>{len(txs_s)}</b> | បំណុល: <b>{len(debts_s)}</b>\n"
-                                f"• រក្សាទុកក្នុង Disk: <code>FinSync_AutoBackup_{today_key}.json</code>\n"
-                                f"💎 <b>សុវត្ថិភាពទិន្នន័យ: បានរក្សាទុកក្នុង Cloud & ចំណុច Restore ស្វ័យប្រវត្តិ ១០០%!</b>"
-                            )
-                            tg_api("sendMessage", {"chat_id": TELEGRAM_CHAT_ID, "text": msg_b, "parse_mode": "HTML"})
-                            print(f"[SCHEDULER] Completed Midnight Backup ({today_key})")
+                                    hist_backups = ud_sched.get("autoMidnightBackups", []) or []
+                                    new_entry = {
+                                        "id": f"bk_{today_key}",
+                                        "date": today_key,
+                                        "time": "00:00",
+                                        "timestamp": now_dt.isoformat(),
+                                        "label": f"🌙 Backup ស្វ័យប្រវត្តិម៉ោង ១២ យប់ ({today_key})",
+                                        "txCount": len(txs_s),
+                                        "debtCount": len(debts_s),
+                                        "taskCount": len(ud_sched.get("tasks", []) or []),
+                                        "payload": bk_payload
+                                    }
+                                    hist_backups = [b for b in hist_backups if b.get("date") != today_key]
+                                    hist_backups.insert(0, new_entry)
+                                    sched_cfg["lastMidnightBackupSent"] = today_key
+                                    patch_firebase_fields({
+                                        "scheduledReportsConfig": sched_cfg,
+                                        "autoMidnightBackups": hist_backups[:30]
+                                    })
+
+                                    msg_b = (
+                                        f"🌙 💾 <b>ប្រព័ន្ធបាន Backup ទិន្នន័យស្វ័យប្រវត្តិម៉ោង ១២ យប់ (00:00) រួចរាល់!</b>\n"
+                                        f"• កាលបរិច្ឆេទ: <b>{today_key}</b>\n"
+                                        f"• ប្រតិបត្តិការ: <b>{len(txs_s)} កំណត់ត្រា</b> | បំណុល: <b>{len(debts_s)}</b>\n"
+                                        f"💎 <b>ស្ថានភាព: បានរក្សាទុកក្នុង Cloud & ផ្ញើឯកសារ Backup .json ជូនរួចរាល់!</b>\n"
+                                        f"💡 <i>(លោកអ្នកអាចទាញយកទុក ឬផ្ញើ File នេះមកវិញដើម្បី Restore បានគ្រប់ពេល)</i>"
+                                    )
+                                    tg_send_document(
+                                        f"FinSync_AutoBackup_{today_key}.json",
+                                        json.dumps(bk_payload, ensure_ascii=False, indent=2).encode("utf-8"),
+                                        caption=msg_b,
+                                        chat_id=TELEGRAM_CHAT_ID
+                                    )
+                                    print(f"[SCHEDULER] Completed Midnight Backup ({today_key})")
+                                except Exception as bke:
+                                    print(f"[MIDNIGHT BACKUP ERROR] {bke}")
                 except Exception as sched_err:
                     print(f"[SCHEDULER ERROR] {sched_err}")
 
@@ -694,9 +833,76 @@ def main():
 
                 target_chat_id = chat_id or TELEGRAM_CHAT_ID
 
-                if re.search(r"/(balance|today|month|debt|help|start|keyboard|menu|k|export|statement|excel)\b", msg_text, re.I):
+                if re.search(r"/(balance|today|month|debt|help|start|keyboard|menu|k|export|statement|excel|backup|bk|snapshot|restore|rst|eod|close|closing|advice|ai|forecast|khqr|qr)\b", msg_text, re.I):
                     handle_slash_command(msg_text, user_data, thread_id)
                     continue
+
+                # Handle Document upload (.json Backup Restore)
+                doc_obj = msg.get("document") or (msg.get("reply_to_message", {}).get("document"))
+                if doc_obj:
+                    f_name = doc_obj.get("file_name", "")
+                    f_id = doc_obj.get("file_id")
+                    if f_name.lower().endswith(".json") or "backup" in f_name.lower() or "/restore" in msg_text.lower():
+                        print(f"[RESTORE VIA TELEGRAM] Document received: {f_name} (id={f_id})")
+                        f_info = tg_api("getFile", {"file_id": f_id})
+                        if f_info.get("ok"):
+                            f_path = f_info.get("result", {}).get("file_path")
+                            dl_url = f"https://api.telegram.org/file/bot{TELEGRAM_BOT_TOKEN}/{f_path}"
+                            try:
+                                req_dl = urllib.request.Request(dl_url)
+                                with urllib.request.urlopen(req_dl, timeout=30) as dl_resp:
+                                    raw_json = dl_resp.read().decode("utf-8")
+                                bk_data = json.loads(raw_json)
+                                res_txs = bk_data.get("transactions")
+                                if isinstance(res_txs, list):
+                                    patch_p = {
+                                        "transactions": res_txs,
+                                        "lastRestoredAt": datetime.now().isoformat()
+                                    }
+                                    if "debts" in bk_data and isinstance(bk_data["debts"], list):
+                                        patch_p["debts"] = bk_data["debts"]
+                                    if "tasks" in bk_data and isinstance(bk_data["tasks"], list):
+                                        patch_p["tasks"] = bk_data["tasks"]
+                                    if "savingsGoals" in bk_data:
+                                        patch_p["savingsGoals"] = bk_data["savingsGoals"]
+                                    if "recurringBills" in bk_data:
+                                        patch_p["recurringBills"] = bk_data["recurringBills"]
+                                    if "exchangeRate" in bk_data:
+                                        patch_p["exchangeRate"] = float(bk_data["exchangeRate"])
+                                    
+                                    patch_firebase_fields(patch_p)
+                                    txs = res_txs
+                                    user_data["transactions"] = res_txs
+                                    if "debts" in patch_p:
+                                        debts = patch_p["debts"]
+                                        user_data["debts"] = debts
+                                    
+                                    bk_dt = bk_data.get("date", "Unknown")
+                                    ok_msg = (
+                                        f"✅ <b>បាន Restore ទិន្នន័យពី Telegram ជោគជ័យ ១០០%!</b>\n"
+                                        f"📁 ឯកសារ: <code>{f_name}</code> (កាលបរិច្ឆេទ: <b>{bk_dt}</b>)\n"
+                                        f"• 📝 ប្រតិបត្តិការបានស្តារ: <b>{len(res_txs)} កំណត់ត្រា</b>\n"
+                                        f"• 🤝 បំណុល: <b>{len(patch_p.get('debts', []))}</b> | 📋 កិច្ចការ: <b>{len(patch_p.get('tasks', []))}</b>\n"
+                                        f"💎 <b>ទិន្នន័យត្រូវបាន Sync ចូល Firebase Cloud & FinSync Pro គ្រប់ឧបករណ៍រួចរាល់!</b>"
+                                    )
+                                    p_rep = {"chat_id": target_chat_id, "text": ok_msg, "parse_mode": "HTML"}
+                                    if thread_id and chat_type != "private":
+                                        p_rep["message_thread_id"] = int(thread_id)
+                                    tg_api("sendMessage", p_rep)
+                                    continue
+                                else:
+                                    p_rep = {"chat_id": target_chat_id, "text": "⚠️ ឯកសារ .json មិនមែនជាទម្រង់ Backup របស់ FinSync Pro ទេ (រកមិនឃើញ transactions)", "parse_mode": "HTML"}
+                                    if thread_id and chat_type != "private":
+                                        p_rep["message_thread_id"] = int(thread_id)
+                                    tg_api("sendMessage", p_rep)
+                                    continue
+                            except Exception as ex:
+                                print(f"[RESTORE ERROR] {ex}")
+                                p_rep = {"chat_id": target_chat_id, "text": f"❌ បរាជ័យក្នុងការ Restore ពី Telegram៖ {ex}", "parse_mode": "HTML"}
+                                if thread_id and chat_type != "private":
+                                    p_rep["message_thread_id"] = int(thread_id)
+                                tg_api("sendMessage", p_rep)
+                                continue
 
                 # Handle Voice Note / Audio messages
                 has_voice = bool(msg.get("voice")) or bool(msg.get("audio"))
